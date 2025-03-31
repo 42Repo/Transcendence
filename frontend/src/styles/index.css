@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+body {
+   @apply text-gray-900 font-sans;
+}
+
+#app {
+  @apply container mx-auto p-4;
+}
+
+h1 {
+  @apply text-2xl font-bold mb-4;
+}
+
+button {
+    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
+pre {
+    @apply bg-gray-200 p-2 rounded mt-2 text-sm;
+}

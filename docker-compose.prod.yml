@@ -1,0 +1,19 @@
+services:
+  nginx:
+     volumes:
+       - ./nginx/conf.d/prod.default.conf:/etc/nginx/conf.d/default.conf:ro
+       - frontend-dist:/usr/share/nginx/html:ro
+
+  backend:
+    build:
+      target: production
+    command: node dist/server.js
+    volumes:
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      target: builder
+    volumes:
+      - frontend-dist:/app/dist
