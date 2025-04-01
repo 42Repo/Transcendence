@@ -10,7 +10,7 @@
   <header class="fixed top-0 w-full bg-mediumdark text-white p-4 z-30">
     <div class="container mx-auto flex lex-row items-center justify-between">
       
-      <img src="src/imgs/BurgerMenu.psd.png" alt="Menu" id="burger-icon" class="burger-icon size-6 left" />
+      <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="burger-icon size-6 left" />
       <nav class="">
         <ul id="nav-desktop" class="flex space-x-4">
           <li>
@@ -39,11 +39,10 @@
   </div>
 </header>
 
-<body class="bg-light pt-16">
+<body class="bg-light pt-16 flex flex-wrap justify-center">
     <!-- SIDE MENU -->
     
-    
-    <div id="nav-mobile" class="nav-mobile fixed mt-16 inset-0 z-49 bg-darkdark/[.50]">
+    <div id="nav-mobile" class="nav-mobile fixed  mt-16 inset-0 z-49 bg-darkdark/[.50]">
     <div class="burger-bg bg-mediumdark w-2/3 h-full">
 
       <ul class="block w-full">
@@ -149,22 +148,33 @@
       </div>
     </div>
 
+      <div class="defdiv min-w-90 size-full">
+        <div class="relative flex flex-col justify-center indiv  w-1/2">
+          <h1>skin</h1>
+          <h1>preview</h1>
+          <img src="Edit.png" alt="Menu" class="absolute bottom-3 right-3 size-10 bg-light p-1 rounded-md hover:bg-lightlight hover:rotate-180 animate-spin" />
+          
+        </div>
+        <div class="flex flex-col w-1/2">
+          <!-- <a href="#" class="p-3 hover:bg-lightlight block">INVITE <br/> friend</a> -->
+          <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">SOLO</a>
+          <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">INVITE <br/> friend</a>
+          <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">join <br/>tournament</a>
+          <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">create<br/> tournament</a>
+        </div>
+      </div>
 
-    <div class="defdiv">
-      <div class="relative flex flex-col justify-center indiv  w-1/2">
-        <h1>skin</h1>
-        <h1>preview</h1>
-        <img src="src/imgs/Edit.png" alt="Menu" class="absolute bottom-3 right-3 size-10 bg-light p-1 rounded-md hover:bg-lightlight hover:rotate-180 animate-spin" />
-        
+
+    <div class="defdiv max-w-1/2 min-w-90 h-90 mt-0">
+      <div class="relative flex flex-col justify-center indiv  w-full">
+        <h1>placeholder</h1>
       </div>
-      <div class="flex flex-col w-1/2">
-        <!-- <a href="#" class="p-3 hover:bg-lightlight block">INVITE <br/> friend</a> -->
-        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">SOLO</a>
-        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">INVITE <br/> friend</a>
-        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">join <br/>tournament</a>
-        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">create<br/> tournament</a>
-      </div>
+  </div>
+  <div class="defdiv max-w-1/2 h-90 min-w-90">
+    <div class="relative flex flex-col justify-center indiv  w-full">
+      <h1>placeholder</h1>
     </div>
+</div>
     <script src="./src/main.ts"></script>
   </body>
 </html>

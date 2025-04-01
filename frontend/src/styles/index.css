@@ -56,6 +56,10 @@ html {
 	display: block;
 	transform: translateX(0); /* Déplace le menu à sa position d'origine */
   }
+  
+  .defdiv{
+    @apply w-full max-w-full;
+  }
 }
 
 .btn {
@@ -94,7 +98,7 @@ html {
 }
 
 .defdiv{
-	@apply bg-mediumlight rounded-xl p-2 m-4 flex text-lightlight text-center;
+	@apply bg-mediumlight flex-grow rounded-xl p-2 m-2 flex text-lightlight text-center;
 }
 
 .indiv{
