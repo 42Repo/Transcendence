@@ -18,7 +18,7 @@
 
 @font-face {
   font-family: "Goofont";
-  src: url("src/fonts/Goofont-Regular.ttf") format("truetype");
+  src: url("../fonts/Goofont-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
