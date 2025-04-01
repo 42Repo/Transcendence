@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY tsconfig.json ./
+COPY database ./database
 
 FROM base AS builder
 RUN npm install

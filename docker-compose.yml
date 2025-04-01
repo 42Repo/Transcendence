@@ -27,6 +27,7 @@ services:
       - transcendence-net
     volumes:
       - backend-node-modules:/app/node_modules
+      - database-data:/app/database
     restart: unless-stopped
 
   frontend:
@@ -48,3 +49,4 @@ volumes:
   frontend-dist:
   backend-node-modules:
   frontend-node-modules:
+  database-data:
