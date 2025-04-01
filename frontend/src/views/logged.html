@@ -5,12 +5,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transcendence</title>
-    <link href="src/styles/index.css" rel="stylesheet" />
+    <link href="../styles/index.css" rel="stylesheet" />
   </head>
   <header class="fixed top-0 w-full bg-mediumdark text-white p-4 z-30">
     <div class="container mx-auto flex lex-row items-center justify-between">
       
-      <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="burger-icon size-6 left" />
+      <img src="public/BurgerMenu.png" alt="Menu" id="burger-icon" class="burger-icon size-6 left" />
       <nav class="">
         <ul id="nav-desktop" class="flex space-x-4">
           <li>
@@ -35,7 +35,7 @@
       </ul>
     </nav>
     <h1 class="text-lightlight font-bold text-2xl hover:rotate-180 transition-transform duration-300 mr-10">Transcendance</h1>
-    <a href="#" id="loginLink" class="text-white hover:text-medium">Join</a>
+    <a href="#" id="loginLink" class="text-white hover:text-medium">profile</a>
   </div>
 </header>
 
@@ -72,7 +72,7 @@
     <!-- LOGIN TAB -->
     <div
     id="loginModal"
-    class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center"
+    class="hidden fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center"
     >
     <div class="bg-medium rounded-lg p-1 w-100">
       <div class="bg-light rounded-lg p-3 m-4">
@@ -94,12 +94,7 @@
         >
           <ul>
             <button class="btn btn-active">
-              Login
-            </button>
-          </ul>
-          <ul>
-            <button id="switchRegister" class="btn">
-              Register
+              LOG OUT
             </button>
           </ul>
           <p id="result"></p>
@@ -154,7 +149,7 @@
         <div class="relative flex flex-col justify-center indiv  w-1/2">
           <h1>skin</h1>
           <h1>preview</h1>
-          <img src="Edit.png" alt="Menu" class="absolute bottom-3 right-3 size-10 bg-light p-1 rounded-md hover:bg-lightlight hover:rotate-180" />
+          <img src="../../public/Edit.png" alt="Edit" class="absolute bottom-3 right-3 size-10 bg-light p-1 rounded-md hover:bg-lightlight hover:rotate-180" />
           
         </div>
         <div class="flex flex-col w-1/2">
@@ -177,8 +172,8 @@
       <h1>placeholder</h1>
     </div>
 </div>
-    <script src="./src/main.ts"></script>
-    <script src="./src/login.ts"></script>
+    <script src="./../main.ts"></script>
+    <script src="./../login.ts"></script>
   </body>
 </html>
 
@@ -198,6 +193,6 @@
       <button id="pingButton">Ping Backend</button>
       <pre id="pingResult">     </pre>
     </div>
-    <script type="module" src="./src/main.ts"></script>
+    <script type="module" src="./../main.ts"></script>
   </body>
 </html> -->
