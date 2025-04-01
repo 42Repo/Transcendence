@@ -1,4 +1,176 @@
+
 <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ma Landing Page</title>
+    <link href="src/styles/index.css" rel="stylesheet" />
+  </head>
+  <header class="fixed top-0 w-full bg-mediumdark text-white p-4 z-30">
+    <div class="container mx-auto flex lex-row items-center justify-between">
+      
+      <img src="src/imgs/BurgerMenu.psd.png" alt="Menu" id="burger-icon" class="burger-icon size-6 left" />
+      <nav class="">
+        <ul id="nav-desktop" class="flex space-x-4">
+          <li>
+            <a href="#" class="hover:text-gray-300">Profile</a>
+          </li>
+          <li>
+            <a href="#" class="hover:text-gray-300"
+            >History</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-gray-300"
+            >Friends</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-gray-300"
+            >About us</a
+            >
+          </li>
+        </li>
+      </ul>
+    </nav>
+    <h1 class="text-light font-bold text-2xl hover:rotate-180 transition-transform duration-300 mr-10">Transcendance</h1>
+    <a href="#" id="loginLink" class="text-light hover:text-medium">Join</a>
+  </div>
+</header>
+
+<body class="bg-light pt-16">
+    <!-- SIDE MENU -->
+    
+    
+    <div id="nav-mobile" class="nav-mobile fixed mt-16 inset-0 z-49 bg-darkdark/[.50]">
+    <div class="burger-bg bg-mediumdark w-2/3 h-full">
+
+      <ul class="block w-full">
+        <li>
+          <a href="#" class="burger-btn">Profile</a>
+        </li>
+        <li>
+          <a href="#" class="burger-btn"
+          >History</a
+          >
+        </li>
+        <li>
+          <a href="#" class="burger-btn"
+          >Friends</a
+          >
+        </li>
+        <li>
+          <a href="#" class="burger-btn"
+          >About Us</a
+          >
+        </li>
+      </div>
+    </ul>
+  </div>
+
+  
+    <!-- LOGIN TAB -->
+    <div
+    id="loginModal"
+    class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
+    >
+    <div class="bg-medium rounded-lg p-1 w-100">
+      <div class="bg-light rounded-lg p-3 m-4">
+        <div class="flex justify-between">
+          <h1 class="ml-2 mb-2 text-dark ">Login</h1>
+          <button id="closeLoginModal" class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium">X</button>
+        </div>
+          <input type="text" placeholder="mail" class="text-darkdark bg-lightlight p-2 pb-1 mb-2 w-full rounded-4xl" />
+        <input
+          type="password"
+          placeholder="Password"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <div class="flex justify-center mb-0"><button class=" btn btn-confirm "> Confirm </button></div>
+        </div>
+        <li
+          class="container mx-auto flex space-x-4 justify-center items-center"
+        >
+          <ul>
+            <button class="btn btn-active">
+              Login
+            </button>
+          </ul>
+          <ul>
+            <button id="switchRegister" class="btn">
+              Register
+            </button>
+          </ul>
+        </li>
+      </div>
+    </div>
+    
+    <!-- REGISTER TAB -->
+    <div
+    id="registerModal"
+    class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
+    >
+    <div class="bg-medium rounded-lg p-1 w-100">
+      <div class="bg-light rounded-lg p-3 pb-1 m-4">
+        <div class="flex justify-between just">
+          <h1 class="ml-2 mb-2 text-dark ">Register</h1>
+          <button id="closeRegisterModal" class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium">X</button>
+        </div>
+          <input type="text" placeholder="username" class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+          <input type="text" placeholder="mail" class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+        <input
+          type="password"
+          placeholder="Password"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <input
+          type="password"
+          placeholder="confirm password"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <div class="flex justify-center mb-0"><button class=" btn btn-confirm "> Confirm </button></div>
+        </div>
+        
+        <li
+          class="container mx-auto flex space-x-4 justify-center items-center"
+        >
+          <ul>
+            <button id="switchLogin" class="btn">
+              Login
+            </button>
+          </ul>
+          <ul>
+                <button class="btn btn-active">
+              Register
+            </button>
+          </ul>
+        </li>
+      </div>
+    </div>
+
+
+    <div class="defdiv">
+      <div class="relative flex flex-col justify-center indiv  w-1/2">
+        <h1>skin</h1>
+        <h1>preview</h1>
+        <img src="src/imgs/Edit.png" alt="Menu" class="absolute bottom-3 right-3 size-10 bg-light p-1 rounded-md hover:bg-lightlight hover:rotate-180 animate-spin" />
+        
+      </div>
+      <div class="flex flex-col w-1/2">
+        <!-- <a href="#" class="p-3 hover:bg-lightlight block">INVITE <br/> friend</a> -->
+        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">SOLO</a>
+        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">INVITE <br/> friend</a>
+        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">join <br/>tournament</a>
+        <a href="#" class="block bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1">create<br/> tournament</a>
+      </div>
+    </div>
+    <script src="./src/main.ts"></script>
+  </body>
+</html>
+
+
+<!-- <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -15,4 +187,4 @@
     </div>
     <script type="module" src="./src/main.ts"></script>
   </body>
-</html>
+</html> -->

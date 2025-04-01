@@ -8,8 +8,8 @@ COMPOSE_FILES_DEV = -f $(COMPOSE_BASE) -f $(COMPOSE_DEV)
 COMPOSE_FILES_PROD = -f $(COMPOSE_BASE) -f $(COMPOSE_PROD)
 
 # Commands
-DOCKER_COMPOSE_DEV = COMPOSE_BAKE=true docker-compose $(COMPOSE_FILES_DEV)
-DOCKER_COMPOSE_PROD = COMPOSE_BAKE=true docker-compose $(COMPOSE_FILES_PROD)
+DOCKER_COMPOSE_DEV = COMPOSE_BAKE=true docker compose $(COMPOSE_FILES_DEV)
+DOCKER_COMPOSE_PROD = COMPOSE_BAKE=true docker compose $(COMPOSE_FILES_PROD)
 
 help: ## Display this help screen
 		@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)

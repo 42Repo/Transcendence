@@ -1,21 +1,102 @@
 @import "tailwindcss";
+/* @import "tailwindcss/preflight"; */
 
-body {
-   @apply text-gray-900 font-sans;
+@tailwind utilities;
+
+@theme {
+  --color-lightlight: #e0c4f8;
+  --color-light: #c6a6e8;
+  --color-mediumlight: #a77dc5;
+  --color-medium: #a77dc5;
+  --color-mediumlightdark: #8a5aa0;
+  --color-mediumdark: #6e3e79;
+  --color-dark: #5a2a5b;
+  --color-darkdark: #4a1c4a;
 }
 
-#app {
-  @apply container mx-auto p-4;
+
+
+@font-face {
+  font-family: "Goofont";
+  src: url("src/fonts/Goofont-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
-h1 {
-  @apply text-2xl font-bold mb-4;
+html {
+  font-family: "Goofont";
 }
 
-button {
-    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+.burger-icon {
+  display: none; /* Caché sur le bureau */
 }
 
-pre {
-    @apply bg-gray-200 p-2 rounded mt-2 text-sm;
+.nav-mobile {
+  display: none; /* Caché par défaut */
+}
+
+.burger-icon {
+  display: none; /* Caché sur le bureau */
+  width: 2em; /* Ajustez la taille de l'image */
+  height: 2em; /* Ajustez la taille de l'image */
+  cursor: pointer; /* Indique que l'image est cliquable */
+}
+
+@media (max-width: 768px) {
+  #nav-desktop {
+    display: none; /* Caché sur mobile */
+  }
+
+  .burger-icon {
+    display: block; /* Affiché sur mobile */
+  }
+
+  .nav-mobile.show {
+    display: flex;
+	display: block;
+	transform: translateX(0); /* Déplace le menu à sa position d'origine */
+  }
+}
+
+.btn {
+  @apply text-white bg-light p-2 mb-2 w-full rounded-xl;
+}
+
+.btn:hover {
+  @apply bg-lightlight;
+}
+
+.btn:active{
+
+	@apply bg-mediumdark text-white shadow-inner scale-95
+
+}
+
+.btn-active{
+	/* add a pressed deep button effect */
+	@apply bg-mediumdark text-white shadow-inner scale-95
+}
+
+.btn-confirm{
+	@apply bg-medium text-white w-50 ;
+}
+
+.burger-btn{
+	@apply  text-light  block w-full p-4 pl-8  transition-all duration-200;
+}
+
+
+.burger-btn:hover{
+	@apply bg-mediumlight;
+}
+.burger-btn:active{
+	@apply duration-1 bg-mediumlight;
+}
+
+.defdiv{
+	@apply bg-mediumlight rounded-xl p-2 m-4 flex text-lightlight text-center;
+}
+
+.indiv{
+	@apply bg-mediumlightdark rounded-xl  m-1 ;
 }
