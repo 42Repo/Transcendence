@@ -27,6 +27,8 @@ html {
   font-family: "Goofont";
 }
 
+
+
 .burger-icon {
   display: none; /* Caché sur le bureau */
 }
@@ -97,10 +99,28 @@ html {
 	@apply duration-1 bg-mediumlight;
 }
 
+/* border des div dans le .content */
 .defdiv{
-	@apply bg-mediumlight flex-grow rounded-xl p-2 m-2 flex text-lightlight text-center;
+	@apply bg-mediumlight rounded-xl p-2 m-2 flex text-lightlight text-center;
 }
-
+/* div dans le content (div interne a defdiv) */
 .indiv{
 	@apply bg-mediumlightdark rounded-xl  m-1 ;
+}
+
+header{
+  @apply fixed top-0 w-full bg-mediumdark text-white p-4 z-30 h-19;
+
+}
+
+body{
+  @apply  flex flex-col min-h-screen bg-light pt-20;
+}
+
+footer{
+  @apply mt-auto p-10 pt-16 text-xs text-center bg-mediumdark text-darkdark;
+}
+
+.content{
+  @apply flex flex-wrap justify-center items-start m-0;
 }

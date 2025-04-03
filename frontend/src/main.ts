@@ -2,6 +2,7 @@
 
 const loginLink = document.getElementById("loginLink");
 const loginModal = document.getElementById("loginModal");
+const registerLink = document.getElementById("registerLink");
 const registerModal = document.getElementById("registerModal");
 const closeLoginModal = document.getElementById("closeLoginModal");
 const closeRegisterModal = document.getElementById("closeRegisterModal");
@@ -19,7 +20,12 @@ if (loginLink && loginModal && closeLoginModal) {
   });
 }
 
-if (registerModal && closeRegisterModal) {
+if (registerLink && registerModal && closeRegisterModal) {
+  registerLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    registerModal.classList.remove("hidden");
+  });
+
   closeRegisterModal.addEventListener("click", () => {
     registerModal.classList.add("hidden");
   });
