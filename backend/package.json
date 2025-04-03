@@ -21,7 +21,7 @@
 		"@fastify/cookie": "^9.0.0",
 		"@fastify/oauth2": "^7.0.0",
 		"@fastify/postgres": "^6.0.0",
-		"bcrypt": "^5.1.0",
+		"bcrypt": "^5.1.0"
 	},
 	"devDependencies": {
 		"@types/node": "^20.0.0",
