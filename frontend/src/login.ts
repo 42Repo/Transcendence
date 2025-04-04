@@ -21,8 +21,73 @@
 //   });
 // });
 
-document.getElementById("loginConfirm")?.addEventListener("click", () => {
-  // Simule un login, puis redirige
-  localStorage.setItem("authToken", "123456");
-  window.location.href = "src/views/logged.html";
+// document.getElementById("loginConfirm")?.addEventListener("click", () => {
+//   // Simule un login, puis redirige
+//   localStorage.setItem("authToken", "123456");
+//   const contentContainer = document.getElementById("content") as HTMLElement;
+
+//   if (contentContainer) {
+
+//     fetch("src/views/logged.html")
+//       .then(response => response.text())
+//       .then(data => {
+//         contentContainer.innerHTML = data;
+//       });
+//   }
+// });
+
+// import './styles/index.css';
+
+function closeModal(modal: HTMLElement | null) {
+  modal?.classList.add("hidden");
+}
+
+function openModal(modal: HTMLElement | null) {
+  modal?.classList.remove("hidden");
+}
+
+// Assure que les modales existent
+const loginModal = document.getElementById("loginModal");
+const registerModal = document.getElementById("registerModal");
+
+document.addEventListener("click", (event) => {
+  const target = event.target as HTMLElement;
+
+  // Ouvrir la modale de login
+  if (target.closest("#loginLink")) {
+    event.preventDefault();
+    openModal(loginModal);
+  }
+
+  // Fermer la modale de login
+  if (target.closest("#closeLoginModal")) {
+    event.preventDefault();
+    closeModal(loginModal);
+  }
+
+  // Ouvrir la modale de register
+  if (target.closest("#registerLink")) {
+    event.preventDefault();
+    openModal(registerModal);
+  }
+
+  // Fermer la modale de register
+  if (target.closest("#closeRegisterModal")) {
+    event.preventDefault();
+    closeModal(registerModal);
+  }
+
+  // Switch Login → Register
+  if (target.closest("#switchRegister")) {
+    event.preventDefault();
+    closeModal(loginModal);
+    openModal(registerModal);
+  }
+
+  // Switch Register → Login
+  if (target.closest("#switchLogin")) {
+    event.preventDefault();
+    closeModal(registerModal);
+    openModal(loginModal);
+  }
 });
