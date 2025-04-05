@@ -21,20 +21,23 @@
 //   });
 // });
 
-// document.getElementById("loginConfirm")?.addEventListener("click", () => {
 //   // Simule un login, puis redirige
 //   localStorage.setItem("authToken", "123456");
 //   const contentContainer = document.getElementById("content") as HTMLElement;
+const loginModal = document.getElementById("loginModal");
+const registerModal = document.getElementById("registerModal");
 
-//   if (contentContainer) {
+document.getElementById("loginConfirm")?.addEventListener("click", () => {
+  if (contentContainer) {
 
-//     fetch("src/views/logged.html")
-//       .then(response => response.text())
-//       .then(data => {
-//         contentContainer.innerHTML = data;
-//       });
-//   }
-// });
+    fetch("src/views/logged.html")
+      .then(response => response.text())
+      .then(data => {
+        contentContainer.innerHTML = data;
+      });
+      closeModal(loginModal);
+  }
+});
 
 // import './styles/index.css';
 
@@ -47,8 +50,6 @@ function openModal(modal: HTMLElement | null) {
 }
 
 // Assure que les modales existent
-const loginModal = document.getElementById("loginModal");
-const registerModal = document.getElementById("registerModal");
 
 document.addEventListener("click", (event) => {
   const target = event.target as HTMLElement;
