@@ -1,12 +1,16 @@
 
-// const burgerIcon = document.querySelector(".burger-icon");
-const navMobile = document.getElementById("nav-mobile");
-// const navMobile = document.querySelector(".nav-mobile");
-const burgerIcon = document.getElementById("burger-icon");
+const burger = document.getElementById("burger-icon");
+const mobileMenu = document.getElementById("nav-mobile");
 
-if (burgerIcon && navMobile) {
-  burgerIcon.addEventListener("click", () => {
-    navMobile.classList.toggle("show");
+if (burger && mobileMenu) {
+  burger.addEventListener("click", () => {
+    mobileMenu.classList.toggle("hidden");
+  });
+  
+  document.querySelectorAll(".burger-btn").forEach(link => {
+    link.addEventListener("click", () => {
+      mobileMenu.classList.add("hidden");
+    });
   });
 }
 

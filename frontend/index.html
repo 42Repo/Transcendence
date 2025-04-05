@@ -9,52 +9,49 @@
 </head>
 
 <header>
-  <div class="container mx-auto flex lex-row items-center justify-between">
+  <div class="container mx-auto flex justify-between items-center">
+    
+    <!-- Left: Nav desktop + Burger -->
+    <div class="flex items-center jus">
+      <!-- Burger icon (mobile only) -->
+      <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="md:hidden size-10 cursor-pointer" />
+      
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex space-x-6">
+        <a href="#" class="text-light hover:text-gray-300">Profile</a>
+        <a href="#" class="text-light hover:text-gray-300">History</a>
+        <a href="#" class="text-light hover:text-gray-300">Friends</a>
+        <a id="abUsButton" href="#" class="text-light hover:text-gray-300">About Us</a>
+      </nav>
+    </div>
 
-    <img src=".public/BurgerMenu.png" alt="Menu" id="burger-icon" class="burger-icon size-6 left" />
-    <nav>
-      <ul id="nav-desktop" class="flex space-x-4">
-        <li>
-          <a href="#" class="text-light hover:-gray-300">Profile</a>
-        </li>
-        <li>
-          <a href="#" class="text-light hover:text-gray-300">History</a>
-        </li>
-        <li>
-          <a href="#" class="text-light hover:text-gray-300">Friends</a>
-        </li>
-        <li>
-          <a href="#" class="text-light hover:text-gray-300">About us</a>
-        </li>
-        </li>
-      </ul>
-    </nav>
-    <h1 class="text-lightlight font-bold text-2xl hover:rotate-180 transition-transform duration-300 mr-10">
-      Transcendance</h1>
-    <a href="#" id="loginLink" class="text-white hover:text-medium mb-"><img src="../../public/DefaultProfilePic.png"
-        class="size-12 rounded-xl hover:rounded-4xl hover:brightness-200 duration-300"> </a>
+    <!-- Center: Logo/title -->
+    <h1 class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300">
+      <a id="homeButton" href="#">Transcendance</a>
+    </h1>
+
+    <!-- Right: Profile/Login -->
+    <div class="flex justify-end items-center">
+      <a href="#" id="loginLink" class="flex items-center">
+        <img src="DefaultProfilePic.png" alt="ProfilePic" class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300" />
+      </a>
+    </div>
   </div>
 
-  <div id="nav-mobile" class="nav-mobile fixed  mt-19 inset-0 z-49 bg-darkdark/[.50]">
-    <div class="burger-bg bg-mediumdark w-2/3 h-full">
-
-      <ul class="block w-full">
-        <li>
-          <a href="#" class="burger-btn">Profile</a>
-        </li>
-        <li>
-          <a href="#" class="burger-btn">History</a>
-        </li>
-        <li>
-          <a href="#" class="burger-btn">Friends</a>
-        </li>
-        <li>
-          <a href="#" class="burger-btn">About Us</a>
-        </li>
+  <!-- Mobile nav (burger menu) -->
+  <!-- nav-mobile fixed  mt-19 inset-0 z-49  -->
+  <div id="nav-mobile" class="hidden fixed inset-0 z-50 bg-darkdark bg-darkdark/[.50] mt-19">
+    <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
+      <ul class="space-y-4">
+        <li><a href="#" class="burger-btn block text-white">Profile</a></li>
+        <li><a href="#" class="burger-btn block text-white">History</a></li>
+        <li><a href="#" class="burger-btn block text-white">Friends</a></li>
+        <li><a id="abUsButton" href="#" class="burger-btn block text-white">About Us</a></li>
+      </ul>
     </div>
-    </ul>
   </div>
 </header>
+
 
 <body>
 
@@ -136,7 +133,7 @@
     <a href="/home" class="text-darkdark hover:text-white">Home</a>
     <a href="/contact" class="text-darkdark hover:text-white">Contact</a>
     <a href="/faq" class="text-darkdark hover:text-white">FAQ</a>
-    <a class="text-darkdark hover:text-white">About Us</a>
+    <a id="abUsButton" class="text-darkdark hover:text-white">About Us</a>
     <a href="/terms-of-service" class="text-darkdark hover:text-white">Terms of Service</a>
     <a href="/privacy-policy" class="text-darkdark hover:text-white">Privacy Policy</a>
     <a href="/legal-notice" class="text-darkdark hover:text-white">Legal Notice</a>
