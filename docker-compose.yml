@@ -23,6 +23,7 @@ services:
       target: base
     environment:
       - BACKEND_PORT=${BACKEND_PORT:-3000}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - transcendence-net
     volumes:
