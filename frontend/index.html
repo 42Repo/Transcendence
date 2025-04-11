@@ -1,145 +1,241 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transcendence</title>
+    <link href="src/styles/index.css" rel="stylesheet" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Transcendence</title>
-  <link href="src/styles/index.css" rel="stylesheet" />
-</head>
+  <header>
+    <div class="container mx-auto flex justify-between items-center">
+      <!-- Left: Nav desktop + Burger -->
+      <div class="flex items-center jus">
+        <!-- Burger icon (mobile only) -->
+        <img
+          src="BurgerMenu.png"
+          alt="Menu"
+          id="burger-icon"
+          class="md:hidden size-10 cursor-pointer"
+        />
 
-<header>
-  <div class="container mx-auto flex justify-between items-center">
-    
-    <!-- Left: Nav desktop + Burger -->
-    <div class="flex items-center jus">
-      <!-- Burger icon (mobile only) -->
-      <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="md:hidden size-10 cursor-pointer" />
-      
-      <!-- Desktop nav -->
-      <nav class="hidden md:flex space-x-6">
-        <a href="#" class="text-light hover:text-gray-300">Profile</a>
-        <a href="#" class="text-light hover:text-gray-300">History</a>
-        <a href="#" class="text-light hover:text-gray-300">Friends</a>
-        <a id="abUsButton" href="#" class="text-light hover:text-gray-300">About Us</a>
-      </nav>
-    </div>
-
-    <!-- Center: Logo/title -->
-    <h1 class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300">
-      <a id="homeButton" href="#">Transcendance</a>
-    </h1>
-
-    <!-- Right: Profile/Login -->
-    <div class="flex justify-end items-center">
-      <a href="#" id="loginLink" class="flex items-center">
-        <img src="DefaultProfilePic.png" alt="ProfilePic" class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300" />
-      </a>
-    </div>
-  </div>
-
-  <!-- Mobile nav (burger menu) -->
-  <div id="nav-mobile" class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19">
-    <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
-      <ul class="space-y-4">
-        <li><a href="#" class="burger-btn block text-white">Profile</a></li>
-        <li><a href="#" class="burger-btn block text-white">History</a></li>
-        <li><a href="#" class="burger-btn block text-white">Friends</a></li>
-        <li><a id="abUsButton" href="#" class="burger-btn block text-white">About Us</a></li>
-      </ul>
-    </div>
-  </div>
-</header>
-
-
-<body>
-
-  <!-- LOGIN TAB -->
-  <div id="loginModal" class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden">
-    <div class="bg-medium rounded-lg p-1 w-100">
-      <div class="bg-light rounded-lg p-3 m-4">
-        <div class="flex justify-between">
-          <h1 class="ml-2 mb-2 text-dark ">Login</h1>
-          <button id="closeLoginModal"
-            class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium">X</button>
-        </div>
-        <input type="text" id="loginEmail" placeholder="email"
-          class="text-darkdark bg-lightlight p-2 pb-1 mb-2 w-full rounded-4xl" />
-        <input type="password" id="loginPassword" placeholder="Password"
-          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
-        <div class="flex justify-center mb-0"><button id="loginConfirm" class=" btn btn-confirm "> Confirm </button>
-        </div>
-      </div>
-      <li class="container mx-auto flex space-x-4 justify-center items-center">
-        <ul>
-          <button class="btn btn-active">
-            Login
-          </button>
-        </ul>
-        <ul>
-          <button id="switchRegister" class="btn">
-            Register
-          </button>
-        </ul>
-        <p id="result"></p>
-      </li>
-    </div>
-  </div>
-
-  <!-- REGISTER TAB -->
-  <div id="registerModal" class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden">
-    <div class="bg-medium rounded-lg p-1 w-100">
-      <div class="bg-light rounded-lg p-3 pb-1 m-4">
-        <div class="flex justify-between just">
-          <h1 class="ml-2 mb-2 text-dark ">Register</h1>
-          <button id="closeRegisterModal"
-            class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium">X</button>
-        </div>
-        <input type="text" placeholder="username" class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
-        <input type="text" placeholder="email" class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
-        <input type="password" placeholder="Password" class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
-        <input type="password" placeholder="confirm password"
-          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
-        <div class="flex justify-center mb-0"><button class=" btn btn-confirm "> Confirm </button></div>
+        <!-- Desktop nav -->
+        <nav class="hidden md:flex space-x-6">
+          <a
+            href="#home"
+            data-page="home"
+            class="text-light hover:text-gray-300"
+            >Profile</a
+          >
+          <a
+            href="#logged"
+            data-page="logged"
+            class="text-light hover:text-gray-300"
+            >logged</a
+          >
+          <a
+            href="#"
+            data-page="logged"
+            class="text-light hover:text-gray-300"
+            >Friends</a
+          >
+          <a
+            data-page="logged"
+            id="abUsButton"
+            class="text-light hover:text-gray-300"
+            >About Us</a
+          >
+        </nav>
       </div>
 
-      <li class="container mx-auto flex space-x-4 justify-center items-center">
-        <ul>
-          <button id="switchLogin" class="btn">
-            Login
-          </button>
-        </ul>
-        <ul>
-          <button class="btn btn-active">
-            Register
-          </button>
-        </ul>
-      </li>
+      <!-- Center: Logo/title -->
+      <h1
+        class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300"
+      >
+        <a id="homeButton" href="#">Transcendance</a>
+      </h1>
+
+      <!-- Right: Profile/Login -->
+      <div class="flex justify-end items-center">
+        <a href="#" id="loginLink" class="flex items-center">
+          <img
+            src="DefaultProfilePic.png"
+            alt="ProfilePic"
+            class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300"
+          />
+        </a>
+      </div>
     </div>
-  </div>
 
+    <!-- Mobile nav (burger menu) -->
+    <div
+      id="nav-mobile"
+      class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19"
+    >
+      <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
+        <ul class="space-y-4">
+          <li>
+            <a
+              href="#NEGATIVE"
+              data-page="logged"
+              class="burger-btn block text-white"
+              >Profile</a
+            >
+          </li>
+          <li>
+            <a
+              href="#abus"
+              data-page="about-us"
+              class="burger-btn block text-white"
+              >History</a
+            >
+          </li>
+          <li>
+            <a
+              href="#friends"
+              data-page="logged"
+              class="burger-btn block text-white"
+              >Friends</a
+            >
+          </li>
+          <li>
+            <a
+              id="abUsButton"
+              data-page="logged"
+              href="#"
+              class="burger-btn block text-white"
+              >About Us</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
 
-  <div id="content"></div>
-  
+  <body>
+    <!-- LOGIN TAB -->
+    <div
+      id="loginModal"
+      class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
+    >
+      <div class="bg-medium rounded-lg p-1 w-100">
+        <div class="bg-light rounded-lg p-3 m-4">
+          <div class="flex justify-between">
+            <h1 class="ml-2 mb-2 text-dark">Login</h1>
+            <button
+              id="closeLoginModal"
+              class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium"
+            >
+              X
+            </button>
+          </div>
+          <input
+            type="text"
+            id="loginEmail"
+            placeholder="email"
+            class="text-darkdark bg-lightlight p-2 pb-1 mb-2 w-full rounded-4xl"
+          />
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Password"
+            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <div class="flex justify-center mb-0">
+            <button id="loginConfirm" class="btn btn-confirm">Confirm</button>
+          </div>
+        </div>
+        <li
+          class="container mx-auto flex space-x-4 justify-center items-center"
+        >
+          <ul>
+            <button class="btn btn-active">Login</button>
+          </ul>
+          <ul>
+            <button id="switchRegister" class="btn">Register</button>
+          </ul>
+          <p id="result"></p>
+        </li>
+      </div>
+    </div>
 
+    <!-- REGISTER TAB -->
+    <div
+      id="registerModal"
+      class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
+    >
+      <div class="bg-medium rounded-lg p-1 w-100">
+        <div class="bg-light rounded-lg p-3 pb-1 m-4">
+          <div class="flex justify-between just">
+            <h1 class="ml-2 mb-2 text-dark">Register</h1>
+            <button
+              id="closeRegisterModal"
+              class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium"
+            >
+              X
+            </button>
+          </div>
+          <input
+            type="text"
+            placeholder="username"
+            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <input
+            type="text"
+            placeholder="email"
+            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <input
+            type="password"
+            placeholder="confirm password"
+            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
+          />
+          <div class="flex justify-center mb-0">
+            <button class="btn btn-confirm">Confirm</button>
+          </div>
+        </div>
 
-  <script src="./src/login.ts" defer></script>
-  <script src="./src/switch-page.ts" defer></script>
-  <script src="./src/main.ts" defer></script>
+        <li
+          class="container mx-auto flex space-x-4 justify-center items-center"
+        >
+          <ul>
+            <button id="switchLogin" class="btn">Login</button>
+          </ul>
+          <ul>
+            <button class="btn btn-active">Register</button>
+          </ul>
+        </li>
+      </div>
+    </div>
 
-</body>
+    <main id="content"></main>
 
-<footer>
-  <p>© 2025 Transcendence - All rights reserved</p>
-  <div class="mt-2 flex justify-center space-x-4">
-    <a href="/home" class="text-darkdark hover:text-white">Home</a>
-    <a href="/contact" class="text-darkdark hover:text-white">Contact</a>
-    <a href="/faq" class="text-darkdark hover:text-white">FAQ</a>
-    <a id="abUsButton" class="text-darkdark hover:text-white">About Us</a>
-    <a href="/terms-of-service" class="text-darkdark hover:text-white">Terms of Service</a>
-    <a href="/privacy-policy" class="text-darkdark hover:text-white">Privacy Policy</a>
-    <a href="/legal-notice" class="text-darkdark hover:text-white">Legal Notice</a>
-  </div>
-</footer>
+    <script src="./src/switch-page.ts" defer></script>
+    <script src="./src/login.ts" defer></script>
+    <script src="./src/main.ts" defer></script>
+  </body>
 
+  <footer>
+    <p>© 2025 Transcendence - All rights reserved</p>
+    <div class="mt-2 flex justify-center space-x-4">
+      <a href="/home" class="text-darkdark hover:text-white">Home</a>
+      <a href="/contact" class="text-darkdark hover:text-white">Contact</a>
+      <a href="/faq" class="text-darkdark hover:text-white">FAQ</a>
+      <a id="abUsButton" class="text-darkdark hover:text-white">About Us</a>
+      <a href="/terms-of-service" class="text-darkdark hover:text-white"
+        >Terms of Service</a
+      >
+      <a href="/privacy-policy" class="text-darkdark hover:text-white"
+        >Privacy Policy</a
+      >
+      <a href="/legal-notice" class="text-darkdark hover:text-white"
+        >Legal Notice</a
+      >
+    </div>
+  </footer>
 </html>
