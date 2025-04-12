@@ -12,6 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return page;
   };
 
+  const fetch404 = async () => {
+    try {
+      const res = await fetch('src/views/404.html');
+      if (!res.ok) throw new Error('Page 404 non trouvée');
+      const html = await res.text();
+      content.innerHTML = html; // <-- ici !
+      cache.set('404', html);
+    } catch (err) {
+      console.error('Erreur de chargement de la page 404 :', err);
+      content.innerHTML = '<h1>Erreur 404 - Page non trouvée</h1>';
+    }
+  };
   // Fonction pour charger le contenu d'une page spécifique
   const fetchPage = async (page: string): Promise<void> => {
     console.log('Chargement de la page :', page);
@@ -23,23 +35,27 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Chargement de la page :', page);
 
     try {
-      console.log('Récupération de la page :', page);
-      console.log('URL de la page :', `src/views/${page}.html`);
       const res = await fetch(`src/views/${page}.html`);
       if (!res.ok) throw new Error('Page non trouvée');
       const html = await res.text();
       content.innerHTML = html;
       cache.set(page, html);
     } catch (err) {
-      content.innerHTML =
-        '<h2>Erreur</h2><p>Impossible de charger la page.</p>';
       console.error('Erreur de chargement :', err);
+      await fetch404();
     }
   };
 
   // Fonction pour changer de page et mettre à jour l'URL
   const switchPage = (page: string) => {
-    history.pushState(null, '', `${page}.html`); // Modifier l'URL sans hash
+    if (page == 'home') {
+      history.pushState(null, '', '/'); // Modifier l'URL sans hash
+      console.log('home = pas de hash');
+    } else {
+      console.log('hash = ', page);
+
+      history.pushState(null, '', `${page}`); // Modifier l'URL sans hash
+    }
     void fetchPage(page); // Charger la page
   };
 
@@ -66,20 +82,16 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCurrentPage();
   prefetchAllPages();
 
-  // Attacher un événement aux liens pour changer de page sans recharger toute la page
   console.log('Attacher un événement aux liens');
-  navLinks.forEach((link) => {
-    console.log('Lien trouvé :', link);
-    link.addEventListener('click', (e) => {
+
+  // Gérer les changements d'URL avec l'historique du navigateur (retour/avant)
+  document.querySelectorAll('[data-page]').forEach((el) => {
+    el.addEventListener('click', (e) => {
       e.preventDefault();
-      console.log('Événement de clic sur le lien');
-      const target = (e.currentTarget as HTMLElement).getAttribute('data-page');
-      if (target) {
-        switchPage(target);
+      const page = (el as HTMLElement).getAttribute('data-page');
+      if (page) {
+        switchPage(page);
       }
     });
   });
-
-  // Gérer les changements d'URL avec l'historique du navigateur (retour/avant)
-  window.addEventListener('popstate', loadCurrentPage);
 });

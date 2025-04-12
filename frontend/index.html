@@ -22,25 +22,26 @@
         <!-- Desktop nav -->
         <nav class="hidden md:flex space-x-6">
           <a
-            href="#home"
-            data-page="home"
+          href="#"
+          data-page="home"
+          class="text-light hover:text-gray-300"
+          >home</a
+          >
+          <a
+            href="#"
+            data-page="profile"
             class="text-light hover:text-gray-300"
             >Profile</a
           >
           <a
-            href="#logged"
-            data-page="logged"
-            class="text-light hover:text-gray-300"
-            >logged</a
-          >
-          <a
             href="#"
-            data-page="logged"
+            data-page="friends"
             class="text-light hover:text-gray-300"
             >Friends</a
           >
           <a
-            data-page="logged"
+            href="#"
+            data-page="about-us"
             id="abUsButton"
             class="text-light hover:text-gray-300"
             >About Us</a
@@ -52,7 +53,7 @@
       <h1
         class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300"
       >
-        <a id="homeButton" href="#">Transcendance</a>
+        <a id="homeButton" data-page="home" href="#">Transcendance</a>
       </h1>
 
       <!-- Right: Profile/Login -->
@@ -76,35 +77,34 @@
         <ul class="space-y-4">
           <li>
             <a
-              href="#NEGATIVE"
-              data-page="logged"
+              href="#"
+              data-page="home"
               class="burger-btn block text-white"
-              >Profile</a
+              >HOME</a
             >
           </li>
           <li>
             <a
-              href="#abus"
+              href="#"
+              data-page="profile"
+              class="burger-btn block text-white"
+              >PROFILE</a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              data-page="friends"
+              class="burger-btn block text-white"
+              >FRIENDS</a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
               data-page="about-us"
               class="burger-btn block text-white"
-              >History</a
-            >
-          </li>
-          <li>
-            <a
-              href="#friends"
-              data-page="logged"
-              class="burger-btn block text-white"
-              >Friends</a
-            >
-          </li>
-          <li>
-            <a
-              id="abUsButton"
-              data-page="logged"
-              href="#"
-              class="burger-btn block text-white"
-              >About Us</a
+              >ABOUT US</a
             >
           </li>
         </ul>
