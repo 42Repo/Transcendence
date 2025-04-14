@@ -1,94 +1,165 @@
-// document.addEventListener("DOMContentLoaded", () => {
-//   const input1 = document.getElementById("loginEmail") as HTMLInputElement;
-//   const input2 = document.getElementById("loginPassword") as HTMLInputElement;
-//   const button = document.getElementById("loginConfirm") as HTMLButtonElement;
-//   const result = document.getElementById("result") as HTMLParagraphElement;
+// frontend/src/login.ts
+import {
+  closeModal,
+  openModal,
+  showFeedback,
+  clearFeedback,
+} from './utils/modalUtils';
 
-//   button.addEventListener("click", () => {
-//     const loginAttempt = async (email: string, password: string): Promise<void> => {
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  token?: string; // TODO store this securely
+  user?: {
+    id: number;
+    username: string;
+  };
+}
 
-//       try {
-//         const response = await fetch(`/api/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
-//         if (response.ok)
-//           result.innerText = `Success: ${response.status}`;
-//         else
-//           result.innerText = `Error: ${response.status}`;
-//       } catch (e) {
-//         result.innerText = `Error Ping: ${e}`;
-//       }
-//     }
-//     loginAttempt(input1.value, input2.value);
-//   });
-// });
+// --- Login Specific Elements ---
+const loginModal = document.getElementById('loginModal');
+const contentContainer = document.getElementById('content');
+const loginIdentifierInput = document.getElementById(
+  'loginIdentifier'
+) as HTMLInputElement | null;
+const loginPasswordInput = document.getElementById(
+  'loginPassword'
+) as HTMLInputElement | null;
+const loginConfirmButton = document.getElementById(
+  'loginConfirm'
+) as HTMLButtonElement | null;
+const closeLoginModalButton = document.getElementById(
+  'closeLoginModal'
+) as HTMLButtonElement | null;
+const switchToRegisterButton = document.getElementById(
+  'switchRegister'
+) as HTMLButtonElement | null;
 
-//   // Simule un login, puis redirige
-//   localStorage.setItem("authToken", "123456");
-//   const contentContainer = document.getElementById("content") as HTMLElement;
-const loginModal = document.getElementById("loginModal");
-const registerModal = document.getElementById("registerModal");
+const LOGIN_FEEDBACK_ID = 'loginFeedback';
 
-document.getElementById("loginConfirm")?.addEventListener("click", () => {
-  if (contentContainer) {
+// --- Event Listener for Login Confirmation ---
+loginConfirmButton?.addEventListener('click', () => {
+  const handleLogin = async () => {
+    if (!loginIdentifierInput || !loginPasswordInput) {
+      showFeedback(
+        LOGIN_FEEDBACK_ID,
+        'Internal error: Form elements not found.',
+        true
+      );
+      return;
+    }
 
-    fetch("src/views/logged.html")
-      .then(response => response.text())
-      .then(data => {
-        contentContainer.innerHTML = data;
+    const identifier = loginIdentifierInput.value.trim();
+    const password = loginPasswordInput.value.trim();
+    if (!identifier || !password) {
+      showFeedback(
+        LOGIN_FEEDBACK_ID,
+        'Please enter username/email and password.',
+        true
+      );
+      return;
+    }
+
+    showFeedback(LOGIN_FEEDBACK_ID, 'Logging in...', false);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          loginIdentifier: identifier,
+          password: password,
+        }),
       });
-      closeModal(loginModal);
+
+      const data: LoginResponse = (await response.json()) as LoginResponse;
+
+      if (response.ok && data.success) {
+        showFeedback(LOGIN_FEEDBACK_ID, 'Login successful!', false);
+
+        // --- Post-Login Actions ---
+        // TODO: Store the JWT token (e.g., data.token) securely
+        // localStorage.setItem('authToken', data.token); something like this
+
+        // Update UI
+        if (contentContainer) {
+          try {
+            const loggedHtmlResponse = await fetch('src/views/logged.html');
+            if (loggedHtmlResponse.ok) {
+              contentContainer.innerHTML = await loggedHtmlResponse.text();
+              // TODO: Attach any event listeners needed for the new content
+            } else {
+              console.error('Failed to load logged.html');
+              showFeedback(
+                LOGIN_FEEDBACK_ID,
+                'Login successful, but failed to load page content.',
+                true
+              );
+            }
+          } catch (fetchError) {
+            console.error('Error fetching logged.html:', fetchError);
+            showFeedback(
+              LOGIN_FEEDBACK_ID,
+              'Login successful, but failed to load page content.',
+              true
+            );
+          }
+        }
+
+        setTimeout(() => {
+          if (loginIdentifierInput) loginIdentifierInput.value = '';
+          if (loginPasswordInput) loginPasswordInput.value = '';
+          closeModal(loginModal);
+        }, 1000);
+      } else {
+        showFeedback(
+          LOGIN_FEEDBACK_ID,
+          data.message || 'Invalid credentials or server error.',
+          true
+        );
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      showFeedback(
+        LOGIN_FEEDBACK_ID,
+        'Network error or unexpected issue. Please try again.',
+        true
+      );
+    }
+  };
+
+  void handleLogin();
+});
+
+// --- Event Listener for Closing Login Modal ---
+closeLoginModalButton?.addEventListener('click', (event) => {
+  event.preventDefault();
+  closeModal(loginModal);
+});
+
+// --- Event Listener for Switching to Register from Login Modal ---
+switchToRegisterButton?.addEventListener('click', (event) => {
+  event.preventDefault();
+  closeModal(loginModal);
+  document.dispatchEvent(new CustomEvent('openRegisterModalRequest'));
+});
+
+// --- Helper Function to Open Login Modal Safely ---
+function showLoginModal(): void {
+  openModal(loginModal);
+  clearFeedback(LOGIN_FEEDBACK_ID);
+}
+
+// --- Event Listener to Open Login Modal ---
+document.addEventListener('click', (event) => {
+  const target = event.target as HTMLElement;
+  if (target.closest('#loginLink')) {
+    event.preventDefault();
+    showLoginModal();
   }
 });
 
-// import './styles/index.css';
-
-function closeModal(modal: HTMLElement | null) {
-  modal?.classList.add("hidden");
-}
-
-function openModal(modal: HTMLElement | null) {
-  modal?.classList.remove("hidden");
-}
-
-// Assure que les modales existent
-
-document.addEventListener("click", (event) => {
-  const target = event.target as HTMLElement;
-
-  // Ouvrir la modale de login
-  if (target.closest("#loginLink")) {
-    event.preventDefault();
-    openModal(loginModal);
-  }
-
-  // Fermer la modale de login
-  if (target.closest("#closeLoginModal")) {
-    event.preventDefault();
-    closeModal(loginModal);
-  }
-
-  // Ouvrir la modale de register
-  if (target.closest("#registerLink")) {
-    event.preventDefault();
-    openModal(registerModal);
-  }
-
-  // Fermer la modale de register
-  if (target.closest("#closeRegisterModal")) {
-    event.preventDefault();
-    closeModal(registerModal);
-  }
-
-  // Switch Login → Register
-  if (target.closest("#switchRegister")) {
-    event.preventDefault();
-    closeModal(loginModal);
-    openModal(registerModal);
-  }
-
-  // Switch Register → Login
-  if (target.closest("#switchLogin")) {
-    event.preventDefault();
-    closeModal(registerModal);
-    openModal(loginModal);
-  }
+// --- Listen for requests to open this modal ---
+document.addEventListener('openLoginModalRequest', () => {
+  showLoginModal();
 });
