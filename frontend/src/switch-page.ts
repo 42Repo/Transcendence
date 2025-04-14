@@ -1,48 +1,111 @@
-const contentContainer = document.getElementById("content") as HTMLElement;
+document.addEventListener('DOMContentLoaded', () => {
+  const content = document.getElementById('content') as HTMLElement;
+  const navLinks = document.querySelectorAll('nav a');
+  console.log('Initialisation du système de navigation');
+  console.log('Liens de navigation trouvés :', navLinks);
+  const cache: Map<string, string> = new Map();
 
-if (contentContainer) {
-  fetch("src/views/landing.html")
-    .then(response => response.text())
-    .then(data => {
-      contentContainer.innerHTML = data;
+  // Get page from URL
+  const getPageName = (): string => {
+    const path = window.location.pathname.split('/').pop();
+    const page = path?.replace('.html', '') || 'home';
+    return page;
+  };
+
+  const fetch404 = async () => {
+    try {
+      const res = await fetch('src/views/404.html');
+      if (!res.ok) throw new Error('Page 404 non trouvée');
+      const html = await res.text();
+      content.innerHTML = html;
+      cache.set('404', html);
+    } catch (err) {
+      console.error('Erreur de chargement de la page 404 :', err);
+      content.innerHTML = '<h1>Erreur 404 - Page non trouvée</h1>';
+    }
+  };
+
+  // Fetch page content
+  const fetchPage = async (page: string): Promise<void> => {
+    console.log('Chargement de la page :', page);
+    if (cache.has(page)) {
+      content.innerHTML = cache.get(page)!;
+      attachPageLinks();
+      return;
+    }
+
+    try {
+      const res = await fetch(`src/views/${page}.html`);
+      if (!res.ok) throw new Error('Page non trouvée');
+      const html = await res.text();
+      content.innerHTML = html;
+      cache.set(page, html);
+      attachPageLinks();
+    } catch (err) {
+      console.error('Erreur de chargement :', err);
+      await fetch404();
+    }
+  };
+
+  // Switch page + update URL
+  const switchPage = (page: string) => {
+    if (page == 'home') {
+      history.pushState(null, '', '/');
+      console.log('home = pas de hash');
+    } else {
+      console.log('hash = ', page);
+
+      history.pushState(null, '', `${page}`);
+    }
+    void fetchPage(page);
+  };
+
+  // Change page after a reload
+  const loadCurrentPage = () => {
+    const page = getPageName();
+    void fetchPage(page);
+  };
+
+  // Pre-fetch all the pages
+  const prefetchAllPages = () => {
+    navLinks.forEach((link) => {
+      const page = (link as HTMLAnchorElement).dataset.page;
+      if (page) {
+        fetch(`src/views/${page}.html`)
+          .then((res) => res.text())
+          .then((html) => cache.set(page, html))
+          .catch(() => console.warn(`Échec du prefetch pour ${page}`));
+      }
     });
-  // Charger la page du jeu lorsque le bouton "Play Game" est cliqué
-  document.getElementById("playGameButton")?.addEventListener("click", () => {
-    fetch("src/views/pongGame.html")
-      .then(response => response.text())
-      .then(data => {
-        contentContainer.innerHTML = data;
+  };
 
-        // Assurez-vous d'appeler mainGame() ou d'initialiser le jeu ici
-        // initializeGame();
-      });
+  // Charger la page actuelle
+  loadCurrentPage();
+  prefetchAllPages();
+
+  console.log('Attacher un événement aux liens');
+
+  document.querySelectorAll('[data-page]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = (el as HTMLElement).getAttribute('data-page');
+      if (page) {
+        switchPage(page);
+      }
+    });
   });
 
-  // Charger la page "About Us" quand l'utilisateur clique sur ce bouton
-  document.getElementById("abUsButton")?.addEventListener("click", () => {
-    fetch("src/views/about-us.html")
-      .then(response => response.text())
-      .then(data => {
-        contentContainer.innerHTML = data;
-      });
-  });
+// Add event listener after a page change
 
-  // Charger la page d'accueil quand l'utilisateur clique sur ce bouton
-  document.getElementById("homeButton")?.addEventListener("click", () => {
-    fetch("src/views/landing.html")
-      .then(response => response.text())
-      .then(data => {
-        contentContainer.innerHTML = data;
+  const attachPageLinks = () => {
+    document.querySelectorAll('[data-page]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = (el as HTMLElement).getAttribute('data-page');
+        if (page) {
+          switchPage(page);
+        }
       });
-  });
-}
-
-// function initializeGame() {
-//   // Assurez-vous que le canvas est bien sélectionné avant d'initialiser le jeu
-//   const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-//   if (canvas) {
-//     const ctx = canvas.getContext('2d')!;
-//     ctx.fillStyle = 'red';
-//     ctx.fillRect(10, 10, 50, 50); // Par exemple, dessiner un carré rouge
-//   }
-// }
+    });
+  };
+});
