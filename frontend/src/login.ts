@@ -8,7 +8,7 @@
 //     const loginAttempt = async (email: string, password: string): Promise<void> => {
 
 //       try {
-//         const response = await fetch(`/api/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+        // const response = await fetch(`/api/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
 //         if (response.ok)
 //           result.innerText = `Success: ${response.status}`;
 //         else

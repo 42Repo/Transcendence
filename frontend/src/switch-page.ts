@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Liens de navigation trouvés :', navLinks);
   const cache: Map<string, string> = new Map();
 
-  // Fonction pour récupérer la page à partir de l'URL (retourne le nom de la page sans extension)
+  // Get page from URL
   const getPageName = (): string => {
     const path = window.location.pathname.split('/').pop();
-    const page = path?.replace('.html', '') || 'home'; // Page par défaut si vide ou si index.html
+    const page = path?.replace('.html', '') || 'home';
     return page;
   };
 
@@ -17,22 +17,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('src/views/404.html');
       if (!res.ok) throw new Error('Page 404 non trouvée');
       const html = await res.text();
-      content.innerHTML = html; // <-- ici !
+      content.innerHTML = html;
       cache.set('404', html);
     } catch (err) {
       console.error('Erreur de chargement de la page 404 :', err);
       content.innerHTML = '<h1>Erreur 404 - Page non trouvée</h1>';
     }
   };
-  // Fonction pour charger le contenu d'une page spécifique
+
+  // Fetch page content
   const fetchPage = async (page: string): Promise<void> => {
     console.log('Chargement de la page :', page);
     if (cache.has(page)) {
       content.innerHTML = cache.get(page)!;
+      attachPageLinks();
       return;
     }
-
-    console.log('Chargement de la page :', page);
 
     try {
       const res = await fetch(`src/views/${page}.html`);
@@ -40,32 +40,33 @@ document.addEventListener('DOMContentLoaded', () => {
       const html = await res.text();
       content.innerHTML = html;
       cache.set(page, html);
+      attachPageLinks();
     } catch (err) {
       console.error('Erreur de chargement :', err);
       await fetch404();
     }
   };
 
-  // Fonction pour changer de page et mettre à jour l'URL
+  // Switch page + update URL
   const switchPage = (page: string) => {
     if (page == 'home') {
-      history.pushState(null, '', '/'); // Modifier l'URL sans hash
+      history.pushState(null, '', '/');
       console.log('home = pas de hash');
     } else {
       console.log('hash = ', page);
 
-      history.pushState(null, '', `${page}`); // Modifier l'URL sans hash
+      history.pushState(null, '', `${page}`);
     }
-    void fetchPage(page); // Charger la page
+    void fetchPage(page);
   };
 
-  // Fonction pour gérer le changement de page au rechargement de la page
+  // Change page after a reload
   const loadCurrentPage = () => {
     const page = getPageName();
     void fetchPage(page);
   };
 
-  // Pré-chargement des pages pour éviter des demandes répétées
+  // Pre-fetch all the pages
   const prefetchAllPages = () => {
     navLinks.forEach((link) => {
       const page = (link as HTMLAnchorElement).dataset.page;
@@ -84,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('Attacher un événement aux liens');
 
-  // Gérer les changements d'URL avec l'historique du navigateur (retour/avant)
   document.querySelectorAll('[data-page]').forEach((el) => {
     el.addEventListener('click', (e) => {
       e.preventDefault();
@@ -94,4 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+// Add event listener after a page change
+
+  const attachPageLinks = () => {
+    document.querySelectorAll('[data-page]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = (el as HTMLElement).getAttribute('data-page');
+        if (page) {
+          switchPage(page);
+        }
+      });
+    });
+  };
 });

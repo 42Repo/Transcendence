@@ -1,0 +1,53 @@
+<div class="flex flex-col w-full h-full 2xl p-4 items-center">
+
+  <form id="editProfileForm">
+    <div class="defdiv flex flex-col min-w-90 w-full">
+      <div class="flex flex-row w-full items-start gap-4">
+        
+        <img id="profilePicture" src="DefaultProfilePic.png" alt="ProfilePicture" class="size-25 rounded-xl m-3" />
+        <input type="file" id="profilePictureInput" class="flex flex-col w-1/2" accept="image/*"/>
+        <div class="flex flex-col w-full gap-2 items-center p-3">
+          <input type="text" id="newUsername" value="username" minlength="3" maxlength="15"
+            class="bg-light text-mediumdark text-4xl p-4 rounded-2xl" />
+          <div class="flex flex-row gap-2">
+            <p>Joined on the </p>
+            <p id="joinDate">2023-10-01</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col w-full">
+        <div class="indiv w-full flex flex-col h-full p-3 justify-center items-center gap-4">
+          <div class="flex flex-row w-full gap-4 items-center">
+            <div id="bioText"  class="bg-light rounded-2xl p-4 w-full ">
+              <h1>Current bio</h1>
+              <p class="min-w-1/2 text-mediumdark">This is a biography sample with some stuff to say, hello everybody
+              </p>
+            </div>
+            <textarea row="3" id="bioInput" placeholder="Enter new biography"
+              class="w-full h-full p-2 rounded-lg border border-gray-300 resize-none"></textarea>
+          </div>
+          <div class="flex flex-row w-full gap-4 items-center">
+           <input type="password" id="current" placeholder="Current Password"
+              class="bg-light text-mediumdark  p-2 rounded-2xl w-1/2" />
+            <div id="bioText"  class="flex flex-col rounded-2xl gap-3 w-1/2">
+              <input type="password" id="new" placeholder="New Password"
+              class="bg-light text-mediumdark  p-2 rounded-2xl" />
+              <input type="password" id="confirmNew" placeholder="Confirm New Password"
+              class="bg-light text-mediumdark  p-2 rounded-2xl" />
+            </div>
+          </div>
+          :)
+        </div>
+
+      </div>
+      <div>
+        <button id="discardButton" class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-light text-xl w-60">Discard</button>
+        <button id="confirmButton" class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-light text-xl w-60">Confirm</button>
+      </div>
+    </div>
+    
+    
+  </form>
+    
+    
+</div>
