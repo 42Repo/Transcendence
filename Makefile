@@ -64,14 +64,18 @@ prod-logs: ## View logs for production environment
 
 clean: ## Stop and remove ALL containers, networks, volumes, and prune system
 		@echo "WARNING: This will remove all containers, networks, volumes!"
-		@read -p "Are you sure? (y/N) " -r; \
-		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		@echo "Are you sure? (y/N) "; \
+		read -r REPLY; \
+		case "$$REPLY" in \
+			[Yy]*) \
 				$(DOCKER_COMPOSE_DEV) down -v --remove-orphans; \
 				$(DOCKER_COMPOSE_PROD) down -v --remove-orphans; \
 				docker system prune -af --volumes; \
-		else \
+				;; \
+			*) \
 				echo "Clean cancelled."; \
-		fi
+				;; \
+		esac
 
 sh-backend: ## Open a shell in the running backend container (dev)
 		$(DOCKER_COMPOSE_DEV) exec backend sh
