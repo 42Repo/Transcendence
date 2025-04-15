@@ -1,7 +1,7 @@
 services:
   nginx:
      volumes:
-       - ./nginx/conf.d/dev.default.conf:/etc/nginx/conf.d/default.conf:ro
+       - ./nginx/conf.d/dev.default.conf:/etc/nginx/templates/default.conf.template:ro
 
   backend:
     build:

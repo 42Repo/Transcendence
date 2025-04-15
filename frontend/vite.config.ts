@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
+const nginxHttpsPort = process.env.NGINX_HTTPS_PORT;
+const hmrClientPort = nginxHttpsPort ? parseInt(nginxHttpsPort, 10) : 443;
+
 export default defineConfig({
     plugins: [
       tailwindcss(),
@@ -11,7 +14,7 @@ export default defineConfig({
     historyApiFallback: true,
     strictPort: true,
     hmr: {
-      clientPort: 443,
+      clientPort: hmrClientPort,
       protocol: 'wss'
     },
     watch: {
