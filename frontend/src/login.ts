@@ -35,9 +35,6 @@ const closeLoginModalButton = document.getElementById(
 const switchToRegisterButton = document.getElementById(
   'switchRegister'
 ) as HTMLButtonElement | null;
-const logoutBtn = document.getElementById(
-  'logoutBtn'
-) as HTMLButtonElement | null;
 
 const LOGIN_FEEDBACK_ID = 'loginFeedback';
 
@@ -172,19 +169,19 @@ document.addEventListener('openLoginModalRequest', () => {
   showLoginModal();
 });
 
-const logout = () => {
+export const logout = () => {
   console.log('Logout function called');
   localStorage.removeItem('authToken');
   switchPage('home');
 };
 
-if (logoutBtn) {
-  console.log('Logout button found');
-  logoutBtn.addEventListener('click', (event) => {
-    console.log('Logout clicked');
-    logout();
-    event.preventDefault();
-  });
-}
+// if (logoutBtn) {
+//   console.log('Logout button found');
+//   logoutBtn.addEventListener('click', (event) => {
+//     console.log('Logout clicked');
+//     logout();
+//     event.preventDefault();
+//   });
+// }
 
-export { showLoginModal, logout };
+export { showLoginModal };

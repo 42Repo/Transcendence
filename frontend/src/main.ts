@@ -1,3 +1,5 @@
+import { logout } from './login';
+
 const burger = document.getElementById('burger-icon');
 const mobileMenu = document.getElementById('nav-mobile');
 
@@ -12,3 +14,14 @@ if (burger && mobileMenu) {
     });
   });
 }
+
+document.body.addEventListener('click', (event) => {
+  const target = event.target as HTMLElement;
+
+  const logoutButtonClicked = target.closest('#logoutBtn');
+
+  if (logoutButtonClicked) {
+    event.preventDefault();
+    logout();
+  }
+});
