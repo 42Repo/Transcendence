@@ -8,17 +8,6 @@ console.log('Initialisation du système de navigation');
 console.log('Liens de navigation trouvés :', navLinks);
 const cache: Map<string, string> = new Map();
 
-document.body.addEventListener('click', (e) => {
-  const target = e.target as HTMLElement;
-  const link = target.closest('[data-page]');
-  
-  if (link) {
-    e.preventDefault();
-    const page = link.dataset.page;
-    if (page) switchPage(page);
-  }
-});
-
 const isAuthenticated = (): boolean => {
   const token = localStorage.getItem('authToken');
 
@@ -131,5 +120,33 @@ loadCurrentPage();
 prefetchAllPages();
 
 console.log('Attacher un événement aux liens');
+
+document.querySelectorAll('[data-page]').forEach((el) => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    const page = (el as HTMLElement).getAttribute('data-page');
+    if (page) {
+      switchPage(page);
+    }
+  });
+});
+
+// Add event listener after a page change
+const attachPageLinks = () => {
+  document.querySelectorAll('[data-page]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = (el as HTMLElement).getAttribute('data-page');
+      if (page) {
+        switchPage(page);
+      }
+    });
+  });
+};
+
+window.addEventListener('popstate', () => {
+  console.log('Handling back/forward navigation');
+  loadCurrentPage();
+});
 
 export { switchPage, loadCurrentPage, isAuthenticated, fetchPage, fetch404 };
