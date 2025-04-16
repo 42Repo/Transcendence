@@ -5,6 +5,7 @@ import {
   showFeedback,
   clearFeedback,
 } from './utils/modalUtils';
+import { switchPage } from './switch-page';
 
 interface LoginResponse {
   success: boolean;
@@ -33,6 +34,9 @@ const closeLoginModalButton = document.getElementById(
 ) as HTMLButtonElement | null;
 const switchToRegisterButton = document.getElementById(
   'switchRegister'
+) as HTMLButtonElement | null;
+const logoutBtn = document.getElementById(
+  'logoutBtn'
 ) as HTMLButtonElement | null;
 
 const LOGIN_FEEDBACK_ID = 'loginFeedback';
@@ -79,7 +83,11 @@ loginConfirmButton?.addEventListener('click', () => {
 
         // --- Post-Login Actions ---
         // TODO: Store the JWT token (e.g., data.token) securely
-        // localStorage.setItem('authToken', data.token); something like this
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        } else {
+          console.error('Token is undefined');
+        }
 
         // Update UI
         if (contentContainer) {
@@ -163,3 +171,20 @@ document.addEventListener('click', (event) => {
 document.addEventListener('openLoginModalRequest', () => {
   showLoginModal();
 });
+
+const logout = () => {
+  console.log('Logout function called');
+  localStorage.removeItem('authToken');
+  switchPage('home');
+};
+
+if (logoutBtn) {
+  console.log('Logout button found');
+  logoutBtn.addEventListener('click', (event) => {
+    console.log('Logout clicked');
+    logout();
+    event.preventDefault();
+  });
+}
+
+export { showLoginModal, logout };

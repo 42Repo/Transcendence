@@ -18,7 +18,8 @@
 		"fastify": "^5.0.0",
 		"better-sqlite3": "^11.0.0",
 		"bcrypt": "^5.0.0",
-		"@fastify/jwt": "^9.0.0"
+		"@fastify/jwt": "^9.0.0",
+		"dotenv": "16.5.0"
 	},
 	"devDependencies": {
 		"@types/node": "^20.0.0",

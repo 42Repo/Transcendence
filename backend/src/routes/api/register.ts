@@ -5,6 +5,7 @@ import {
   FastifyReply,
 } from 'fastify';
 import bcrypt from 'bcrypt';
+import FastifyJwt from '@fastify/jwt';
 
 interface RegisterBody {
   username?: string; // TODO: Make this required later
@@ -12,7 +13,10 @@ interface RegisterBody {
   password?: string; // TODO: Make this required later
 }
 
-export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
+export default function (
+  fastify: FastifyInstance,
+  opts: FastifyPluginOptions
+) {
   fastify.post(
     '/register',
     async (

@@ -5,13 +5,16 @@ import {
   FastifyReply,
 } from 'fastify';
 import bcrypt from 'bcrypt';
-
+import FastifyJwt from '@fastify/jwt';
 interface LoginBody {
   loginIdentifier: string; // Username or email
   password: string;
 }
 
 export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
+  fastify.register(FastifyJwt, {
+    secret: process.env.JWT_SECRET!,
+  });
   fastify.post(
     '/login',
     async (
@@ -49,12 +52,15 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
         if (match) {
           fastify.log.info(`User ${user.username} logged in successfully.`);
 
-          // TODO: Implement JWT token generation (from JWT Module) here later
+
+          const generatedToken = await reply.jwtSign({
+            id: user.user_id,
+            username: user.username,
+          });
           return reply.send({
             success: true,
             message: 'Login successful.',
-            // TODO : Send JWT token here
-            // token: generatedToken,
+            token: generatedToken,
             user: { id: user.user_id, username: user.username },
           });
         } else {
