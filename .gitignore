@@ -18,3 +18,4 @@ ssl/
 backend/database/*.db
 backend/database/*.db-journal
 .nfs*
+package-lock.json
