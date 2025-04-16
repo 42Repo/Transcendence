@@ -147,4 +147,9 @@ const attachPageLinks = () => {
   });
 };
 
+window.addEventListener('popstate', () => {
+  console.log('Handling back/forward navigation');
+  loadCurrentPage();
+});
+
 export { switchPage, loadCurrentPage, isAuthenticated, fetchPage, fetch404 };
