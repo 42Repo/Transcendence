@@ -104,7 +104,14 @@ const switchPage = (page: string) => {
 
     history.pushState(null, '', `${page}`);
   }
-  void fetchPage(page);
+  void fetchPage(page).then(() => {
+	  if (page === 'pongGame') {
+		  // Dynamically import and run the game logic
+		  import('./pongGame').then((module) => {
+			  module.mainGame();
+		  });
+	  }
+  });
 };
 
 // Change page after a reload
