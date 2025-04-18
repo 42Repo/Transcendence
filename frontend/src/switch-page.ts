@@ -44,9 +44,19 @@ const isAuthenticated = (): boolean => {
 
 // Get page from URL
 const getPageName = (): string => {
+  const existingPages : string[] = [
+    "home",
+    "about-us",
+    "edit-profile",
+    "error",
+    "logged",
+    "pongGame",
+    "privacy-policy",
+    "profile",
+    "public-profile"];
   const path = window.location.pathname.split('/').pop();
   const page = path?.replace('.html', '') || 'home';
-  return page;
+  return existingPages.includes(page) ? page : 'error';
 };
 
 const fetch404 = async () => {
