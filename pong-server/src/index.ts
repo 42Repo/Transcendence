@@ -1,29 +1,28 @@
 import Fastify from 'fastify';
-import fastifyWebsocket from '@fastify/websocket';
-import WebSocket from 'ws';
+import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
+import { type FastifyRequest } from 'fastify';
 import { GameManager } from './pong';
 
-const server = Fastify();
-server.register(fastifyWebsocket);
+const start = async () => {
+	const server = Fastify({ logger: true });
+	await server.register(fastifyWebsocket);
+	const gameManager = new GameManager();
+	server.get('/health', async () => ({ status: 'pong-server running' }));
+	server.get('/ws', { websocket: true }, (socket: WebSocket, request: FastifyRequest) => {
+		const playerId = gameManager.addPlayer(socket);
+		socket.on('message', (msg: string) => {
+			gameManager.handlePlayerInput(playerId, msg);
+		});
 
-const gameManager = new GameManager();
+		socket.on('close', () => {
+			gameManager.removePlayer(playerId);
+		});
+	}
+			  );
 
-server.get('/health', async () => ({ status: 'pong-server running' }));
+			  await server.listen({ port: 4000, host: '0.0.0.0' });
+			  console.log('Pong server listening on http://localhost:4000');
+}
 
-// The handler's first arg IS the ws.WebSocket instance (per plugin types)
-server.get('/ws', { websocket: true }, (connection, request) => {
-	const { socket } = connection;
-console.log("route /ws");
-  const playerId = gameManager.addPlayer(socket);   // socket: WebSocket
-  socket.on('message', (msg) => {
-    gameManager.handlePlayerInput(playerId, msg.toString());
-  });
-  socket.on('close', () => {
-    gameManager.removePlayer(playerId);
-  });
-});
+start();
 
-server.listen({ port: 4000, host: '0.0.0.0' }, (err) => {
-	if (err) throw err;
-	console.log('Pong server listening on http://localhost:4000');
-});
