@@ -54,22 +54,14 @@ const getPageName = (): string => {
     "privacy-policy",
     "profile",
     "public-profile"];
+
   const path = window.location.pathname.split('/').pop();
   const page = path?.replace('.html', '') || 'home';
   return existingPages.includes(page) ? page : 'error';
 };
 
-const fetch404 = async () => {
-  try {
-    const res = await fetch('src/views/404.html');
-    if (!res.ok) throw new Error('Page 404 non trouvée');
-    const html = await res.text();
-    content.innerHTML = html;
-    cache.set('404', html);
-  } catch (err) {
-    console.error('Erreur de chargement de la page 404 :', err);
-    content.innerHTML = '<h1>Erreur 404 - Page non trouvée</h1>';
-  }
+const fetchLoadingError = async () => {
+  content.innerHTML = '<h1>Error 404 - Cannot load page</h1>';
 };
 
 // Fetch page content
@@ -88,7 +80,7 @@ const fetchPage = async (page: string): Promise<void> => {
     cache.set(page, html);
   } catch (err) {
     console.error('Erreur de chargement :', err);
-    await fetch404();
+    await fetchLoadingError();
   }
 };
 
