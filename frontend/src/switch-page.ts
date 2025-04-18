@@ -3,9 +3,6 @@ import { showLoginModal } from './login';
 import { jwtDecode } from 'jwt-decode';
 
 const content = document.getElementById('content') as HTMLElement;
-const navLinks = document.querySelectorAll('nav a');
-console.log('Initialisation du système de navigation');
-console.log('Liens de navigation trouvés :', navLinks);
 const cache: Map<string, string> = new Map();
 
 document.body.addEventListener('click', (e) => {
@@ -15,7 +12,9 @@ document.body.addEventListener('click', (e) => {
   if (link) {
     e.preventDefault();
     const page = link.dataset.page;
-    if (page) switchPage(page);
+    if (page){
+       switchPage(page)
+    };
   }
 });
 
@@ -68,11 +67,13 @@ const fetchLoadingError = async () => {
 const fetchPage = async (page: string): Promise<void> => {
   console.log('Chargement de la page :', page);
   if (cache.has(page)) {
+    console.log("page in cache", page);
     content.innerHTML = cache.get(page)!;
     return;
   }
 
   try {
+    console.log("page not in cache", page, cache);
     const res = await fetch(`src/views/${page}.html`);
     if (!res.ok) throw new Error('Page non trouvée');
     const html = await res.text();
@@ -115,28 +116,42 @@ const loadCurrentPage = () => {
   void fetchPage(page);
 };
 
-// Pre-fetch all the pages
-const prefetchAllPages = () => {
+// Modify prefetchAllPages to return a Promise
+const prefetchAllPages = async (): Promise<void> => {
+  const navLinks = document.querySelectorAll('[data-page]');//???
+  const prefetchPromises: Promise<void>[] = [];
+
   navLinks.forEach((link) => {
     const page = (link as HTMLAnchorElement).dataset.page;
-    if (page) {
-      fetch(`src/views/${page}.html`)
-        .then((res) => res.text())
-        .then((html) => cache.set(page, html))
-        .catch(() => console.warn(`Échec du prefetch pour ${page}`));
+    if (page && !cache.has(page)) {
+      const fetchPromise = fetch(`src/views/${page}.html`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Page not found');
+          return res.text();
+        })
+        .then((html) => {
+          cache.set(page, html);
+          localStorage.setItem(`page_${page}`, html);
+        })
+        .catch((err) => console.warn(`Prefetch failed for ${page}:`, err));
+      prefetchPromises.push(fetchPromise);
     }
   });
+
+  await Promise.all(prefetchPromises);
 };
 
-// Charger la page actuelle
-loadCurrentPage();
-prefetchAllPages();
+// Await prefetch before loading the current page
+const initializeApp = async () => {
+  await prefetchAllPages();
+  loadCurrentPage();
+};
 
-console.log('Attacher un événement aux liens');
+initializeApp();
 
 window.addEventListener('popstate', () => {
   console.log('Handling back/forward navigation');
   loadCurrentPage();
 });
 
-export { switchPage, loadCurrentPage, isAuthenticated, fetchPage, fetch404 };
+export { switchPage, loadCurrentPage, isAuthenticated, fetchPage, fetchLoadingError };
