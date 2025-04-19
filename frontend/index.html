@@ -15,6 +15,23 @@
       <!-- Burger icon (mobile only) -->
       <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="md:hidden size-10 cursor-pointer" />
 
+          <!-- Desktop nav -->
+          <nav class="hidden md:flex space-x-6">
+            <a href="#" data-page="home" class="text-light hover:text-gray-300"
+              >home</a
+            >
+            <a href="#" data-page="profile" class="text-light hover:text-gray-300"
+              >Profile</a
+            >
+            <a
+              href="#"
+              data-page="about-us"
+              id="abUsButton"
+              class="text-light hover:text-gray-300"
+              >About Us</a
+            >
+          </nav>
+        </div>
       <!-- Desktop nav -->
       <nav id="desktopMenu" class="hidden md:flex space-x-6">
         <!-- <a href="#" data-page="home" class="text-light hover:text-gray-300"
@@ -33,11 +50,28 @@
       </nav>
     </div>
 
+        <!-- Center: Logo/title -->
+        <h1
+          class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300"
+        >
+          <a id="homeButton" data-page="home" href="#">Transcendance</a>
+        </h1>
     <!-- Center: Logo/title -->
     <h1 class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300">
       <a id="homeButton" data-page="home" href="#">Transcendance</a>
     </h1>
 
+        <!-- Right: Profile/Login -->
+        <div class="flex justify-end items-center">
+          <a href="#" id="loginLink" class="flex items-center">
+            <img
+              src="DefaultProfilePic.png"
+              alt="ProfilePic"
+              class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300"
+            />
+          </a>
+        </div>
+      </div>
     <!-- Right: Profile/Login -->
     <div id="loginPic" class="flex justify-end items-center">
       <!-- <a href="#" id="loginLink" class="flex items-center">
@@ -92,16 +126,18 @@
 
       <div class="g-signin2" data-onsuccess="onSignIn"></div>
 
-      <li class="container mx-auto flex space-x-4 justify-center items-center">
-        <ul>
-          <button class="btn btn-active">Login</button>
-        </ul>
-        <ul>
-          <button id="switchRegister" class="btn">Register</button>
-        </ul>
-      </li>
-    </div>
-  </div>
+          <li
+            class="container mx-auto flex space-x-4 justify-center items-center"
+          >
+            <ul>
+              <button class="btn btn-active">Login</button>
+            </ul>
+            <ul>
+              <button id="switchRegister" class="btn">Register</button>
+            </ul>
+          </li>
+        </div>
+      </div>
 
   <!-- REGISTER TAB -->
   <div id="registerModal" class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden">
@@ -144,9 +180,7 @@
     </div>
   </div>
 
-  <main id="content">
-    <h1 class="text-4xl">ERROR 404</h1>
-  </main>
+    <main id="content"></main>
 
   <script src="https://accounts.google.com/gsi/client"></script>
   <script type="module" src="./src/switch-page.ts" defer></script>
@@ -155,17 +189,30 @@
   <script type="module" src="./src/main.ts" defer></script>
 </body>
 
-<footer>
-  <p>© 2025 Transcendence - All rights reserved</p>
-  <div class="mt-2 flex justify-center space-x-4">
-    <a href="#" data-page="home" class="text-darkdark hover:text-white">Home</a>
-    <a href="#" data-page="" class="text-darkdark hover:text-white">Contact</a>
-    <a href="#" data-page="" class="text-darkdark hover:text-white">FAQ</a>
-    <a href="#" data-page="about-us" class="text-darkdark hover:text-white">About Us</a>
-    <a href="#" data-page="" class="text-darkdark hover:text-white">Terms of Service</a>
-    <a href="#" data-page="privacy-policy" class="text-darkdark hover:text-white">Privacy Policy</a>
-    <a href="#" class="text-darkdark hover:text-white">Legal Notice</a>
-  </div>
-</footer>
-
+    <footer>
+      <p>© 2025 Transcendence - All rights reserved</p>
+      <div class="mt-2 flex justify-center space-x-4">
+        <a href="#" data-page="home" class="text-darkdark hover:text-white"
+          >Home</a
+        >
+        <a href="#" data-page="" class="text-darkdark hover:text-white"
+          >Contact</a
+        >
+        <a href="#" data-page="" class="text-darkdark hover:text-white">FAQ</a>
+        <a href="#" data-page="about-us" class="text-darkdark hover:text-white"
+          >About Us</a
+        >
+        <a href="#" data-page="" class="text-darkdark hover:text-white"
+          >Terms of Service</a
+        >
+        <a
+          href="#"
+          data-page="privacy-policy"
+          class="text-darkdark hover:text-white"
+          >Privacy Policy</a
+        >
+        <a href="#" class="text-darkdark hover:text-white">Legal Notice</a>
+      </div>
+    </footer>
+  </body>
 </html>
