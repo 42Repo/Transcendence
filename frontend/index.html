@@ -1,29 +1,24 @@
-<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Transcendence</title>
-    <link href="src/styles/index.css" rel="stylesheet" />
-  </head>
 
-  <header>
-    <div class="container mx-auto flex justify-between items-center">
-      <button id="logoutBtn">logout</button>
-      <!-- Left: Nav desktop + Burger -->
-      <div class="flex items-center jus">
-        <!-- Burger icon (mobile only) -->
-        <img
-          src="BurgerMenu.png"
-          alt="Menu"
-          id="burger-icon"
-          class="md:hidden size-10 cursor-pointer"
-        />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transcendence</title>
+  <link href="src/styles/index.css" rel="stylesheet" />
+</head>
 
-        <!-- Desktop nav -->
-        <nav class="hidden md:flex space-x-6">
-          <a href="#" data-page="home" class="text-light hover:text-gray-300"
-            >home</a
+<header>
+  <div class="container mx-auto flex justify-between items-center">
+    <!-- <button id="logoutBtn">logout</button> -->
+    <!-- Left: Nav desktop + Burger -->
+    <div class="flex items-center jus">
+      <!-- Burger icon (mobile only) -->
+      <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="md:hidden size-10 cursor-pointer" />
+
+      <!-- Desktop nav -->
+      <nav id="desktopMenu" class="hidden md:flex space-x-6">
+        <!-- <a href="#" data-page="home" class="text-light hover:text-gray-300"
+            >Home</a
           >
           <a href="#" data-page="profile" class="text-light hover:text-gray-300"
             >Profile</a
@@ -34,203 +29,143 @@
             id="abUsButton"
             class="text-light hover:text-gray-300"
             >About Us</a
-          >
-        </nav>
-      </div>
+          > -->
+      </nav>
+    </div>
 
-      <!-- Center: Logo/title -->
-      <h1
-        class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300"
-      >
-        <a id="homeButton" data-page="home" href="#">Transcendance</a>
-      </h1>
+    <!-- Center: Logo/title -->
+    <h1 class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300">
+      <a id="homeButton" data-page="home" href="#">Transcendance</a>
+    </h1>
 
-      <!-- Right: Profile/Login -->
-      <div class="flex justify-end items-center">
-        <a href="#" id="loginLink" class="flex items-center">
+    <!-- Right: Profile/Login -->
+    <div id="loginPic" class="flex justify-end items-center">
+      <!-- <a href="#" id="loginLink" class="flex items-center">
           <img
             src="DefaultProfilePic.png"
             alt="ProfilePic"
             class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300"
           />
-        </a>
-      </div>
+        </a> -->
     </div>
+  </div>
 
-    <!-- Mobile nav (burger menu) -->
-    <div
-      id="nav-mobile"
-      class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19"
-    >
-      <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
-        <ul class="space-y-4">
-          <li>
-            <a href="#" data-page="home" class="burger-btn block text-white"
-              >HOME</a
-            >
-          </li>
-          <li>
-            <a href="#" data-page="profile" class="burger-btn block text-white"
-              >PROFILE</a
-            >
-          </li>
-          <li>
-            <a href="#" data-page="about-us" class="burger-btn block text-white"
-              >ABOUT US</a
-            >
-          </li>
+  <!-- Mobile nav (burger menu) -->
+  <div id="nav-mobile" class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19">
+    <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
+      <ul id="mobileMenu" class="space-y-4">
+        <li>
+          <a href="#" data-page="home" class="burger-btn block text-white">HOME</a>
+        </li>
+        <li>
+          <a href="#" data-page="profile" class="burger-btn block text-white">PROFILE</a>
+        </li>
+        <li>
+          <a href="#" data-page="about-us" class="burger-btn block text-white">ABOUT US</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<body>
+  <!-- LOGIN TAB -->
+  <div id="loginModal" class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden">
+    <div class="bg-medium rounded-lg p-1 w-100">
+      <div class="bg-light rounded-lg p-3 m-4">
+        <div class="flex justify-between">
+          <h1 class="ml-2 mb-2 text-dark">Login</h1>
+          <button id="closeLoginModal" class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium">
+            X
+          </button>
+        </div>
+        <input type="text" id="loginIdentifier" placeholder="Username or Email"
+          class="text-darkdark bg-lightlight p-2 pb-1 mb-2 w-full rounded-4xl" />
+        <input type="password" id="loginPassword" placeholder="Password"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+        <p id="loginFeedback" class="text-red-600 text-sm mb-2 h-4"></p>
+        <div class="flex justify-center mb-0">
+          <button id="loginConfirm" class="btn btn-confirm">Confirm</button>
+        </div>
+      </div>
+      <div id="googleButtonContainer" class="flex justify-center m-2"></div>
+
+      <div class="g-signin2" data-onsuccess="onSignIn"></div>
+
+      <li class="container mx-auto flex space-x-4 justify-center items-center">
+        <ul>
+          <button class="btn btn-active">Login</button>
         </ul>
-      </div>
+        <ul>
+          <button id="switchRegister" class="btn">Register</button>
+        </ul>
+      </li>
     </div>
-  </header>
+  </div>
 
-  <body>
-    <!-- LOGIN TAB -->
-    <div
-      id="loginModal"
-      class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
-    >
-      <div class="bg-medium rounded-lg p-1 w-100">
-        <div class="bg-light rounded-lg p-3 m-4">
-          <div class="flex justify-between">
-            <h1 class="ml-2 mb-2 text-dark">Login</h1>
-            <button
-              id="closeLoginModal"
-              class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium"
-            >
-              X
-            </button>
-          </div>
-          <input
-            type="text"
-            id="loginIdentifier"
-            placeholder="Username or Email"
-            class="text-darkdark bg-lightlight p-2 pb-1 mb-2 w-full rounded-4xl"
-          />
-          <input
-            type="password"
-            id="loginPassword"
-            placeholder="Password"
-            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
-          />
-          <p id="loginFeedback" class="text-red-600 text-sm mb-2 h-4"></p>
-          <div class="flex justify-center mb-0">
-            <button id="loginConfirm" class="btn btn-confirm">Confirm</button>
-          </div>
+  <!-- REGISTER TAB -->
+  <div id="registerModal" class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden">
+    <div class="bg-medium rounded-lg p-1 w-100">
+      <div class="bg-light rounded-lg p-3 pb-1 m-4">
+        <div class="flex justify-between just">
+          <h1 class="ml-2 mb-2 text-dark">Register</h1>
+          <button id="closeRegisterModal"
+            class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium">
+            X
+          </button>
         </div>
-        <meta
-          name="google-signin-client_id"
-          content="1063963294590-ce7p97pmdm74fk3gs41fin2j61lsa2q2.apps.googleusercontent.com.apps.googleusercontent.com"
-        />
-        <div class="g-signin2" data-onsuccess="onSignIn"></div>
-
-        <li
-          class="container mx-auto flex space-x-4 justify-center items-center"
-        >
-          <ul>
-            <button class="btn btn-active">Login</button>
-          </ul>
-          <ul>
-            <button id="switchRegister" class="btn">Register</button>
-          </ul>
-        </li>
-      </div>
-    </div>
-
-    <!-- REGISTER TAB -->
-    <div
-      id="registerModal"
-      class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
-    >
-      <div class="bg-medium rounded-lg p-1 w-100">
-        <div class="bg-light rounded-lg p-3 pb-1 m-4">
-          <div class="flex justify-between just">
-            <h1 class="ml-2 mb-2 text-dark">Register</h1>
-            <button
-              id="closeRegisterModal"
-              class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium"
-            >
-              X
-            </button>
-          </div>
-          <input
-            type="text"
-            id="registerUsername"
-            placeholder="Username"
-            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
-          />
-          <input
-            type="email"
-            id="registerEmail"
-            placeholder="Email (Optional but recommended)"
-            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
-          />
-          <input
-            type="password"
-            id="registerPassword"
-            placeholder="Password"
-            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
-          />
-          <input
-            type="password"
-            id="registerConfirmPassword"
-            placeholder="Confirm Password"
-            class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl"
-          />
-          <p id="registerFeedback" class="text-red-600 text-sm mb-2 h-4"></p>
-          <div class="flex justify-center mb-0">
-            <button id="registerConfirm" class="btn btn-confirm">
-              Confirm
-            </button>
-            <!-- Added ID -->
-          </div>
+        <input type="text" id="registerUsername" placeholder="Username"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+        <input type="email" id="registerEmail" placeholder="Email (Optional but recommended)"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+        <input type="password" id="registerPassword" placeholder="Password"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+        <input type="password" id="registerConfirmPassword" placeholder="Confirm Password"
+          class="text-darkdark bg-lightlight p-2 mb-2 w-full rounded-4xl" />
+        <p id="registerFeedback" class="text-red-600 text-sm mb-2 h-4"></p>
+        <div class="flex justify-center mb-0">
+          <button id="registerConfirm" class="btn btn-confirm">
+            Confirm
+          </button>
+          <!-- Added ID -->
         </div>
-        <button id="google-sign-in">Se connecter avec Google</button>
-        <li
-          class="container mx-auto flex space-x-4 justify-center items-center"
-        >
-          <ul>
-            <button id="switchLogin" class="btn">Login</button>
-          </ul>
-          <ul>
-            <button class="btn btn-active">Register</button>
-          </ul>
-        </li>
       </div>
+      <script src="https://accounts.google.com/gsi/client"></script>
+      <div id="googleButtonContainer" class="flex justify-center m-2"></div>
+
+      <li class="container mx-auto flex space-x-4 justify-center items-center">
+        <ul>
+          <button id="switchLogin" class="btn">Login</button>
+        </ul>
+        <ul>
+          <button class="btn btn-active">Register</button>
+        </ul>
+      </li>
     </div>
+  </div>
 
-    <main id="content"><h1 class="text-4xl">ERROR 404</h1></main>
+  <main id="content">
+    <h1 class="text-4xl">ERROR 404</h1>
+  </main>
 
-    <script type="module" src="./src/switch-page.ts" defer></script>
-    <script type="module" src="./src/login.ts" defer></script>
-    <script type="module" src="./src/register.ts" defer></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" src="./src/main.ts" defer></script>
-  </body>
+  <script src="https://accounts.google.com/gsi/client"></script>
+  <script type="module" src="./src/switch-page.ts" defer></script>
+  <script type="module" src="./src/login.ts" defer></script>
+  <script type="module" src="./src/register.ts" defer></script>
+  <script type="module" src="./src/main.ts" defer></script>
+</body>
 
-  <footer>
-    <p>© 2025 Transcendence - All rights reserved</p>
-    <div class="mt-2 flex justify-center space-x-4">
-      <a href="#" data-page="home" class="text-darkdark hover:text-white"
-        >Home</a
-      >
-      <a href="#" data-page="" class="text-darkdark hover:text-white"
-        >Contact</a
-      >
-      <a href="#" data-page="" class="text-darkdark hover:text-white">FAQ</a>
-      <a href="#" data-page="about-us" class="text-darkdark hover:text-white"
-        >About Us</a
-      >
-      <a href="#" data-page="" class="text-darkdark hover:text-white"
-        >Terms of Service</a
-      >
-      <a
-        href="#"
-        data-page="privacy-policy"
-        class="text-darkdark hover:text-white"
-        >Privacy Policy</a
-      >
-      <a href="#" class="text-darkdark hover:text-white">Legal Notice</a>
-    </div>
-  </footer>
+<footer>
+  <p>© 2025 Transcendence - All rights reserved</p>
+  <div class="mt-2 flex justify-center space-x-4">
+    <a href="#" data-page="home" class="text-darkdark hover:text-white">Home</a>
+    <a href="#" data-page="" class="text-darkdark hover:text-white">Contact</a>
+    <a href="#" data-page="" class="text-darkdark hover:text-white">FAQ</a>
+    <a href="#" data-page="about-us" class="text-darkdark hover:text-white">About Us</a>
+    <a href="#" data-page="" class="text-darkdark hover:text-white">Terms of Service</a>
+    <a href="#" data-page="privacy-policy" class="text-darkdark hover:text-white">Privacy Policy</a>
+    <a href="#" class="text-darkdark hover:text-white">Legal Notice</a>
+  </div>
+</footer>
+
 </html>

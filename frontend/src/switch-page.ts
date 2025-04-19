@@ -64,6 +64,13 @@ const fetch404 = async () => {
 
 // Fetch page content
 const fetchPage = async (page: string): Promise<void> => {
+  if (pageRequiresAuth(page) && !isAuthenticated()) {
+    console.log("Page protégée, redirection vers la page de d'accueil");
+    history.pushState(null, '', '/');
+    void fetchPage('home');
+    showLoginModal();
+    return;
+  }
   console.log('Chargement de la page :', page);
   if (cache.has(page)) {
     content.innerHTML = cache.get(page)!;
@@ -89,14 +96,9 @@ const pageRequiresAuth = (page: string): boolean => {
 
 // Switch page + update URL
 const switchPage = (page: string) => {
-  if (pageRequiresAuth(page) && !isAuthenticated()) {
-    console.log("Page protégée, redirection vers la page de d'accueil");
-    history.pushState(null, '', '/');
-    void fetchPage('home');
-    showLoginModal();
-    return;
-  }
+ 
   if (page == 'home') {
+    if (isAuthenticated()) page = 'logged';
     history.pushState(null, '', '/');
     console.log('home = pas de hash');
   } else {
@@ -110,6 +112,10 @@ const switchPage = (page: string) => {
 // Change page after a reload
 const loadCurrentPage = () => {
   const page = getPageName();
+  if (isAuthenticated() && page == 'home') {
+    switchPage('home');
+    return;
+  }
   void fetchPage(page);
 };
 
