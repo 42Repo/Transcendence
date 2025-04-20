@@ -1,4 +1,3 @@
-// frontend/src/login.ts
 import {
   closeModal,
   openModal,

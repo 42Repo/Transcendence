@@ -35,6 +35,5 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   googleAuth.initialize();
-
   googleAuth.renderButton('googleButtonContainer');
 });

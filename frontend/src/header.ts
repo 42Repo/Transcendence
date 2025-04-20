@@ -3,7 +3,6 @@ import { isAuthenticated } from './switch-page.ts';
 const headerMenu = document.getElementById('desktopMenu');
 
 const setHeaderMenuList = () => {
-  // const page = getPageName();
   const isAuth = isAuthenticated();
 
   if (headerMenu && isAuth) {

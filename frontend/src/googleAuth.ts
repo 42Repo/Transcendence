@@ -1,4 +1,3 @@
-// google-auth.ts
 import { jwtDecode } from 'jwt-decode';
 
 interface GoogleCredentialResponse {
@@ -37,8 +36,6 @@ export class GoogleAuth {
   private handleCredentialResponse(response: GoogleCredentialResponse): void {
     console.log('Encoded JWT ID token: ' + response.credential);
 
-    // Décoder le token JWT pour obtenir les informations utilisateur
-
     interface GoogleUser {
       email: string;
       name: string;
@@ -46,15 +43,9 @@ export class GoogleAuth {
     }
 
     const user = jwtDecode<GoogleUser>(response.credential);
-
     console.log('User info:', user);
-
-    // Vous pouvez maintenant utiliser les informations utilisateur
-
     console.log('Email:', user.email);
-
     console.log('Name:', user.name);
-
     console.log('Picture:', user.picture);
   }
 }
