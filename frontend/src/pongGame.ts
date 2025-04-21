@@ -1,9 +1,19 @@
 import * as BABYLON from '@babylonjs/core';
+import { Vector3, Color3 } from '@babylonjs/core';
+import "@babylonjs/loaders";
+import { PongConfig } from './game/PongConfig.ts';
+import { defaultConfig } from './game/DefaultConf.ts';
+import { Ball } from './game/Ball.ts';
+import { Paddle } from './game/Paddle.ts';
+import { Table } from './game/Table.ts';
+import { Camera } from './game/Camera.ts';
+import { Light } from './game/Light.ts';
+import { Skybox } from './game/Skybox.ts';
+import { Wall } from './game/Wall.ts';
 
 function initWebSocket(draw: (state: any) => void) {
 	const isLocal = location.hostname === 'localhost';
 	const socketProtocol = isLocal ? 'ws' : 'wss';
-	//const socket = new WebSocket(`${socketProtocol}://${location.host}/ws`);
 	const socket = new WebSocket(`${socketProtocol}://${isLocal ? 'localhost:4000' : location.host}/ws`);
 
 
@@ -23,73 +33,129 @@ function initWebSocket(draw: (state: any) => void) {
 	};
 }
 
-const createCanvas = (container : HTMLElement | null) :HTMLCanvasElement | null => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 500;
-	canvas.height = 500;
-	canvas.style.border = '0.2em solid purple';
-	canvas.style.borderRadius = '10%';
-	canvas.classList.add("self-auto");
-	if (!canvas || !container)
-		return (null);
-	container.appendChild(canvas);
-	return canvas;
-};
+export class Game {
+  private _engine: BABYLON.Engine;
+  private _conf: PongConfig;
+  public scene!: BABYLON.Scene;
+  public canvas: HTMLCanvasElement;
+  private _floorY!: number;
 
-class Game {
-	private _engine : Engine;
-	private _scene : Scene;
-	private _canvas : HTMLCanvasElement;
+  constructor(container: HTMLElement | null, conf: PongConfig = defaultConfig) {
+    if (!container) {
+      throw new Error("Error: container not found!");
+    }
 
-	private _state : number = 0;
+    this._conf = conf;
 
-	constructor (container : HTMLElement | null) {
-		this._canvas = createCanvas(container);
-		if (!this._canvas) {
-			throw new Error("Error: canvas creation !");
-		}
-		this._engine = new BABYLON.Engine(this._canvas, true);
-		this._scene = new BABYLON.Scene(this._engine);
-		const camera : ArcRotateCamera = new BABYLON.ArcRotateCamera("camera1",
-				Math.PI / 2, Math.PI / 4, 10, BABYLON.Vector3.Zero(), this._scene);
-		camera.attachControl(this._canvas, true);
-		const light1: HemisphericLight = new BABYLON.HemisphericLight("light1",
-				new BABYLON.Vector3(1, 1, 0), this._scene);
-		const sphere: Mesh = BABYLON.MeshBuilder.CreateSphere("sphere",
-				{ diameter: 1 }, this._scene);
-		const leftPaddle = BABYLON.MeshBuilder.CreateBox("leftPaddle",
-				{ width: 0.2, height: 1, depth: 0.2 }, this._scene);
-		leftPaddle.position.x = -3.5; // Positioned to the left side
-		leftPaddle.position.y = 0; // Center the paddle on the Y-axis
-		leftPaddle.position.z = 0; // Center the paddle on the Z-axis
+    const { canvas: canvasConf } = this._conf;
+    this.canvas = this.createCanvas(container, canvasConf);
+    this._engine = new BABYLON.Engine(this.canvas, true);
+  }
 
-		// Right Paddle
-		const rightPaddle = BABYLON.MeshBuilder.CreateBox("rightPaddle",
-				{ width: 0.2, height: 1, depth: 0.2 }, this._scene);
-		rightPaddle.position.x = 3.5; // Positioned to the right side
-		rightPaddle.position.y = 0;
-		rightPaddle.position.z = 0;
+  async init(): Promise<void> {
+    this.scene = new BABYLON.Scene(this._engine);
 
-		// Ball
-		const ball = BABYLON.MeshBuilder.CreateSphere("ball", { diameter: 0.2 }, this._scene);
-		ball.position = new BABYLON.Vector3(0, 0.2, 0); // Place the ball in the center
+    const {
+      table,
+      paddle,
+      ball,
+      wall,
+      skybox,
+      camera,
+      light,
+    } = this._conf;
 
-		// Start the game loop and update the game elements
-		this._engine.runRenderLoop(() => {
-			this._scene.render();
-		});
-	}
+    await new Skybox(this, skybox.path, skybox.meshName);
+
+    const tableColor = table.color
+      ? new Color3(table.color.r, table.color.g, table.color.b)
+      : undefined;
+
+    new Table(
+      this,
+      "table",
+      new Vector3(0, table.y, 0),
+      tableColor
+    );
+
+    const targetCamera = camera.followOffset
+      ? camera.followOffset
+      : camera.targetOffset;
+
+    new Camera(this, "Cam1", camera.angles, targetCamera);
+    new Light(this, "light1", light.direction);
+    new Ball(this, "ball1", ball.initialPosition);
+
+    Object.entries(wall.wallPositions).forEach(([name,{
+      width,
+      height,
+      depth,
+      position
+    }]) => {
+      const props: { color?: Color3; alpha?: number } = {};
+
+      if (wall.color) {
+        props.color = new Color3(wall.color.r, wall.color.g, wall.color.b);
+      }
+
+      if (wall.alpha !== undefined) {
+        props.alpha = wall.alpha;
+      }
+
+      new Wall(this, name, position as BABYLON.Vector3, props);
+    });
+
+    const paddleColorRight = paddle.colors && paddle.colors.right
+      ? new Color3(
+        paddle.colors.right.r,
+        paddle.colors.right.g,
+        paddle.colors.right.b
+      ) : undefined;
+
+    new Paddle(this, "paddleRight", paddle.positions.right, paddleColorRight);
+
+    const paddleColorLeft = paddle.colors && paddle.colors.left
+      ? new Color3(
+        paddle.colors.left.r,
+        paddle.colors.left.g,
+        paddle.colors.left.b
+      ) : undefined;
+
+    new Paddle(this, "paddleLeft", paddle.positions.left, paddleColorLeft);
+
+    this._engine.runRenderLoop(() => {
+      this.scene.render();
+    });
+
+    return;
+  }
+
+  createCanvas(container: HTMLElement, conf: PongConfig["canvas"]): HTMLCanvasElement {
+    const canvas = document.createElement("canvas");
+    canvas.width = conf.width;
+    canvas.height = conf.height;
+    canvas.style.border = conf.border;
+    canvas.style.borderRadius = conf.borderRadius;
+    container.appendChild(canvas);
+    return canvas;
+  }
+
+  public setFloorY(y: number): void {
+    this._floorY = y;
+    return;
+  }
 }
 
-export function mainGame() {
+export const mainGame = async () => {
 	console.log("pong start !!");
 	const container = document.getElementById("game-container");
 	if (!container)
 		return (console.log("Error: creating canvas container"));
-	new Game(container);
+	const game = new Game(container);
+  await game.init();
 	initWebSocket(()=>{
 		console.log("need function to update move");
 	});
-}
+};
 
 document.addEventListener('DOMContentLoaded', mainGame);

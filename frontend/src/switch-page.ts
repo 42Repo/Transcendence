@@ -10,7 +10,7 @@ const cache: Map<string, string> = new Map();
 
 document.body.addEventListener('click', (e) => {
   const target = e.target as HTMLElement;
-  const link = target.closest('[data-page]');
+  const link = target.closest('[data-page]') as HTMLElement;
 
   if (link) {
     e.preventDefault();
