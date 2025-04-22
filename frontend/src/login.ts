@@ -1,4 +1,3 @@
-// frontend/src/login.ts
 import {
   closeModal,
   openModal,
@@ -6,6 +5,7 @@ import {
   clearFeedback,
 } from './utils/modalUtils';
 import { switchPage } from './switch-page';
+import { setHeaderMenu } from './header';
 
 interface LoginResponse {
   success: boolean;
@@ -90,6 +90,7 @@ loginConfirmButton?.addEventListener('click', () => {
         if (contentContainer) {
           try {
             const loggedHtmlResponse = await fetch('src/views/logged.html');
+            setHeaderMenu();
             if (loggedHtmlResponse.ok) {
               contentContainer.innerHTML = await loggedHtmlResponse.text();
               // TODO: Attach any event listeners needed for the new content
@@ -173,15 +174,8 @@ export const logout = () => {
   console.log('Logout function called');
   localStorage.removeItem('authToken');
   switchPage('home');
+  setHeaderMenu();
 };
 
-// if (logoutBtn) {
-//   console.log('Logout button found');
-//   logoutBtn.addEventListener('click', (event) => {
-//     console.log('Logout clicked');
-//     logout();
-//     event.preventDefault();
-//   });
-// }
 
 export { showLoginModal };
