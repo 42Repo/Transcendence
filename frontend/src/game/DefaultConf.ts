@@ -4,9 +4,9 @@ import { PongConfig } from "./PongConfig";
 const table = {
   width: 8,
   depth: 4,
-  height: 0.1,
+  height: .1,
   y: -0.3,
-  color: { r: 0.1, g: 0.1, b: 0.3 },
+  color: { r: 0.1, g: 0.5, b: 0.3 },
 };
 
 const paddle = {
@@ -116,7 +116,7 @@ export const defaultConfig: PongConfig = {
 
   skybox: {
     meshName: "Sphere__0",
-    path: "../public/assets/img/skybox_fairy_castle_night/scene.gltf",
+    path: "../public/assets/img/DreamlikeLandscape.glb",
   },
 
   camera: {
