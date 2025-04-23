@@ -1,6 +1,6 @@
 import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
 import { v4 as uuidv4 } from 'uuid';
-import { StateGame, PlayerBase } from './StateGame';
+import { StateGame, PlayerBase, Paddle } from './StateGame';
 import { defaultConfig } from './DefaultConf';
 import { PongConfig } from './PongConfig';
 import { DefaultState } from './DefaultState';
@@ -18,7 +18,6 @@ export class MatchMaking {
   { player: PlayerBase, game: GameManager | null } {
     const player : PlayerBase = { id: uuidv4(), socket, name };
     let newGame : GameManager | null = null;
-
 		this.players.push(player);
     if (this.players.length >= 2) {
       const gamePlayers = this.players.slice(0, 2);
@@ -34,9 +33,9 @@ export class GameManager {
 	private game: StateGame = DefaultState;
 	private gameInterval: NodeJS.Timeout | null = null;
 
-	//if (!this.gameInterval) this.startGameLoop();
   constructor (player1 : PlayerBase , player2: PlayerBase) {
     this.init(player1, player2);
+	  this.startGameLoop();
   } 
 
 
@@ -44,26 +43,58 @@ export class GameManager {
 
 	}
 
-	handlePlayerInput(player: PlayerBase, data: object) {
+	handlePlayerInput(player: PlayerBase, data: { key:string }) {
 		// parse input (move left/right/up/down)
-		console.log(`Player ${player.name} input:`);
+    const paddle : Paddle | undefined = this.getPaddles().find((pad : Paddle) => {
+      return player.id === pad.id
+    });
+    console.log(paddle);
+       if (!paddle) return;
+
+    // Vitesse de déplacement (tu peux la stocker dans ton config)
+    const speed = 0.1;
+
+    // Selon la touche, on modifie posZ
+    switch (data.key) {
+      case 'ArrowUp':
+      case 'w':
+      case'KeyW':
+        paddle.posZ += speed;
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'KeyS':
+        paddle.posZ -= speed;
+        break;
+      default:
+        return;
+    }
+
+    // On borne la position Z entre -depth/2 et +depth/2
+    const halfDepth = this.game.table.bounds.depth / 2;
+    paddle.posZ = Math.max(-halfDepth, Math.min(halfDepth, paddle.posZ));
+    //paddle.posZ = Math.sign(paddle.posZ) * Math.max(Math.abs(paddle.posZ), halfDepth);
 	}
 
-  getPlayers() {
+  getPlayers() : StateGame['players'] {
     return this.game.players;
+  }
+
+  getPaddles() : StateGame['paddles'] {
+    return this.game.paddles;
   }
 
   private init(player1: PlayerBase, player2: PlayerBase, conf: PongConfig = defaultConfig) {
     this.game.players[0].id = player1.id; 
     this.game.players[0].socket = player1.socket;
     this.game.players[0].name = player1.name;
-    this.game.paddle[0].id = player1.id;
-    this.game.paddle[0].playerName = player1.name;
+    this.game.paddles[0].id = player1.id;
+    this.game.paddles[0].playerName = player1.name;
     this.game.players[1].id = player2.id; 
     this.game.players[1].socket = player2.socket;
     this.game.players[1].name = player2.name;
-    this.game.paddle[1].id = player2.id;
-    this.game.paddle[1].playerName = player2.name;
+    this.game.paddles[1].id = player2.id;
+    this.game.paddles[1].playerName = player2.name;
     this.game.table.bounds.width = conf.table.width;
     this.game.table.bounds.depth = conf.table.depth;
   }
@@ -72,20 +103,22 @@ export class GameManager {
 		this.gameInterval = setInterval(() => {
 			// Game state update logic (ball movement, collision, etc.)
 			const state = {
-		//		timestamp: Date.now(),
-		//		ball: { x: Math.random(), y: Math.random() }, // stub
-		//		players: this.players.map(p => ({ id: p.id }))
-			};
+        paddles : this.game.paddles,
+        //		timestamp: Date.now(),
+        //		ball: { x: Math.random(), y: Math.random() }, // stub
+        //		players: this.players.map(p => ({ id: p.id }))
+      };
+      this.broadcast("update", state);
+    }, 1000 / 30); // 30 FPS
+  }
 
-			for (const player of this.game.players) {
-				try {
-					if (player.socket && typeof player.socket.send === 'function') {
-						player.socket.send(JSON.stringify({ type: 'update', data: state }));
-					}
-				} catch (err) {
-					console.error('Error sending to player socket:', err);
-				}
-			}
-		}, 1000 / 30); // 30 FPS
-	}
+  private broadcast(type: string, data : any) {
+    const players : StateGame['players']= this.getPlayers();
+    for (const player of players) {
+      if (player.socket){
+        console.log("pfffff");
+         player.socket.send(JSON.stringify({type: `${type}`, data }))
+      }
+    }
+  }
 }

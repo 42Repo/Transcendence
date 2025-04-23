@@ -9,7 +9,7 @@ export const DefaultState : StateGame = {
     posY: 0,
     speed: 1,
   },
-  paddle: [
+  paddles: [
     {
       id: "",
       playerName: "",

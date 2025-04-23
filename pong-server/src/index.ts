@@ -30,8 +30,10 @@ const start = async () => {
 
       let player : PlayerBase | null = null;
 
-      socket.on('message', (msg: string) => {
-        const message = JSON.parse(msg);
+      socket.on('message', (msg: string, isBinary) => {
+        const msgStr = isBinary ? msg.toString() : msg as string;
+        const message = JSON.parse(msgStr);
+        console.log(message);
         const { type, data } = message;
         switch (type) {
           case 'join':
@@ -39,12 +41,16 @@ const start = async () => {
             player = result.player;
             if (result.game) {
               gameManagers.push(result.game);
+              socket.send(JSON.stringify({type:'start'}));
+            } else {
+              socket.send(JSON.stringify({type:'wait'}));
             }
             break;
           case 'input':
             if (player) {
               const gameManager = getGameManager(player, gameManagers);
               if (gameManager) {
+                console.log("DATA:", data);
                 gameManager.handlePlayerInput(player, data);
               }
             }
