@@ -64,6 +64,13 @@ html {
   }
 }
 
+@media (max-width: 400px)
+{
+  #registerFeedback, #loginFeedback {
+    font-size: 0.8em;
+  }
+}
+
 .btn {
   @apply text-white bg-light p-2 mb-2 w-full rounded-xl;
 }
