@@ -28,9 +28,8 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
       // --- Server-Side Validation ---
       const trimmedUsername = username?.trim();
       const trimmedEmail = email?.trim();
-      const trimmedPassword = password?.trim();
 
-      if (!trimmedUsername || !trimmedPassword) {
+      if (!trimmedUsername || !password) {
         return reply.status(400).send({
           success: false,
           message: 'Username and password are required.',
@@ -43,7 +42,7 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
           message: 'Username must be at least 3 characters long.',
         });
       }
-      if (trimmedPassword.length < 6) {
+      if (password.length < 6) {
         return reply.status(400).send({
           success: false,
           message: 'Password must be at least 6 characters long.',
@@ -75,7 +74,7 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
 
         // --- Hash Password ---
         const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(trimmedPassword, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // --- Insert User into DB ---
         const insertStmt = fastify.db.prepare(
