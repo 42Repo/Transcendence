@@ -23,4 +23,16 @@ export class GameObject {
       this.mesh.material = material;
     }
   }
+
+  updateWidth(num : number) {
+    this.mesh.position.x = num;
+  }
+
+  updateHeight(num : number) {
+    this.mesh.position.y = num;
+  }
+
+  updateDepth(num : number) {
+    this.mesh.position.z = num;
+  }
 }

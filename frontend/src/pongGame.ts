@@ -10,28 +10,12 @@ import { Camera } from './game/Camera.ts';
 import { Light } from './game/Light.ts';
 import { Skybox } from './game/Skybox.ts';
 import { Wall } from './game/Wall.ts';
+import { WebSocketManager } from './game/WebSocketManager.ts';
 
-function initWebSocket(draw: (state: any) => void) {
-	const isLocal = location.hostname === 'localhost';
-	const socketProtocol = isLocal ? 'ws' : 'wss';
-	const socket = new WebSocket(`${socketProtocol}://${isLocal ? 'localhost:4000' : location.host}/ws`);
-
-
-		socket.onopen = () => {
-		console.log('✅ Connected to Pong Server');
-	};
-
-	socket.onmessage = (event) => {
-		const message = JSON.parse(event.data);
-		if (message.type === 'update') {
-			draw(message.data);
-		}
-	};
-
-	socket.onclose = () => {
-		console.log('❌ Disconnected from Pong Server');
-	};
-}
+type GameState = {
+  paddles: { id: string; posX: number; posZ: number }[],
+  ball:    { posY: number; posZ: number }
+};
 
 export class Game {
   private _engine: BABYLON.Engine;
@@ -39,6 +23,9 @@ export class Game {
   public scene!: BABYLON.Scene;
   public canvas: HTMLCanvasElement;
   private _floorY!: number;
+  private _leftPaddle : Paddle;
+  private _rightPaddle : Paddle;
+  private _ball: Ball;
 
   constructor(container: HTMLElement | null, conf: PongConfig = defaultConfig) {
     if (!container) {
@@ -84,7 +71,7 @@ export class Game {
 
     new Camera(this, "Cam1", camera.angles, targetCamera);
     new Light(this, "light1", light.direction);
-    new Ball(this, "ball1", ball.initialPosition);
+    this._ball = new Ball(this, "ball1", ball.initialPosition);
 
     Object.entries(wall.wallPositions).forEach(([name,{
       width,
@@ -112,7 +99,12 @@ export class Game {
         paddle.colors.right.b
       ) : undefined;
 
-    new Paddle(this, "paddleRight", paddle.positions.right, paddleColorRight);
+    this ._rightPaddle = new Paddle(
+      this,
+      "paddleRight",
+      paddle.positions.right,
+      paddleColorRight
+    );
 
     const paddleColorLeft = paddle.colors && paddle.colors.left
       ? new Color3(
@@ -121,7 +113,12 @@ export class Game {
         paddle.colors.left.b
       ) : undefined;
 
-    new Paddle(this, "paddleLeft", paddle.positions.left, paddleColorLeft);
+    this._leftPaddle = new Paddle(
+      this,
+      "paddleLeft",
+      paddle.positions.left,
+      paddleColorLeft
+    );
 
     this._engine.runRenderLoop(() => {
       this.scene.render();
@@ -144,18 +141,19 @@ export class Game {
     this._floorY = y;
     return;
   }
+
+  public updateState(state : StateGame) {
+    console.log("hihihihi", state.paddles[0].posZ);
+    this._rightPaddle.updateDepth(state.paddles[0].posZ);
+    this._leftPaddle.updateDepth(state.paddles[1].posZ);
+  }
 }
 
-export const mainGame = async () => {
-	console.log("pong start !!");
+export const mainGame = () => {
 	const container = document.getElementById("game-container");
 	if (!container)
-		return (console.log("Error: creating canvas container"));
-	const game = new Game(container);
-  await game.init();
-	initWebSocket(()=>{
-		console.log("need function to update move");
-	});
+		return (console.log("Error: container not found!"));
+	const  initGame = new WebSocketManager(container);
 };
 
 document.addEventListener('DOMContentLoaded', mainGame);
