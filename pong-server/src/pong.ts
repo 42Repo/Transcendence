@@ -70,10 +70,8 @@ export class GameManager {
         return;
     }
 
-    // On borne la position Z entre -depth/2 et +depth/2
-    const halfDepth = this.game.table.bounds.depth / 2;
-    paddle.posZ = Math.max(-halfDepth, Math.min(halfDepth, paddle.posZ));
-    //paddle.posZ = Math.sign(paddle.posZ) * Math.max(Math.abs(paddle.posZ), halfDepth);
+    const maxBound = this.game.table.bounds.depth * .5 - 1 * .5;//je sais pas comment get la taille de la raquette, j'ai mis 1
+    paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
 	}
 
   getPlayers() : StateGame['players'] {
