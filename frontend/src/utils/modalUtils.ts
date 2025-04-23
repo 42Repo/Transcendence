@@ -19,7 +19,6 @@ export function showFeedback(
     element.classList.remove('text-red-600', 'text-green-600');
     element.classList.add(isError ? 'text-red-600' : 'text-green-600');
     element.classList.remove('invisible');
-    element.classList.add('h-4');
   } else {
     console.warn(`Feedback element with ID "${elementId}" not found.`);
   }
@@ -30,9 +29,8 @@ export function clearFeedback(elementId: string): void {
     elementId
   ) as HTMLParagraphElement | null;
   if (element) {
-    element.textContent = '';
+    element.textContent = '&nbsp';
     element.classList.remove('text-red-600', 'text-green-600');
     element.classList.add('invisible');
-    element.classList.remove('h-4');
   }
 }
