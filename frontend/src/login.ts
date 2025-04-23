@@ -51,7 +51,7 @@ loginConfirmButton?.addEventListener('click', () => {
     }
 
     const identifier = loginIdentifierInput.value.trim();
-    const password = loginPasswordInput.value.trim();
+    const password = loginPasswordInput.value;
     if (!identifier || !password) {
       showFeedback(
         LOGIN_FEEDBACK_ID,

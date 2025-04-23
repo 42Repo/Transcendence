@@ -54,8 +54,8 @@ registerConfirmButton?.addEventListener('click', () => {
     // Get input values
     const username = registerUsernameInput.value.trim();
     const email = registerEmailInput.value.trim();
-    const password = registerPasswordInput.value.trim();
-    const confirmPassword = registerConfirmPasswordInput.value.trim();
+    const password = registerPasswordInput.value;
+    const confirmPassword = registerConfirmPasswordInput.value;
 
     // --- Client-Side Validation ---
     if (!username || !password || !confirmPassword) {

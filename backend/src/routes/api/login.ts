@@ -26,9 +26,8 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
       const { loginIdentifier, password } = request.body;
 
       const trimmedIdentifier = loginIdentifier?.trim();
-      const trimmedPassword = password?.trim();
 
-      if (!trimmedIdentifier || !trimmedPassword) {
+      if (!trimmedIdentifier || !password) {
         return reply.status(400).send({
           success: false,
           message: 'Username/email and password are required.',
@@ -51,7 +50,7 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
             .send({ success: false, message: 'Invalid credentials.' });
         }
 
-        const match = await bcrypt.compare(trimmedPassword, user.password_hash);
+        const match = await bcrypt.compare(password, user.password_hash);
 
         if (match) {
           fastify.log.info(`User ${user.username} logged in successfully.`);
