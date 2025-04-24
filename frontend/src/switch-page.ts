@@ -127,8 +127,7 @@ const prefetchAllPages = async (): Promise<void> => {
     const linkExists = document.querySelector(`[data-page="${page}"]`) !== null;
 
     if (linkExists) {
-      const cachedHtml = localStorage.getItem(`page_${page}`);
-      if (!cache.has(page) && !cachedHtml) {
+      if (!cache.has(page)) {
         const fetchPromise = fetch(`src/views/${page}.html`)
           .then((res) => {
             if (!res.ok) throw new Error(`Page ${page} not found`);
@@ -136,13 +135,9 @@ const prefetchAllPages = async (): Promise<void> => {
           })
           .then((html) => {
             cache.set(page, html);
-            localStorage.setItem(`page_${page}`, html);
           })
           .catch((err) => console.warn(`Prefetch failed for ${page}:`, err));
         prefetchPromises.push(fetchPromise);
-      } else if (cachedHtml) {
-        //apparemment il faut hydrater le cache 🌧️
-        cache.set(page, cachedHtml);
       }
     }
   });

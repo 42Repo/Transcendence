@@ -52,6 +52,8 @@ loginConfirmButton?.addEventListener('click', () => {
 
     const identifier = loginIdentifierInput.value.trim();
     const password = loginPasswordInput.value;
+    loginIdentifierInput.value = "";
+    loginPasswordInput.value = "";
     if (!identifier || !password) {
       showFeedback(
         LOGIN_FEEDBACK_ID,
@@ -60,8 +62,6 @@ loginConfirmButton?.addEventListener('click', () => {
       );
       return;
     }
-
-    showFeedback(LOGIN_FEEDBACK_ID, 'Logging in...', false);
 
     try {
       const response = await fetch('/api/login', {
