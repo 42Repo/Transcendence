@@ -30,7 +30,7 @@ const start = async () => {
 
       let player : PlayerBase | null = null;
 
-      socket.on('message', (msg: string, isBinary) => {
+      socket.on('message', (msg: string, isBinary: boolean) => {
         const msgStr = isBinary ? msg.toString() : msg as string;
         const message = JSON.parse(msgStr);
         console.log(message);

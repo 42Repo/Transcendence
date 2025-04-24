@@ -16,6 +16,7 @@ export interface Paddle {
   playerName: string;
   posX: number;
   posZ: number;
+  width: number;
 }
 
  export interface PlayerStats {

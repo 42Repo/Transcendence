@@ -15,12 +15,14 @@ export const DefaultState : StateGame = {
       playerName: "",
       posX: 0,
       posZ: 0,
+	  width: 0,
     },
     {
       id: "",
       playerName: "",
       posX: 0,
       posZ: 0,
+	  width: 0,
     }
   ],
   players: [

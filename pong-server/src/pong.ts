@@ -70,7 +70,7 @@ export class GameManager {
         return;
     }
 
-    const maxBound = this.game.table.bounds.depth * .5 - 1 * .5;//je sais pas comment get la taille de la raquette, j'ai mis 1
+    const maxBound = this.game.table.bounds.depth * .5 - paddle.width * .5;
     paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
 	}
 
@@ -88,11 +88,13 @@ export class GameManager {
     this.game.players[0].name = player1.name;
     this.game.paddles[0].id = player1.id;
     this.game.paddles[0].playerName = player1.name;
+	this.game.paddles[0].width = conf.paddle.width;
     this.game.players[1].id = player2.id; 
     this.game.players[1].socket = player2.socket;
     this.game.players[1].name = player2.name;
     this.game.paddles[1].id = player2.id;
     this.game.paddles[1].playerName = player2.name;
+	this.game.paddles[1].width = conf.paddle.width;
     this.game.table.bounds.width = conf.table.width;
     this.game.table.bounds.depth = conf.table.depth;
   }
@@ -114,7 +116,6 @@ export class GameManager {
     const players : StateGame['players']= this.getPlayers();
     for (const player of players) {
       if (player.socket){
-        console.log("pfffff");
          player.socket.send(JSON.stringify({type: `${type}`, data }))
       }
     }
