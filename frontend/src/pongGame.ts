@@ -13,8 +13,23 @@ import { Wall } from './game/Wall.ts';
 import { WebSocketManager } from './game/WebSocketManager.ts';
 
 type GameState = {
-  paddles: { id: string; posX: number; posZ: number }[],
-  ball:    { posY: number; posZ: number }
+  paddles: {
+    id: string;
+    playerName: string;
+    posX: number;
+    posZ: number;
+    width: number;
+    speed: number;
+  }[],
+  ball:    {
+    posZ: number;
+    posY: number;
+    speed: number;
+    diameter: number;
+    dirZ: number;
+    dirY: number;
+    onWall: boolean;
+  }
 };
 
 export class Game {
@@ -142,10 +157,11 @@ export class Game {
     return;
   }
 
-  public updateState(state : StateGame) {
-    console.log("hihihihi", state.paddles[0].posZ);
+  public updateState(state : GameState) {
     this._rightPaddle.updateDepth(state.paddles[0].posZ);
     this._leftPaddle.updateDepth(state.paddles[1].posZ);
+    this._ball.updateDepth(state.ball.posZ);
+    this._ball.updateHeight(state.ball.posY);
   }
 }
 

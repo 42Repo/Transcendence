@@ -1,9 +1,12 @@
 import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
 import { v4 as uuidv4 } from 'uuid';
-import { StateGame, PlayerBase, Paddle } from './StateGame';
 import { defaultConfig } from './DefaultConf';
+import { createInitialState } from './createInitialState';
+import { PhysicsEngine }       from './PhysicsEngine';
+import { StateGame, PlayerBase, Paddle, Ball } from './StateGame';
 import { PongConfig } from './PongConfig';
 import { DefaultState } from './DefaultState';
+import { Vector3 } from '@babylonjs/core';
 
 export class MatchMaking {
   private players : PlayerBase[];
@@ -32,9 +35,21 @@ export class MatchMaking {
 export class GameManager {
 	private game: StateGame = DefaultState;
 	private gameInterval: NodeJS.Timeout | null = null;
+  private physicsEngine: PhysicsEngine;
 
   constructor (player1 : PlayerBase , player2: PlayerBase) {
-    this.init(player1, player2);
+    this.game = createInitialState();
+    this.game.players[0].id = player1.id; 
+    this.game.players[0].socket = player1.socket;
+    this.game.players[0].name = player1.name;
+    this.game.paddles[0].id = player1.id;
+    this.game.paddles[0].playerName = player1.name;
+    this.game.players[1].id = player2.id; 
+    this.game.players[1].socket = player2.socket;
+    this.game.players[1].name = player2.name;
+    this.game.paddles[1].id = player2.id;
+    this.game.paddles[1].playerName = player2.name;
+    this.physicsEngine = new PhysicsEngine(defaultConfig);
 	  this.startGameLoop();
   } 
 
@@ -43,69 +58,28 @@ export class GameManager {
 
 	}
 
-	handlePlayerInput(player: PlayerBase, data: { key:string }) {
-		// parse input (move left/right/up/down)
-    const paddle : Paddle | undefined = this.getPaddles().find((pad : Paddle) => {
-      return player.id === pad.id
-    });
-    console.log(paddle);
-       if (!paddle) return;
-
-    // Vitesse de déplacement (tu peux la stocker dans ton config)
-    const speed = 0.1;
-
-    // Selon la touche, on modifie posZ
-    switch (data.key) {
-      case 'ArrowUp':
-      case 'w':
-      case'KeyW':
-        paddle.posZ += speed;
-        break;
-      case 'ArrowDown':
-      case 's':
-      case 'KeyS':
-        paddle.posZ -= speed;
-        break;
-      default:
-        return;
-    }
-
-    const maxBound = this.game.table.bounds.depth * .5 - paddle.width * .5;
-    paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
+	public handlePlayerInput(player: PlayerBase, data: { key:string }) {
+    this.physicsEngine.handlePlayerInput(this.game, player, data)
 	}
 
-  getPlayers() : StateGame['players'] {
+  public getPlayers() : StateGame['players'] {
     return this.game.players;
   }
 
-  getPaddles() : StateGame['paddles'] {
+  public getPaddles() : StateGame['paddles'] {
     return this.game.paddles;
   }
 
-  private init(player1: PlayerBase, player2: PlayerBase, conf: PongConfig = defaultConfig) {
-    this.game.players[0].id = player1.id; 
-    this.game.players[0].socket = player1.socket;
-    this.game.players[0].name = player1.name;
-    this.game.paddles[0].id = player1.id;
-    this.game.paddles[0].playerName = player1.name;
-	this.game.paddles[0].width = conf.paddle.width;
-    this.game.players[1].id = player2.id; 
-    this.game.players[1].socket = player2.socket;
-    this.game.players[1].name = player2.name;
-    this.game.paddles[1].id = player2.id;
-    this.game.paddles[1].playerName = player2.name;
-	this.game.paddles[1].width = conf.paddle.width;
-    this.game.table.bounds.width = conf.table.width;
-    this.game.table.bounds.depth = conf.table.depth;
+  public startGame() : void {
+    this.broadcast('start', null);
   }
 
 	private startGameLoop() {
 		this.gameInterval = setInterval(() => {
-			// Game state update logic (ball movement, collision, etc.)
+      this.physicsEngine.update(this.game);
 			const state = {
         paddles : this.game.paddles,
-        //		timestamp: Date.now(),
-        //		ball: { x: Math.random(), y: Math.random() }, // stub
+        ball : this.game.ball,
         //		players: this.players.map(p => ({ id: p.id }))
       };
       this.broadcast("update", state);

@@ -8,6 +8,10 @@ export const DefaultState : StateGame = {
     posZ: 0,
     posY: 0,
     speed: 1,
+    diameter: 0,
+    dirZ: -1,
+    dirY: 1,
+    onWall: false,
   },
   paddles: [
     {
@@ -15,14 +19,16 @@ export const DefaultState : StateGame = {
       playerName: "",
       posX: 0,
       posZ: 0,
-	  width: 0,
+      width: 0,
+      speed: .1,
     },
     {
       id: "",
       playerName: "",
       posX: 0,
       posZ: 0,
-	  width: 0,
+      width: 0,
+      speed: .1,
     }
   ],
   players: [

@@ -41,7 +41,7 @@ const start = async () => {
             player = result.player;
             if (result.game) {
               gameManagers.push(result.game);
-              socket.send(JSON.stringify({type:'start'}));
+              result.game.startGame();
             } else {
               socket.send(JSON.stringify({type:'wait'}));
             }

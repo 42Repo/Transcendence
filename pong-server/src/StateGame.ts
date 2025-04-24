@@ -9,6 +9,10 @@ export interface Ball {
   posZ: number;
   posY: number;
   speed: number;
+  diameter: number;
+  dirZ: number;
+  dirY: number;
+  onWall: boolean;
 }
 
 export interface Paddle {
@@ -17,6 +21,7 @@ export interface Paddle {
   posX: number;
   posZ: number;
   width: number;
+  speed: number;
 }
 
  export interface PlayerStats {

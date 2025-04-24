@@ -28,7 +28,6 @@ export class WebSocketManager {
   private onMessage = async (event) => {
     const msg = JSON.parse(event.data);
     const { type } = msg;
-    console.log('type: ',type);
     switch (type) {
       case 'wait':
         console.log('Wait for other player');
@@ -39,8 +38,8 @@ export class WebSocketManager {
         this.game.init();
         break;
       case 'update':
+        console.log(msg.data);
         this.game.updateState(msg.data);
-        //console.log('update the game: ', msg.data);
         break;
       default:
         break;
