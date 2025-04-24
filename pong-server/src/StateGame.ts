@@ -13,6 +13,7 @@ export interface Ball {
   dirZ: number;
   dirY: number;
   onWall: boolean;
+  onSide: boolean;
 }
 
 export interface Paddle {

@@ -1,12 +1,9 @@
-import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
+import { type WebSocket } from '@fastify/websocket';
 import { v4 as uuidv4 } from 'uuid';
 import { defaultConfig } from './DefaultConf';
 import { createInitialState } from './createInitialState';
 import { PhysicsEngine }       from './PhysicsEngine';
 import { StateGame, PlayerBase, Paddle, Ball } from './StateGame';
-import { PongConfig } from './PongConfig';
-import { DefaultState } from './DefaultState';
-import { Vector3 } from '@babylonjs/core';
 
 export class MatchMaking {
   private players : PlayerBase[];
@@ -33,7 +30,7 @@ export class MatchMaking {
 }
 
 export class GameManager {
-	private game: StateGame = DefaultState;
+	private game: StateGame = createInitialState();
 	private gameInterval: NodeJS.Timeout | null = null;
   private physicsEngine: PhysicsEngine;
 
