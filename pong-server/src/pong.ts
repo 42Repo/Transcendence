@@ -51,9 +51,33 @@ export class GameManager {
   } 
 
 
-	removePlayer(player: PlayerBase) {
+  removePlayer(player: PlayerBase) {
+    const index = this.game.players.findIndex(p => p.id === player.id);
+    if (index === -1) return;
 
-	}
+    // 1. Supprime le joueur
+    this.game.players[index].socket = null;
+    this.game.players[index].id = "";
+    this.game.players[index].name = "";
+
+    // 2. Stoppe le jeu s’il ne reste plus de joueurs actifs
+    const activePlayers = this.game.players.filter(p => p.socket !== null);
+    if (activePlayers.length < 2) {
+      if (this.gameInterval) {
+        clearInterval(this.gameInterval);
+        this.gameInterval = null;
+      }
+
+      // 3. Notifie le joueur restant
+      if (activePlayers.length === 1) {
+        const remaining = activePlayers[0];
+        remaining.socket?.send(JSON.stringify({
+          type: 'playerLeft',
+          data: { message: 'L’autre joueur a quitté la partie.' }
+        }));
+      }
+    }
+  }
 
 	public handlePlayerInput(player: PlayerBase, data: { key:string }) {
     this.physicsEngine.handlePlayerInput(this.game, player, data)
