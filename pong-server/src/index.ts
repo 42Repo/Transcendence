@@ -64,6 +64,14 @@ const start = async () => {
           const gameManager = getGameManager(player, gameManagers);
           if (gameManager) {
             gameManager.removePlayer(player);
+            const gamerleft = gameManager.getPlayers().filter((p)=>{
+              return p.socket;
+            });
+            const activePlayers = gameManager.getPlayers().filter(p => p.socket);
+            if (activePlayers.length === 0) {
+              const index = gameManagers.indexOf(gameManager);
+              if (index !== -1) gameManagers.splice(index, 1);
+            }
           }
         }
       });
