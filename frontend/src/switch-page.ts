@@ -3,6 +3,16 @@ import { jwtDecode } from 'jwt-decode';
 
 const content = document.getElementById('content') as HTMLElement;
 const cache: Map<string, string> = new Map();
+const existingPages : string[] = [
+  "home",
+  "about-us",
+  "edit-profile",
+  "error",
+  "logged",
+  "pongGame",
+  "privacy-policy",
+  "profile",
+  "public-profile"];
 
 document.body.addEventListener('click', (e) => {
   const target = e.target as HTMLElement;
@@ -42,17 +52,6 @@ const isAuthenticated = (): boolean => {
 
 // Get page from URL
 const getPageName = (): string => {
-  const existingPages : string[] = [
-    "home",
-    "about-us",
-    "edit-profile",
-    "error",
-    "logged",
-    "pongGame",
-    "privacy-policy",
-    "profile",
-    "public-profile"];
-
   const path = window.location.pathname.split('/').pop();
   const page = path?.replace('.html', '') || 'home';
   return existingPages.includes(page) ? page : 'error';
@@ -121,25 +120,30 @@ const loadCurrentPage = () => {
   void fetchPage(page);
 };
 
-// Modify prefetchAllPages to return a Promise
 const prefetchAllPages = async (): Promise<void> => {
-  const navLinks = document.querySelectorAll('[data-page]');//???
   const prefetchPromises: Promise<void>[] = [];
 
-  navLinks.forEach((link) => {
-    const page = (link as HTMLAnchorElement).dataset.page;
-    if (page && !cache.has(page)) {
-      const fetchPromise = fetch(`src/views/${page}.html`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Page not found');
-          return res.text();
-        })
-        .then((html) => {
-          cache.set(page, html);
-          localStorage.setItem(`page_${page}`, html);
-        })
-        .catch((err) => console.warn(`Prefetch failed for ${page}:`, err));
-      prefetchPromises.push(fetchPromise);
+  existingPages.forEach((page) => {
+    const linkExists = document.querySelector(`[data-page="${page}"]`) !== null;
+
+    if (linkExists) {
+      const cachedHtml = localStorage.getItem(`page_${page}`);
+      if (!cache.has(page) && !cachedHtml) {
+        const fetchPromise = fetch(`src/views/${page}.html`)
+          .then((res) => {
+            if (!res.ok) throw new Error(`Page ${page} not found`);
+            return res.text();
+          })
+          .then((html) => {
+            cache.set(page, html);
+            localStorage.setItem(`page_${page}`, html);
+          })
+          .catch((err) => console.warn(`Prefetch failed for ${page}:`, err));
+        prefetchPromises.push(fetchPromise);
+      } else if (cachedHtml) {
+        //apparemment il faut hydrater le cache 🌧️
+        cache.set(page, cachedHtml);
+      }
     }
   });
 
