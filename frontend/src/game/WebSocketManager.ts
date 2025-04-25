@@ -13,7 +13,8 @@ export class WebSocketManager {
     this.socket.addEventListener('open', this.onOpen);
     this.socket.addEventListener('message', this.onMessage);
     this.socket.addEventListener('close', this.onClose);
-    document.addEventListener('keypress', this.keypress);
+    document.addEventListener('keydown', this.keypress);
+    document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
   }
 
@@ -48,6 +49,10 @@ export class WebSocketManager {
   };
 
   private keypress = (event: any) => {
-    this.socket.send(JSON.stringify({ type: 'input', data: { key: event.code } }));
+    this.socket.send(JSON.stringify({ type: 'input', data: {type: true, key: event.code } }));
+  };
+
+  private keyup = (event: any) => {
+    this.socket.send(JSON.stringify({ type: 'input', data: {type: false, key: event.code } }));
   };
 }

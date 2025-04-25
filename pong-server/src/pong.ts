@@ -14,8 +14,8 @@ export class MatchMaking {
     this.gameManagers = gameManagers;
   }
 
-  addPlayer(socket: WebSocket, name: string): { player: PlayerBase, game: GameManager | null } {
-    const player: PlayerBase = { id: uuidv4(), socket, name };
+  addPlayer(socket: WebSocket, name: string, playerKeys : Map<string, boolean> | null): { player: PlayerBase, game: GameManager | null } {
+    const player: PlayerBase = { id: uuidv4(), socket, name, playerKeys};
     let newGame: GameManager | null = null;
     this.players.push(player);
     if (this.players.length >= 2) {
@@ -82,7 +82,7 @@ export class GameManager {
     }
   }
 
-  public handlePlayerInput(player: PlayerBase, data: { key: string }) {
+  public handlePlayerInput(player: PlayerBase, data: { key: string, type: boolean }) {
     this.physicsEngine.handlePlayerInput(this.game, player, data)
   }
 

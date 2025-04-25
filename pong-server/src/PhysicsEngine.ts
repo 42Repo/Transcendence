@@ -19,7 +19,7 @@ export class PhysicsEngine {
       ball.onWall = false;
     }
     if (ball.onSide) {
-      ball.dirY *= -.9;
+      ball.dirY *= -1.05;
       ball.onSide = false;
     }
     ball.posZ += ball.dirZ * ball.speed;
@@ -52,27 +52,31 @@ export class PhysicsEngine {
   public handlePlayerInput(
     game: StateGame,
     player: PlayerBase,
-    input: { key: string }
+    input: { key: string, type: boolean}
   ) {
-    const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
-      return player.id === pad.id
-    });
-    if (!paddle) return;
-    switch (input.key) {
-      case 'ArrowUp':
-      case 'w':
-      case 'KeyW':
-        paddle.posZ -= paddle.speed;
-        break;
-      case 'ArrowDown':
-      case 's':
-      case 'KeyS':
-        paddle.posZ += paddle.speed;
-        break;
-      default:
-        return;
-    }
-    const maxBound = game.table.bounds.depth * .5 - paddle.width * .5;
-    paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
+    player.playerKeys?.set(input.key, input.type);
+    console.log(player.playerKeys);
+  
+  //   const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
+  //     return player.id === pad.id
+  //   });
+  //   if (!paddle) return;
+  //   switch (input.key) {
+  //     case 'ArrowUp':
+  //     case 'w':
+  //     case 'KeyW':
+  //       paddle.posZ -= paddle.speed;
+  //       break;
+  //     case 'ArrowDown':
+  //     case 's':
+  //     case 'KeyS':
+  //       paddle.posZ += paddle.speed;
+  //       break;
+  //     default:
+  //       return;
+  //   }
+
+  //   const maxBound = game.table.bounds.depth * .5 - paddle.width * .5;
+  //   paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
   }
 }

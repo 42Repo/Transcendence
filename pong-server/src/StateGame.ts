@@ -38,6 +38,7 @@ export interface PlayerBase {
   id: string;
   name: string;
   socket: WebSocket | null;
+  playerKeys : Map<string, boolean> | null;
 }
 
 export type Player = PlayerBase & PlayerStats;

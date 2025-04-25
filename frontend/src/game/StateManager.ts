@@ -62,7 +62,6 @@ export class StateManager {
 
   public updateStateGame(state: GameState) {
     if (this.state && this.state === State.START) {
-      console.log('update:', this.state);
       this._game.updateState(state);
     }
   }
