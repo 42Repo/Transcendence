@@ -1,11 +1,10 @@
 import { StateGame, Ball, PlayerBase, Paddle } from './StateGame';
-import { defaultConfig } from './DefaultConf';
 import { PongConfig } from './PongConfig';
 
 export class PhysicsEngine {
   private config: PongConfig;
-  
-  constructor (config : PongConfig) {
+
+  constructor(config: PongConfig) {
     this.config = config;
   }
 
@@ -43,14 +42,14 @@ export class PhysicsEngine {
     player: PlayerBase,
     input: { key: string }
   ) {
-    const paddle : Paddle | undefined = game.paddles.find((pad : Paddle) => {
+    const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
       return player.id === pad.id
     });
-       if (!paddle) return;
+    if (!paddle) return;
     switch (input.key) {
       case 'ArrowUp':
       case 'w':
-      case'KeyW':
+      case 'KeyW':
         paddle.posZ -= paddle.speed;
         break;
       case 'ArrowDown':
