@@ -13,10 +13,6 @@ interface LoginBody {
 }
 
 export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
-  fastify.register(FastifyJwt, {
-    secret: process.env.JWT_SECRET!,
-  });
-
   fastify.post(
     '/login',
     async (

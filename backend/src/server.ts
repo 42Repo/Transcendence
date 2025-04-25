@@ -1,16 +1,42 @@
-import Fastify from 'fastify';
+import Fastify, {
+  FastifyInstance,
+  FastifyRequest,
+  FastifyReply,
+} from 'fastify';
 import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
+import FastifyJwt from '@fastify/jwt';
 import apiRoutes from './routes/api/index';
 import { getDb } from './db/initDb';
 import Database from 'better-sqlite3';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+interface UserJwtPayload {
+  id: number;
+  username: string;
+}
 
 declare module 'fastify' {
   interface FastifyInstance {
     db: Database.Database;
+    authenticate: (
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) => Promise<void>;
+  }
+  interface FastifyRequest {
+    user: UserJwtPayload;
   }
 }
 
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: UserJwtPayload;
+    user: UserJwtPayload;
+  }
+}
 const fastify = Fastify({
   logger: true,
 });
@@ -29,7 +55,34 @@ fastify.register(cors, {
   origin: '*',
 });
 
-fastify.register(apiRoutes);
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  fastify.log.error('JWT_SECRET environment variable is not set!');
+  process.exit(1);
+}
+fastify.register(FastifyJwt, {
+  secret: jwtSecret,
+});
+
+fastify.decorate(
+  'authenticate',
+  async function (request: FastifyRequest, reply: FastifyReply) {
+    try {
+      await request.jwtVerify();
+      if (!request.user || !request.user.id) {
+        throw new Error('Invalid token payload');
+      }
+    } catch (err) {
+      fastify.log.warn({ msg: 'JWT Verification failed', error: err });
+      reply.code(401).send({
+        success: false,
+        message: 'Unauthorized: Invalid or missing token.',
+      });
+    }
+  }
+);
+
+fastify.register(apiRoutes, { prefix: '/api' });
 
 fastify.get('/', async (request, reply) => {
   try {

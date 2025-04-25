@@ -2,14 +2,16 @@ import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import pingRoutes from './ping';
 import loginRoutes from './login';
 import registerRoutes from './register';
+import userRoutes from './users';
 
-export default function (
+export default function apiIndex(
   fastify: FastifyInstance,
-  opts: FastifyPluginOptions,
+  opts: FastifyPluginOptions
 ) {
-  fastify.register(pingRoutes, { prefix: '/api' });
-  fastify.register(loginRoutes, { prefix: '/api' });
-  fastify.register(registerRoutes, { prefix: '/api' });
+  fastify.register(pingRoutes);
+  fastify.register(loginRoutes);
+  fastify.register(registerRoutes);
+  fastify.register(userRoutes);
 
-  fastify.log.info('Registered /api routes: ping, login, register');
+  fastify.log.info('Registered API routes: ping, login, register, users');
 }
