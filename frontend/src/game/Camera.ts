@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import { ArcRotateCamera, Vector3 } from '@babylonjs/core';
 import { GameObject } from './GameObject.ts';
-import { Game } from '../pongGame.ts';
+import { StateManager } from './StateManager.ts';
 
 interface CameraOptions {
   minRadius?: number;
@@ -14,7 +14,7 @@ export class Camera extends GameObject {
   public camera: BABYLON.ArcRotateCamera;
 
   constructor(
-    game: Game,
+    game: StateManager,
     name: string,
     angles: { alpha: number; beta: number; radius: number },
     target: Vector3,
@@ -30,14 +30,14 @@ export class Camera extends GameObject {
     } = options || {};
 
     const { alpha, beta, radius } = angles;
-    
+
     this.camera = new ArcRotateCamera(
       name,
       alpha,
       beta,
       radius,
       target,
-      game.scene
+      game.currentScene
     );
 
     this.camera.attachControl(this.game.canvas, true);

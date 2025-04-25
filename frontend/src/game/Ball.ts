@@ -1,16 +1,16 @@
 import { GameObject } from './GameObject.ts';
-import { Game } from '../pongGame.ts';
+import { StateManager } from './StateManager.ts';
 import { Vector3, MeshBuilder, Color3 } from '@babylonjs/core'
 
 export class Ball extends GameObject {
 
-  constructor (
-    game : Game,
-    name: string, pos : Vector3,
-    color? : Color3
+  constructor(
+    game: StateManager,
+    name: string, pos: Vector3,
+    color?: Color3
   ) {
     super(game);
-    const { diameter } = this.game["_conf"].ball;
+    const { diameter } = this.game["conf"].ball;
 
     this.mesh = MeshBuilder.CreateSphere(
       name,

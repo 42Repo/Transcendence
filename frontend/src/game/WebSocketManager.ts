@@ -1,31 +1,29 @@
-import { Game } from '../pongGame.ts'
+import { StateManager } from './StateManager.ts';
 
 export class WebSocketManager {
-  private socket : WebSocket;
-  private htmlContainer : HTMLElement;
-  private game : Game | null = null;
+  private socket: WebSocket;
+  private stateManager: StateManager;
 
-  constructor (container : HTMLElement) {
+  constructor(container: HTMLElement) {
     const isLocal = location.hostname === 'localhost';
     const socketProtocol = isLocal ? 'ws' : 'wss';
     const host = isLocal ? 'localhost:4000' : location.host;
     this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
-    this.htmlContainer = container;
 
     this.socket.addEventListener('open', this.onOpen);
     this.socket.addEventListener('message', this.onMessage);
     this.socket.addEventListener('close', this.onClose);
     document.addEventListener('keypress', this.keypress);
-
+    this.stateManager = new StateManager(container);
   }
 
   private onOpen = () => {
     console.log('✅ Connected to Pong Server');
     //fetch user if connected
-    this.socket.send(JSON.stringify({type: 'join', data: {name:'Chris'}}));
+    this.socket.send(JSON.stringify({ type: 'join', data: { name: 'Chris' } }));
   };
 
-  private onMessage = async (event) => {
+  private onMessage = async (event: any) => {
     const msg = JSON.parse(event.data);
     const { type } = msg;
     switch (type) {
@@ -34,12 +32,11 @@ export class WebSocketManager {
         break;
       case 'start':
         console.log('game ready');
-        this.game = await new Game(this.htmlContainer);
-        this.game.init();
+        this.stateManager.changeState(1);
         break;
       case 'update':
-        console.log(msg.data);
-        this.game.updateState(msg.data);
+        //console.log(msg.data);
+        this.stateManager.updateStateGame(msg.data);
         break;
       default:
         break;
@@ -50,8 +47,7 @@ export class WebSocketManager {
     console.log('❌ Disconnected from Pong Server');
   };
 
-  private keypress = (event) => {
-    this.socket.send(JSON.stringify({type:'input', data: {key: event.code}}));
-    console.log('keypress: ',event.code);
+  private keypress = (event: any) => {
+    this.socket.send(JSON.stringify({ type: 'input', data: { key: event.code } }));
   };
 }
