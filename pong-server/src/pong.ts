@@ -83,7 +83,7 @@ export class GameManager {
   }
 
   public handlePlayerInput(player: PlayerBase, data: { key: string, type: boolean }) {
-    this.physicsEngine.handlePlayerInput(this.game, player, data)
+    this.physicsEngine.handlePlayerInput(player, data)
   }
 
   public getPlayers(): StateGame['players'] {

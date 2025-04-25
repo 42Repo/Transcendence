@@ -11,6 +11,32 @@ export class PhysicsEngine {
   public update(game: StateGame): void {
     this.moveBall(game.ball);
     this.handleCollisions(game);
+    game.players.forEach((player) => {
+      player.playerKeys?.get("KeyW");
+    });
+
+      
+  //   const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
+  //     return player.id === pad.id
+  //   });
+  //   if (!paddle) return;
+  //   switch (input.key) {
+  //     case 'ArrowUp':
+  //     case 'w':
+  //     case 'KeyW':
+  //       paddle.posZ -= paddle.speed;
+  //       break;
+  //     case 'ArrowDown':
+  //     case 's':
+  //     case 'KeyS':
+  //       paddle.posZ += paddle.speed;
+  //       break;
+  //     default:
+  //       return;
+  //   }
+
+  //   const maxBound = game.table.bounds.depth * .5 - paddle.width * .5;
+  //   paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
   }
 
   private moveBall(ball: Ball) {
@@ -50,33 +76,9 @@ export class PhysicsEngine {
   }
 
   public handlePlayerInput(
-    game: StateGame,
     player: PlayerBase,
     input: { key: string, type: boolean}
   ) {
     player.playerKeys?.set(input.key, input.type);
-    console.log(player.playerKeys);
-  
-  //   const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
-  //     return player.id === pad.id
-  //   });
-  //   if (!paddle) return;
-  //   switch (input.key) {
-  //     case 'ArrowUp':
-  //     case 'w':
-  //     case 'KeyW':
-  //       paddle.posZ -= paddle.speed;
-  //       break;
-  //     case 'ArrowDown':
-  //     case 's':
-  //     case 'KeyS':
-  //       paddle.posZ += paddle.speed;
-  //       break;
-  //     default:
-  //       return;
-  //   }
-
-  //   const maxBound = game.table.bounds.depth * .5 - paddle.width * .5;
-  //   paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
   }
 }
