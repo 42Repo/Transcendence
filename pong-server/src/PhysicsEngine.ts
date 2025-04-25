@@ -15,8 +15,12 @@ export class PhysicsEngine {
 
   private moveBall(ball: Ball) {
     if (ball.onWall) {
-      ball.dirZ *= -1;
+      ball.dirZ *= -.9;
       ball.onWall = false;
+    }
+    if (ball.onSide) {
+      ball.dirY *= -.9;
+      ball.onSide = false;
     }
     ball.posZ += ball.dirZ * ball.speed;
     ball.posY += ball.dirY * ball.speed;
@@ -27,13 +31,21 @@ export class PhysicsEngine {
     const bounds = game.table.bounds;
     const radius = this.config.ball.diameter / 2;
     const maxZ = bounds.depth / 2 - radius;
+    const maxY = bounds.width / 2 - radius
 
     if (ball.posZ > maxZ) {
-      ball.posZ = maxZ;
+      ball.posZ = maxZ - (ball.posZ - maxZ);
       ball.onWall = true;
     } else if (ball.posZ < -maxZ) {
-      ball.posZ = -maxZ;
+      ball.posZ = -maxZ + (ball.posZ + maxZ);
       ball.onWall = true;
+    }
+    if (ball.posY > maxY) {
+      ball.posY = maxY - (ball.posY - maxY);
+      ball.onSide = true;
+    } else if (ball.posY < -maxY) {
+      ball.posY = -maxY + (ball.posY + maxY);
+      ball.onSide = true;
     }
   }
 

@@ -158,10 +158,10 @@ export class Game {
   }
 
   public updateState(state : GameState) {
-    this._rightPaddle.updateDepth(state.paddles[0].posZ);
-    this._leftPaddle.updateDepth(state.paddles[1].posZ);
-    this._ball.updateDepth(state.ball.posZ);
-    this._ball.updateHeight(state.ball.posY);
+    this._rightPaddle.updateZ(state.paddles[0].posZ);
+    this._leftPaddle.updateZ(state.paddles[1].posZ);
+    this._ball.updateZ(state.ball.posZ);
+    this._ball.updateX(state.ball.posY);
   }
 }
 

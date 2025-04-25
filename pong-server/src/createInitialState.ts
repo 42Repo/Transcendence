@@ -17,6 +17,7 @@ export function createInitialState(): StateGame {
       dirZ:    -1,
       dirY:     1,
       onWall:   false,
+      onSide:   false
     },
     paddles: [
       {

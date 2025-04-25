@@ -102,7 +102,7 @@ export const defaultConfig: PongConfig = {
   },
 
   ball: {
-    diameter: 0.3,
+    diameter: 1,
     initialPosition: new Vector3(0, -0.01, 0),
   },
 
