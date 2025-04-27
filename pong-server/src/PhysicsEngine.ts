@@ -65,7 +65,9 @@ export class PhysicsEngine {
     if (Math.abs(ball.posX) > maxX
       && Math.abs(ball.posZ - paddle.posZ) < paddle.width * .5){
       let angle = Math.PI/8. + 4.*Math.PI/3. * (Math.abs(ball.posZ - paddle.posZ) / (paddle.width * .5 + radius));
-      ball.posX = -maxX + (ball.posX + maxX)
+      ball.posX = -maxX + (ball.posX + maxX);
+      if (Math.abs(ball.posX) > maxX)
+        ball.posX = Math.sign(ball.posX) * (maxX - .01);
       ball.dirZ = Math.cos(angle) * Math.sign(ball.posZ - paddle.posZ);
       ball.dirX = Math.sin(angle) * -Math.sign(ball.dirX);
       console.log(angle, Math.cos(angle), Math.sin(angle))
