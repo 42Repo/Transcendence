@@ -20,6 +20,7 @@ export class PhysicsEngine {
           this.movePaddle(player, game.paddles[0]);
         else
           this.movePaddle(player, game.paddles[1]);
+        return;
       }
       //
       this.movePaddle(player, paddle);
@@ -63,15 +64,19 @@ export class PhysicsEngine {
     ball.posX += ball.dirX * ball.speed;
     if (Math.abs(ball.posX) > maxX
       && Math.abs(ball.posZ - paddle.posZ) < paddle.width * .5){
+      let angle = Math.PI/8. + 4.*Math.PI/3. * (Math.abs(ball.posZ - paddle.posZ) / (paddle.width * .5 + radius));
       ball.posX = -maxX + (ball.posX + maxX)
-      ball.dirX *= -1;
+      ball.dirZ = Math.cos(angle) * Math.sign(ball.posZ - paddle.posZ);
+      ball.dirX = Math.sin(angle) * -Math.sign(ball.dirX);
+      console.log(angle, Math.cos(angle), Math.sin(angle))
     }
     else if (Math.abs(ball.posX) - radius * 2. >= maxX){
       //paddle lost
       ball.posX = 0;
       ball.posZ = 0;
     }
-  }
+  }//TODO angles normaux, meilleures collisions sur les bords
+  //FIXME on peut dribbler la balle
 
   private moveBallZ(game: StateGame) {
     const ball = game.ball;
@@ -89,23 +94,6 @@ export class PhysicsEngine {
       ball.dirZ *= -1;
     }
   }
-
-  // private handleCollisions(game: StateGame) {
-  //   const ball = game.ball;
-  //   const bounds = game.table.bounds;
-  //   const radius = this.config.ball.diameter / 2;
-  //   const maxZ = bounds.depth / 2 - radius;
-  //   const maxY = bounds.width / 2 - radius;
-
-  //   if (ball.posZ > maxZ) {
-  //     ball.posZ = maxZ - (ball.posZ - maxZ);
-  //     ball.onWall = true;
-  //   } else if (ball.posZ < -maxZ) {
-  //     ball.posZ = -maxZ + (ball.posZ + maxZ);
-  //     ball.onWall = true;
-  //   }
-
-  // }
 
   public handlePlayerInput(
     player: PlayerBase,

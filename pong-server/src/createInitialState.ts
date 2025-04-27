@@ -2,13 +2,11 @@ import { defaultConfig } from './DefaultConf';
 import { StateGame } from './StateGame';
 
 export function createInitialState(): StateGame {
-  let ballX = Math.random() * 2. - 1.;
-  let ballZ = Math.random() * 2. - 1.;
-  if (ballX == 0.)
-    ballX = .5;
-  let len = Math.sqrt(ballX * ballX + ballZ * ballZ);
-  ballX /= len;
-  ballZ /= len;
+  let angle = Math.random() * 2.*Math.PI - Math.PI;
+  if (Math.abs(Math.abs(angle) - Math.PI/2.) < Math.PI/6.)
+    angle += Math.PI/6 * Math.sign(Math.abs(angle) - Math.PI/2.) * Math.sign(angle);
+  let ballX = Math.cos(angle);
+  let ballZ = Math.sin(angle);
 
   return {
     table: {
@@ -33,14 +31,14 @@ export function createInitialState(): StateGame {
         playerName: '',
         posX: 0, posZ: 0,
         width: defaultConfig.paddle.width,
-        speed: .1
+        speed: .15
       },
       { id: '',
         playerName: '',
         posX: 0,
         posZ: 0,
         width: defaultConfig.paddle.width,
-        speed:.1
+        speed: .15
       }
     ],
     players: [
