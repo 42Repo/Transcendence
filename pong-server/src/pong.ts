@@ -39,11 +39,13 @@ export class GameManager {
     this.game.players[0].name = player1.name;
     this.game.paddles[0].id = player1.id;
     this.game.paddles[0].playerName = player1.name;
+    this.game.players[0].playerKeys = player1.playerKeys;
     this.game.players[1].id = player2.id;
     this.game.players[1].socket = player2.socket;
     this.game.players[1].name = player2.name;
     this.game.paddles[1].id = player2.id;
     this.game.paddles[1].playerName = player2.name;
+    this.game.players[1].playerKeys = player2.playerKeys;
     this.physicsEngine = new PhysicsEngine(defaultConfig);
     this.startGameLoop();
   }

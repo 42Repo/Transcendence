@@ -1,4 +1,4 @@
-import { StateGame, Ball, PlayerBase, Paddle } from './StateGame';
+import { StateGame, Ball, PlayerBase, Player, Paddle } from './StateGame';
 import { PongConfig } from './PongConfig';
 
 export class PhysicsEngine {
@@ -12,31 +12,25 @@ export class PhysicsEngine {
     this.moveBall(game.ball);
     this.handleCollisions(game);
     game.players.forEach((player) => {
-      player.playerKeys?.get("KeyW");
+      const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
+        return player.id === pad.id
+      });
+      if (!paddle) return;
+      this.movePaddle(player, paddle);
+      this.checkPaddleCollision(game, paddle);
     });
+  }
 
-      
-  //   const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
-  //     return player.id === pad.id
-  //   });
-  //   if (!paddle) return;
-  //   switch (input.key) {
-  //     case 'ArrowUp':
-  //     case 'w':
-  //     case 'KeyW':
-  //       paddle.posZ -= paddle.speed;
-  //       break;
-  //     case 'ArrowDown':
-  //     case 's':
-  //     case 'KeyS':
-  //       paddle.posZ += paddle.speed;
-  //       break;
-  //     default:
-  //       return;
-  //   }
+  private checkPaddleCollision(game: StateGame, paddle: Paddle){
+    const maxBound = game.table.bounds.depth * .5 - paddle.width * .5;
+    paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
+  }
 
-  //   const maxBound = game.table.bounds.depth * .5 - paddle.width * .5;
-  //   paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
+  private movePaddle(player: PlayerBase, paddle: Paddle): void {
+    if (player.playerKeys?.get('KeyW'))
+      paddle.posZ -= paddle.speed;
+    if (player.playerKeys?.get('KeyS'))
+      paddle.posZ += paddle.speed;
   }
 
   private moveBall(ball: Ball) {

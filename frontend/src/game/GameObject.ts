@@ -27,18 +27,20 @@ export class GameObject {
   updateX(num: number) {
     const x = this.mesh.position.x;
 
-    //console.log(x - num);
-    if (Math.abs(x - num) > .001)//marge
-      this.mesh.translate(new Vector3(1, 0, 0), (num - x) * .5, this.scene);
+    if (Math.abs(x - num) > .001)
+      this.mesh.translate(new Vector3(1, 0, 0), num - x, this.scene);
   }
-  //use deltatime ?
+
   updateZ(num: number) {
     const z = this.mesh.position.z;
 
     if (Math.abs(z - num) > .001)
-      this.mesh.translate(new Vector3(0, 0, 1), (num - z) * .5, this.scene);
+      this.mesh.translate(new Vector3(0, 0, 1), num - z, this.scene);
   }
   updateY(num: number) {
-    this.mesh.translate(new Vector3(0, 1, 0), num, this.scene);
+    const y = this.mesh.position.y;
+
+    if (Math.abs(y - num) > .001)
+      this.mesh.translate(new Vector3(0, 1, 0), num, this.scene);
   }
 }

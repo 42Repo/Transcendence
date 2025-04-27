@@ -37,7 +37,7 @@ const start = async () => {
         const { type, data } = message;
         switch (type) {
           case 'join':
-            const result = (matchMaker.addPlayer(socket, data.name, null));
+            const result = (matchMaker.addPlayer(socket, data.name, new Map()));
             player = result.player;
             if (result.game) {
               gameManagers.push(result.game);

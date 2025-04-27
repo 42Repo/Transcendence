@@ -40,7 +40,7 @@ export function createInitialState(): StateGame {
         id: '',
         name: '',
         socket: null,
-        playerKeys : new Map(),
+        playerKeys : null,
         score: 0,
         touchedBall: 0,
         missedBall: 0,
