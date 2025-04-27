@@ -1,6 +1,7 @@
 import { StateManager } from './StateManager.ts';
 
 export class WebSocketManager {
+  private keyMap: Map<string, boolean>;
   private socket: WebSocket;
   private stateManager: StateManager;
 
@@ -10,6 +11,7 @@ export class WebSocketManager {
     const host = isLocal ? 'localhost:4000' : location.host;
     this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
 
+    this.keyMap = new Map();
     this.socket.addEventListener('open', this.onOpen);
     this.socket.addEventListener('message', this.onMessage);
     this.socket.addEventListener('close', this.onClose);
@@ -49,10 +51,14 @@ export class WebSocketManager {
   };
 
   private keypress = (event: any) => {
-    this.socket.send(JSON.stringify({ type: 'input', data: {type: true, key: event.code } }));
+    if (this.keyMap.get(event.code) != true)
+      this.socket.send(JSON.stringify({ type: 'input', data: {type: true, key: event.code } }));
+    this.keyMap.set(event.code, true);
   };
 
   private keyup = (event: any) => {
-    this.socket.send(JSON.stringify({ type: 'input', data: {type: false, key: event.code } }));
+    if (this.keyMap.get(event.code) != false)
+      this.socket.send(JSON.stringify({ type: 'input', data: {type: false, key: event.code } }));
+    this.keyMap.set(event.code, false);
   };
 }
