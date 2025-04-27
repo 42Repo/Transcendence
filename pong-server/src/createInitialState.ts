@@ -2,6 +2,14 @@ import { defaultConfig } from './DefaultConf';
 import { StateGame } from './StateGame';
 
 export function createInitialState(): StateGame {
+  let ballX = Math.random() * 2. - 1.;
+  let ballZ = Math.random() * 2. - 1.;
+  if (ballX == 0.)
+    ballX = .5;
+  let len = Math.sqrt(ballX * ballX + ballZ * ballZ);
+  ballX /= len;
+  ballZ /= len;
+
   return {
     table: {
       bounds: {
@@ -14,8 +22,8 @@ export function createInitialState(): StateGame {
       posX:     defaultConfig.ball.initialPosition.y,
       speed:    .1,
       diameter: defaultConfig.ball.diameter,
-      dirZ:    -1,
-      dirX:     1,
+      dirZ:     ballZ,
+      dirX:     ballX,
       onWall:   false,
       onSide:   false
     },

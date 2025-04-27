@@ -2,8 +2,8 @@ import { Vector3 } from "@babylonjs/core";
 import { PongConfig } from "./PongConfig";
 
 const table = {
-  width: 8,
-  depth: 4,
+  width: 6,
+  depth: 8,
   height: 0.1,
   y: -0.3,
   color: { r: 0.1, g: 0.1, b: 0.3 },

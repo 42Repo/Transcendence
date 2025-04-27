@@ -14,6 +14,14 @@ export class PhysicsEngine {
         return player.id === pad.id
       });
       if (!paddle) return;
+      //debug
+      if (player.playerKeys?.get('ShiftLeft')){
+        if (player.id == game.players[1].id)
+          this.movePaddle(player, game.paddles[0]);
+        else
+          this.movePaddle(player, game.paddles[1]);
+      }
+      //
       this.movePaddle(player, paddle);
       this.checkPaddleCollision(game, paddle);
       //debug
@@ -21,6 +29,7 @@ export class PhysicsEngine {
         game.ball.posX = 0;
         game.ball.posZ = 0;
       }
+      //
     });
     this.moveBall(game);
   }
@@ -54,9 +63,10 @@ export class PhysicsEngine {
     ball.posX += ball.dirX * ball.speed;
     if (Math.abs(ball.posX) > maxX
       && Math.abs(ball.posZ - paddle.posZ) < paddle.width * .5){
+      ball.posX = -maxX + (ball.posX + maxX)
       ball.dirX *= -1;
     }
-    else if (Math.abs(ball.posX) - radius >= maxX){
+    else if (Math.abs(ball.posX) - radius * 2. >= maxX){
       //paddle lost
       ball.posX = 0;
       ball.posZ = 0;
