@@ -7,11 +7,11 @@ export interface TableBounds {
 
 export interface Ball {
   posZ: number;
-  posY: number;
+  posX: number;
   speed: number;
   diameter: number;
   dirZ: number;
-  dirY: number;
+  dirX: number;
   onWall: boolean;
   onSide: boolean;
 }

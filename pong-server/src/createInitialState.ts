@@ -11,11 +11,11 @@ export function createInitialState(): StateGame {
     },
     ball: {
       posZ:     defaultConfig.ball.initialPosition.z,
-      posY:     defaultConfig.ball.initialPosition.y,
+      posX:     defaultConfig.ball.initialPosition.y,
       speed:    .1,
       diameter: defaultConfig.ball.diameter,
       dirZ:    -1,
-      dirY:     1,
+      dirX:     1,
       onWall:   false,
       onSide:   false
     },
