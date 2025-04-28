@@ -5,7 +5,7 @@ import { PongConfig } from './PongConfig.ts';
 import { Ball } from './Ball.ts';
 import { Paddle } from './Paddle.ts';
 import { Table } from './Table.ts';
-import { Camera } from './Camera.ts';
+import { Camera, CameraOptions } from './Camera.ts';
 import { Light } from './Light.ts';
 import { Skybox } from './Skybox.ts';
 import { Wall } from './Wall.ts';
@@ -45,8 +45,7 @@ export class Game {
     this._conf = conf;
     this._stateManager = stateManager
     this.canvas = stateManager.canvas;
-    this._engine = stateManager.engine;
-    this.scene = this._stateManager.currentScene;
+    this.scene = stateManager.currentScene;
   }
 
   async init(): Promise<void> {
@@ -77,7 +76,14 @@ export class Game {
       ? camera.followOffset
       : camera.targetOffset;
 
-    new Camera(this._stateManager, "Cam1", camera.angles, targetCamera);
+    const cameraOptions = {
+      minRadius: 3,
+      maxRadius: 30,
+      minClipDistance: 0.01,
+      wheelPrecision: 10
+    }
+
+    new Camera(this._stateManager, "Cam1", camera.angles, targetCamera, cameraOptions);
     new Light(this._stateManager, "light1", light.direction);
     this._ball = new Ball(this._stateManager, "ball1", ball.initialPosition);
 

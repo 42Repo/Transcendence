@@ -2,15 +2,17 @@ import { Engine, Scene } from '@babylonjs/core'
 import { Game, GameState } from './Game.ts'
 import { PongConfig } from './PongConfig.ts';
 import { defaultConfig } from './DefaultConf.ts';
+import { WaitGame } from './WaitGame.ts';
 
-enum State { WAIT = 0, START = 1, WIN = 2, LOSE = 3 };
+export enum State { WAIT = 0, START = 1, WIN = 2, LOSE = 3 };
 
 export class StateManager {
   private _engine: Engine;
   private _canvas: HTMLCanvasElement;
   private state: State = State.WAIT;
   private _currentScene: Scene | null = null;
-  private _game: Game;
+  private _game: Game | null = null;
+  private _waitRoom: WaitGame | null = null;
   public conf: PongConfig;
   private _floorY!: number;
 
@@ -31,7 +33,9 @@ export class StateManager {
     }
     switch (state) {
       case State.WAIT:
-        //this.currentScene = await new WaitScene(this.engine, this.container);
+        this._currentScene = new Scene(this._engine, true);
+        this._waitRoom = new WaitGame(this);
+        await this._waitRoom.init();
         break;
       case State.START:
         this._currentScene = new Scene(this._engine, true);
@@ -62,7 +66,7 @@ export class StateManager {
 
   public updateStateGame(state: GameState) {
     if (this.state && this.state === State.START) {
-      console.log('update:', this.state);
+      // console.log('update:', this.state);
       this._game.updateState(state);
     }
   }

@@ -1,4 +1,4 @@
-import { StateManager } from './StateManager.ts';
+import { StateManager, State } from './StateManager.ts';
 
 export class WebSocketManager {
   private socket: WebSocket;
@@ -29,10 +29,11 @@ export class WebSocketManager {
     switch (type) {
       case 'wait':
         console.log('Wait for other player');
+        this.stateManager.changeState(State.WAIT);
         break;
       case 'start':
         console.log('game ready');
-        this.stateManager.changeState(1);
+        this.stateManager.changeState(State.START);
         break;
       case 'update':
         //console.log(msg.data);

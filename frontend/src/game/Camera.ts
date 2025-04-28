@@ -3,7 +3,7 @@ import { ArcRotateCamera, Vector3 } from '@babylonjs/core';
 import { GameObject } from './GameObject.ts';
 import { StateManager } from './StateManager.ts';
 
-interface CameraOptions {
+export interface CameraOptions {
   minRadius?: number;
   maxRadius?: number;
   minClipDistance?: number;
@@ -22,13 +22,6 @@ export class Camera extends GameObject {
   ) {
     super(game);
 
-    const {
-      minRadius = 3,
-      maxRadius = 30,
-      minClipDistance = 0.01,
-      wheelPrecision = 10
-    } = options || {};
-
     const { alpha, beta, radius } = angles;
 
     this.camera = new ArcRotateCamera(
@@ -37,13 +30,17 @@ export class Camera extends GameObject {
       beta,
       radius,
       target,
-      game.currentScene
+      this.game.currentScene
     );
 
     this.camera.attachControl(this.game.canvas, true);
-    this.camera.wheelPrecision = wheelPrecision;
-    this.camera.lowerRadiusLimit = minRadius;
-    this.camera.upperRadiusLimit = maxRadius;
-    this.camera.minZ = minClipDistance;
+    if (options && options.wheelPrecision)
+      this.camera.wheelPrecision = options.wheelPrecision;
+    if (options && options.minRadius)
+      this.camera.lowerRadiusLimit = options.minRadius;
+    if (options && options.maxRadius)
+      this.camera.upperRadiusLimit = options.maxRadius;
+    if (options && options.minClipDistance)
+      this.camera.minZ = options.minClipDistance;
   }
 }

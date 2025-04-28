@@ -24,10 +24,14 @@ export class GameObject {
     }
   }
 
+  rotate(axe: string, degres: number) {
+    this.mesh.rotation[axe] = degres;
+  }
+
   updateX(num: number) {
     const x = this.mesh.position.x;
 
-    console.log(x - num);
+    //console.log(x - num);
     if (Math.abs(x - num) > .01)//marge
       this.mesh.translate(new Vector3(1, 0, 0), (num - x) * .1, this.scene);
   }
