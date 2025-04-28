@@ -29,13 +29,14 @@ export function createInitialState(): StateGame {
       {
         id: '',
         playerName: '',
-        posX: 0, posZ: 0,
+        posX: defaultConfig.paddle.positions.right.x,
+        posZ: 0,
         width: defaultConfig.paddle.width,
         speed: .15
       },
       { id: '',
         playerName: '',
-        posX: 0,
+        posX: defaultConfig.paddle.positions.left.x,
         posZ: 0,
         width: defaultConfig.paddle.width,
         speed: .15
