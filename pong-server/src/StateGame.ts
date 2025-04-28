@@ -7,11 +7,11 @@ export interface TableBounds {
 
 export interface Ball {
   posZ: number;
-  posY: number;
+  posX: number;
   speed: number;
   diameter: number;
   dirZ: number;
-  dirY: number;
+  dirX: number;
   onWall: boolean;
   onSide: boolean;
 }
@@ -38,6 +38,7 @@ export interface PlayerBase {
   id: string;
   name: string;
   socket: WebSocket | null;
+  playerKeys : Map<string, boolean> | null;
 }
 
 export type Player = PlayerBase & PlayerStats;

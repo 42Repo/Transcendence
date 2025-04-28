@@ -14,8 +14,8 @@ export class MatchMaking {
     this.gameManagers = gameManagers;
   }
 
-  addPlayer(socket: WebSocket, name: string): { player: PlayerBase, game: GameManager | null } {
-    const player: PlayerBase = { id: uuidv4(), socket, name };
+  addPlayer(socket: WebSocket, name: string, playerKeys : Map<string, boolean> | null): { player: PlayerBase, game: GameManager | null } {
+    const player: PlayerBase = { id: uuidv4(), socket, name, playerKeys};
     let newGame: GameManager | null = null;
     this.players.push(player);
     if (this.players.length >= 2) {
@@ -39,11 +39,13 @@ export class GameManager {
     this.game.players[0].name = player1.name;
     this.game.paddles[0].id = player1.id;
     this.game.paddles[0].playerName = player1.name;
+    this.game.players[0].playerKeys = player1.playerKeys;
     this.game.players[1].id = player2.id;
     this.game.players[1].socket = player2.socket;
     this.game.players[1].name = player2.name;
     this.game.paddles[1].id = player2.id;
     this.game.paddles[1].playerName = player2.name;
+    this.game.players[1].playerKeys = player2.playerKeys;
     this.physicsEngine = new PhysicsEngine(defaultConfig);
     this.startGameLoop();
   }
@@ -82,8 +84,8 @@ export class GameManager {
     }
   }
 
-  public handlePlayerInput(player: PlayerBase, data: { key: string }) {
-    this.physicsEngine.handlePlayerInput(this.game, player, data)
+  public handlePlayerInput(player: PlayerBase, data: { key: string, type: boolean }) {
+    this.physicsEngine.handlePlayerInput(player, data)
   }
 
   public getPlayers(): StateGame['players'] {

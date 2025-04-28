@@ -2,6 +2,12 @@ import { defaultConfig } from './DefaultConf';
 import { StateGame } from './StateGame';
 
 export function createInitialState(): StateGame {
+  let angle = Math.random() * 2.*Math.PI - Math.PI;
+  if (Math.abs(Math.abs(angle) - Math.PI/2.) < Math.PI/6.)
+    angle += Math.PI/6 * Math.sign(Math.abs(angle) - Math.PI/2.) * Math.sign(angle);
+  let ballX = Math.cos(angle);
+  let ballZ = Math.sin(angle);
+
   return {
     table: {
       bounds: {
@@ -11,11 +17,11 @@ export function createInitialState(): StateGame {
     },
     ball: {
       posZ:     defaultConfig.ball.initialPosition.z,
-      posY:     defaultConfig.ball.initialPosition.y,
+      posX:     defaultConfig.ball.initialPosition.y,
       speed:    .1,
       diameter: defaultConfig.ball.diameter,
-      dirZ:    -1,
-      dirY:     1,
+      dirZ:     ballZ,
+      dirX:     ballX,
       onWall:   false,
       onSide:   false
     },
@@ -23,16 +29,17 @@ export function createInitialState(): StateGame {
       {
         id: '',
         playerName: '',
-        posX: 0, posZ: 0,
+        posX: defaultConfig.paddle.positions.right.x,
+        posZ: 0,
         width: defaultConfig.paddle.width,
-        speed: .1
+        speed: .15
       },
       { id: '',
         playerName: '',
-        posX: 0,
+        posX: defaultConfig.paddle.positions.left.x,
         posZ: 0,
         width: defaultConfig.paddle.width,
-        speed:.1
+        speed: .15
       }
     ],
     players: [
@@ -40,6 +47,7 @@ export function createInitialState(): StateGame {
         id: '',
         name: '',
         socket: null,
+        playerKeys : null,
         score: 0,
         touchedBall: 0,
         missedBall: 0,
@@ -51,6 +59,7 @@ export function createInitialState(): StateGame {
         id: '',
         name: '',
         socket: null,
+        playerKeys : new Map(),
         score: 0,
         touchedBall: 0,
         missedBall: 0,

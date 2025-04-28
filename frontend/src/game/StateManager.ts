@@ -19,6 +19,7 @@ export class StateManager {
   constructor(container: HTMLElement) {
     this._canvas = this.createCanvas(container, defaultConfig['canvas']);
     this._engine = new Engine(this._canvas, true);
+    this._engine.hideLoadingUI();
     this.conf = defaultConfig;
     this._engine.runRenderLoop(() => {
       if (this._currentScene) {
@@ -38,7 +39,9 @@ export class StateManager {
         await this._waitRoom.init();
         break;
       case State.START:
+        this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine, true);
+        this._engine.hideLoadingUI();
         this._game = new Game(this, defaultConfig);
         await this._game.init();
         break;
@@ -65,8 +68,7 @@ export class StateManager {
   }
 
   public updateStateGame(state: GameState) {
-    if (this.state && this.state === State.START) {
-      // console.log('update:', this.state);
+    if (this._game && this.state && this.state === State.START) {
       this._game.updateState(state);
     }
   }

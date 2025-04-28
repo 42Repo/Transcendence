@@ -2,8 +2,8 @@ import { Vector3 } from "@babylonjs/core";
 import { PongConfig } from "./PongConfig";
 
 const table = {
-  width: 8,
-  depth: 4,
+  width: 6,
+  depth: 8,
   height: 0.1,
   y: -0.3,
   color: { r: 0.1, g: 0.1, b: 0.3 },
@@ -14,7 +14,7 @@ const paddle = {
   height: 0.3,
   depth: 0.2,
   rotation: Math.PI / 2,
-  xOffset: table.width / 2 - 0.5 * 0.2,  
+  xOffset: table.width / 2 - 0.1 - 0.1, //-depth/2 - wallthickness  
   colorLeft: { r: 1, g: 0, b: 0 },
   colorRight: { r: 0, g: 0, b: 1 },
 };
@@ -46,25 +46,25 @@ const createWallPositionsFromTable = (
       width: wallThickness,
       height: wallHeight,
       depth: tableDepth,
-      position: new Vector3(-tableWidth / 2, y, 0),
+      position: new Vector3(-(tableWidth / 2 - wallThickness * .5), y, 0),
     },
     right: {
       width: wallThickness,
       height: wallHeight,
       depth: tableDepth,
-      position: new Vector3(tableWidth / 2, y, 0),
+      position: new Vector3(tableWidth / 2 - wallThickness * .5, y, 0),
     },
     front: {
-      width: tableWidth,
+      width: tableWidth - wallThickness * 2,
       height: wallHeight,
       depth: wallThickness,
-      position: new Vector3(0, y, -tableDepth / 2),
+      position: new Vector3(0, y, -tableDepth / 2 + wallThickness * .5),
     },
     back: {
-      width: tableWidth,
+      width: tableWidth - wallThickness * 2,
       height: wallHeight,
       depth: wallThickness,
-      position: new Vector3(0, y, tableDepth / 2),
+      position: new Vector3(0, y, tableDepth / 2 - wallThickness * .5),
     },
   };
 }
@@ -102,7 +102,7 @@ export const defaultConfig: PongConfig = {
   },
 
   ball: {
-    diameter: 1,
+    diameter: .3,
     initialPosition: new Vector3(0, -0.01, 0),
   },
 

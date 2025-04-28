@@ -22,11 +22,11 @@ export type GameState = {
   }[],
   ball: {
     posZ: number;
-    posY: number;
+    posX: number;
     speed: number;
     diameter: number;
     dirZ: number;
-    dirY: number;
+    dirX: number;
     onWall: boolean;
     onSide: boolean;
   }
@@ -139,6 +139,6 @@ export class Game {
     this._rightPaddle?.updateZ(state.paddles[0].posZ);
     this._leftPaddle?.updateZ(state.paddles[1].posZ);
     this._ball?.updateZ(state.ball.posZ);
-    this._ball?.updateX(state.ball.posY);
+    this._ball?.updateX(state.ball.posX);
   }
 }
