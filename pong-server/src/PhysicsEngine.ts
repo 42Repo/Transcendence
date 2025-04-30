@@ -38,6 +38,16 @@ export class PhysicsEngine {
     this.moveBall(game);
   }
 
+  private launchBall(ball: Ball){
+    let angle = Math.random() * 2.*Math.PI - Math.PI;
+    if (Math.abs(Math.abs(angle) - Math.PI/2.) < Math.PI/6.)
+      angle += Math.PI/6 * Math.sign(Math.abs(angle) - Math.PI/2.) * Math.sign(angle);
+    ball.dirX = Math.cos(angle);
+    ball.dirZ = Math.sin(angle);
+    ball.posX = 0;
+    ball.posZ = 0;
+  }
+
   private checkPaddleCollision(game: StateGame, paddle: Paddle){
     const maxBound = game.table.bounds.depth * .5 - paddle.width * .5 - this.config.wall.thickness;
     paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
@@ -48,17 +58,6 @@ export class PhysicsEngine {
       paddle.posZ -= paddle.speed;
     if (player.playerKeys?.get('KeyS'))
       paddle.posZ += paddle.speed;
-  }
-
-  private checkBallCollision(ball: Ball, paddle: Paddle): boolean {
-    let xPos = paddle.posX - this.config.paddle.depth * .5 * Math.sign(paddle.posX);
-    let zPos = Math.max(Math.min(ball.posZ, paddle.posZ + paddle.width * .5), paddle.posZ - paddle.width * .5);
-
-    let dist = Math.sqrt((zPos - ball.posZ) * (zPos - ball.posZ) + (xPos - ball.posX) * (xPos - ball.posX));
-
-    if (dist <= ball.diameter * .5)
-      return true;
-    return false;
   }
 
   private moveBall(game: StateGame):void {
@@ -72,28 +71,25 @@ export class PhysicsEngine {
 
     ball.posX += ball.dirX * ball.speed;
 
-    if (Math.abs(ball.posX) > maxX
-      && this.checkBallCollision(ball, paddle)){
-      ball.posX = Math.sign(ball.posX) * (maxX - (Math.abs(ball.posX) - maxX));
-
-      let angle = Math.PI/4. + Math.PI/4. * Math.sign(-ball.dirX) // start angle
-        - Math.sign(ball.posZ - paddle.posZ) * Math.sign(ball.dirX) // which way to add angle
-          * (Math.PI/6. //min
-            + Math.PI/3. //variation
-              * (Math.abs(ball.posZ - paddle.posZ) / (paddle.width * .5 + radius)));
-      
-      ball.dirZ = Math.cos(angle);
-      ball.dirX = Math.sin(angle);
-      console.log(angle, Math.cos(angle), Math.sin(angle))
-      //ball.speed *= 1.05;
+    if (Math.abs(ball.posX) > maxX && Math.sign(ball.dirX) == Math.sign(paddle.posX)){
+      let xPos = paddle.posX - this.config.paddle.depth * .5 * Math.sign(paddle.posX);
+      let zPos = Math.max(Math.min(ball.posZ, paddle.posZ + paddle.width * .5), paddle.posZ - paddle.width * .5);
+      if (Math.sqrt((zPos - ball.posZ) * (zPos - ball.posZ) + (xPos - ball.posX) * (xPos - ball.posX)) <= radius){
+        let angle = Math.PI/2. + Math.PI/2. * Math.sign(ball.dirX) // start angle
+           - Math.sign(ball.posZ - paddle.posZ) * Math.sign(ball.dirX) // which way to add angle
+              * (Math.PI/3. //variation
+                  * (Math.abs(zPos - paddle.posZ) / (paddle.width * .5)));
+        
+        ball.dirX = Math.cos(angle);
+        ball.dirZ = Math.sin(angle);
+        ball.speed *= 1.03;
+      }
+      else if (Math.abs(ball.posX) - radius * 2. >= maxX){
+        //paddle lost
+        this.launchBall(ball);
+      }
     }
-    else if (Math.abs(ball.posX) - radius * 2. >= maxX){
-      //paddle lost
-      ball.posX = 0;
-      ball.posZ = 0;
-    }
-  }//TODO angles normaux, meilleures collisions sur les bords
-  //TODO speed
+  }
 
   private moveBallZ(game: StateGame) {
     const ball = game.ball;
