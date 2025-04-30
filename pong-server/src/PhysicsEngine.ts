@@ -71,7 +71,7 @@ export class PhysicsEngine {
 
     ball.posX += ball.dirX * ball.speed;
 
-    if (Math.abs(ball.posX) > maxX && Math.sign(ball.dirX) == Math.sign(paddle.posX)){
+    if (Math.abs(ball.posX) > maxX){
       let xPos = paddle.posX - this.config.paddle.depth * .5 * Math.sign(paddle.posX);
       let zPos = Math.max(Math.min(ball.posZ, paddle.posZ + paddle.width * .5), paddle.posZ - paddle.width * .5);
       if (Math.sqrt((zPos - ball.posZ) * (zPos - ball.posZ) + (xPos - ball.posX) * (xPos - ball.posX)) <= radius){
@@ -82,7 +82,10 @@ export class PhysicsEngine {
         
         ball.dirX = Math.cos(angle);
         ball.dirZ = Math.sin(angle);
-        ball.speed *= 1.03;
+        if (Math.abs(paddle.posZ - ball.posZ) < paddle.width * .5)
+          ball.posX = Math.sign(ball.posX) * (maxX - (Math.abs(ball.posX) - maxX));
+        if (ball.speed < 3.)
+          ball.speed *= 1.03;
       }
       else if (Math.abs(ball.posX) - radius * 2. >= maxX){
         //paddle lost
