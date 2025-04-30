@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 
 const content = document.getElementById('content') as HTMLElement;
 const cache: Map<string, string> = new Map();
-const existingPages : string[] = [
+const existingPages: string[] = [
   "home",
   "about-us",
   "edit-profile",
@@ -21,8 +21,8 @@ document.body.addEventListener('click', (e) => {
   if (link) {
     e.preventDefault();
     const page = link.dataset.page;
-    if (page){
-       switchPage(page)
+    if (page) {
+      switchPage(page)
     };
   }
 });
@@ -97,7 +97,7 @@ const pageRequiresAuth = (page: string): boolean => {
 
 // Switch page + update URL
 const switchPage = (page: string) => {
- 
+
   if (page == 'home') {
     if (isAuthenticated()) page = 'logged';
     history.pushState(null, '', '/');
@@ -108,12 +108,12 @@ const switchPage = (page: string) => {
     history.pushState(null, '', `${page}`);
   }
   void fetchPage(page).then(() => {
-	  if (page === 'pongGame') {
-		  // Dynamically import and run the game logic
-		  import('./pongGame').then((module) => {
-			  module.mainGame();
-		  });
-	  }
+    if (page === 'pongGame') {
+      // Dynamically import and run the game logic
+      import('./pongGame').then((module) => {
+        module.mainGame();
+      });
+    }
   });
 };
 
@@ -123,6 +123,9 @@ const loadCurrentPage = () => {
   if (isAuthenticated() && page == 'home') {
     switchPage('home');
     return;
+  }
+  else {
+    switchPage(page);
   }
   void fetchPage(page);
 };

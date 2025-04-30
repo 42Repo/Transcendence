@@ -3,6 +3,7 @@ import { Game, GameState } from './Game.ts'
 import { PongConfig } from './PongConfig.ts';
 import { defaultConfig } from './DefaultConf.ts';
 import { WaitGame } from './WaitGame.ts';
+import { WinScene } from './WinScene.ts';
 
 export enum State { WAIT = 0, START = 1, WIN = 2, LOSE = 3 };
 
@@ -13,6 +14,7 @@ export class StateManager {
   private _currentScene: Scene | null = null;
   private _game: Game | null = null;
   private _waitRoom: WaitGame | null = null;
+  private _winScene: WinScene | null = null;
   public conf: PongConfig;
   private _floorY!: number;
 
@@ -28,24 +30,29 @@ export class StateManager {
     });;
   }
 
-  public changeState = async (state: State) => {
+  public changeState = async (state: State, message?: string) => {
     if (this._currentScene) {
       this._currentScene.dispose();
     }
     switch (state) {
       case State.WAIT:
-        this._currentScene = new Scene(this._engine, true);
+        this._currentScene = new Scene(this._engine);
         this._waitRoom = new WaitGame(this);
         await this._waitRoom.init();
         break;
       case State.START:
         this._engine.hideLoadingUI();
-        this._currentScene = new Scene(this._engine, true);
+        this._currentScene = new Scene(this._engine);
         this._engine.hideLoadingUI();
         this._game = new Game(this, defaultConfig);
         await this._game.init();
         break;
       case State.WIN:
+        console.log(message);
+        this._engine.hideLoadingUI();
+        this._currentScene = new Scene(this._engine);
+        this._winScene = new WinScene(this, message);
+        await this._winScene.init();
         break;
       case State.LOSE:
         break;
@@ -77,7 +84,7 @@ export class StateManager {
     return this._engine;
   }
 
-  public get currentScene(): Scene {
+  public get currentScene(): Scene | null {
     return this._currentScene;
   }
 

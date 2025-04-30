@@ -14,8 +14,8 @@ export class MatchMaking {
     this.gameManagers = gameManagers;
   }
 
-  addPlayer(socket: WebSocket, name: string, playerKeys : Map<string, boolean> | null): { player: PlayerBase, game: GameManager | null } {
-    const player: PlayerBase = { id: uuidv4(), socket, name, playerKeys};
+  addPlayer(socket: WebSocket, name: string, playerKeys: Map<string, boolean> | null): { player: PlayerBase, game: GameManager | null } {
+    const player: PlayerBase = { id: uuidv4(), socket, name, playerKeys };
     let newGame: GameManager | null = null;
     this.players.push(player);
     if (this.players.length >= 2) {
@@ -57,6 +57,7 @@ export class GameManager {
     });
     if (index === -1) return;
 
+    const leftPlayer: string = this.game.players[index].name;
     // 1. Supprime le joueur
     this.game.players[index].socket = null;
     this.game.players[index].id = "";
@@ -77,8 +78,8 @@ export class GameManager {
       if (activePlayersLen === 1) {
         const remaining = activePlayers[0];
         remaining.socket?.send(JSON.stringify({
-          type: 'playerLeft',
-          data: { message: 'L’autre joueur a quitté la partie.' }
+          type: 'win',
+          data: { message: `${leftPlayer} left the game !` }
         }));
       }
     }

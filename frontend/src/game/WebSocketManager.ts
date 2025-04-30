@@ -26,7 +26,7 @@ export class WebSocketManager {
     this.socket.send(JSON.stringify({ type: 'join', data: { name: 'Chris' } }));
   };
 
-  private onMessage = async (event: any) => {
+  private onMessage = (event: any) => {
     const msg = JSON.parse(event.data);
     const { type } = msg;
     switch (type) {
@@ -39,8 +39,15 @@ export class WebSocketManager {
         this.stateManager.changeState(State.START);
         break;
       case 'update':
-        //console.log(msg.data);
         this.stateManager.updateStateGame(msg.data);
+        break;
+      case 'lose':
+        this.stateManager.changeState(State.LOSE);
+        break;
+      case 'win':
+        console.log('win game state', msg);
+        this.stateManager.changeState(State.WIN, msg.data.message);
+        this.socket.send(JSON.stringify({ type: 'close' }));
         break;
       default:
         break;
@@ -53,13 +60,13 @@ export class WebSocketManager {
 
   private keypress = (event: any) => {
     if (this.keyMap.get(event.code) != true)
-      this.socket.send(JSON.stringify({ type: 'input', data: {type: true, key: event.code } }));
+      this.socket.send(JSON.stringify({ type: 'input', data: { type: true, key: event.code } }));
     this.keyMap.set(event.code, true);
   };
 
   private keyup = (event: any) => {
     if (this.keyMap.get(event.code) != false)
-      this.socket.send(JSON.stringify({ type: 'input', data: {type: false, key: event.code } }));
+      this.socket.send(JSON.stringify({ type: 'input', data: { type: false, key: event.code } }));
     this.keyMap.set(event.code, false);
   };
 }

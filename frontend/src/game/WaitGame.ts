@@ -1,4 +1,4 @@
-import { Vector3, Color3, Scene } from '@babylonjs/core';
+import { Vector3 } from '@babylonjs/core';
 import { StateManager } from './StateManager.ts';
 import { Camera } from './Camera.ts';
 import { Light } from './Light.ts';
@@ -6,13 +6,9 @@ import { Skybox } from './Skybox.ts';
 import { MyMeshWriter, WriterDef } from './MyMeshWriter.ts';
 
 export class WaitGame {
-  //private _scene: Scene;
-  //private _canvas: HTMLCanvasElement;
   private _stateManager: StateManager;
 
   constructor(game: StateManager) {
-    //this._scene = game.currentScene;
-    //this._canvas = game.canvas;
     this._stateManager = game;
   }
 
@@ -42,8 +38,8 @@ export class WaitGame {
         anchor: "center",
         'letter-height': 8,
         'letter-thickness': 2,
-        color: "#E77A07",
-        alpha: 0.9,
+        color: "#E74E07",
+        alpha: 0.8,
         position: {
           x: 0,
           y: -2,

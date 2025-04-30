@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { StateManager } from './StateManager.ts';
-import { Vector3, Color3, StandardMaterial } from '@babylonjs/core';
+import { Vector3, Color3, StandardMaterial, Space } from '@babylonjs/core';
 
 export class GameObject {
 
@@ -24,27 +24,27 @@ export class GameObject {
     }
   }
 
-  rotate(axe: string, degres: number) {
-    this.mesh.rotation[axe] = degres;
+  rotate(axe: 'x' | 'y' | 'z', degrees: number) {
+    this.mesh.rotation[axe] = degrees;
   }
 
   updateX(num: number) {
     const x = this.mesh.position.x;
 
     if (Math.abs(x - num) > .001)
-      this.mesh.translate(new Vector3(1, 0, 0), num - x, this.scene);
+      this.mesh.translate(new Vector3(1, 0, 0), num - x, Space.WORLD);
   }
 
   updateZ(num: number) {
     const z = this.mesh.position.z;
 
     if (Math.abs(z - num) > .001)
-      this.mesh.translate(new Vector3(0, 0, 1), num - z, this.scene);
+      this.mesh.translate(new Vector3(0, 0, 1), num - z, Space.WORLD);
   }
   updateY(num: number) {
     const y = this.mesh.position.y;
 
     if (Math.abs(y - num) > .001)
-      this.mesh.translate(new Vector3(0, 1, 0), num, this.scene);
+      this.mesh.translate(new Vector3(0, 1, 0), num, Space.WORLD);
   }
 }

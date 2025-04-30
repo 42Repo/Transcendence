@@ -13,7 +13,8 @@
 		"jwt-decode": "^4.0.0",
 		"@babylonjs/core":"^8.3.1",
     "@babylonjs/loaders": "^8.3.1",
-    "meshwriter": "^1.3.2"
+    "meshwriter": "^1.3.2",
+    "@babylonjs/gui": "^8.3.1"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.23.0",
