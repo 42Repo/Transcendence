@@ -55,15 +55,19 @@ export class StateEngine {
     if (start) {
       this._states.time.matchDate = new Date();
     } else {
-      const dateNow = new Date();
-      const timeNow = dateNow.getTime();
-      const timeStart = this._states.time.matchDate.getTime();
-      this._states.time.matchDuration = Math.floor((timeNow - timeStart) / 1000);
+      this._states.time.matchDuration = this.getElapsedTime();
     }
   }
 
   public get states(): StateGame {
     return this._states;
+  }
+
+  public getElapsedTime(): number {
+    const dateNow = new Date();
+    const timeNow = dateNow.getTime();
+    const timeStart = this._states.time.matchDate.getTime();
+    return Math.floor((timeNow - timeStart) / 1000);
   }
 
   private getOtherPlayer(player: Player): Player {
