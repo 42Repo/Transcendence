@@ -4,6 +4,7 @@ import { PongConfig } from './PongConfig.ts';
 import { defaultConfig } from './DefaultConf.ts';
 import { WaitGame } from './WaitGame.ts';
 import { WinScene } from './WinScene.ts';
+import { LoseScene } from './LoseScene.ts';
 
 export enum State { WAIT = 0, START = 1, WIN = 2, LOSE = 3 };
 
@@ -15,6 +16,7 @@ export class StateManager {
   private _game: Game | null = null;
   private _waitRoom: WaitGame | null = null;
   private _winScene: WinScene | null = null;
+  private _loseScene: LoseScene | null = null;
   public conf: PongConfig;
   private _floorY!: number;
 
@@ -55,6 +57,10 @@ export class StateManager {
         await this._winScene.init();
         break;
       case State.LOSE:
+        this._engine.hideLoadingUI();
+        this._currentScene = new Scene(this._engine);
+        this._loseScene = new LoseScene(this, message);
+        await this._loseScene.init();
         break;
       default:
         break;

@@ -1,11 +1,14 @@
-import { StateGame, Ball, PlayerBase, Player, Paddle } from './StateGame';
+import { StateGame, Ball, PlayerBase, Paddle } from './StateGame';
 import { PongConfig } from './PongConfig';
+import { StateEngine } from './StateEngine';
 
 export class PhysicsEngine {
   private config: PongConfig;
+  private states: StateEngine;
 
-  constructor(config: PongConfig) {
+  constructor(config: PongConfig, states: StateEngine) {
     this.config = config;
+    this.states = states;
   }
 
   public update(game: StateGame): void {
@@ -15,7 +18,7 @@ export class PhysicsEngine {
       });
       if (!paddle) return;
       //debug
-      if (player.playerKeys?.get('ShiftLeft')){
+      if (player.playerKeys?.get('ShiftLeft')) {
         if (player.id == game.players[1].id)
           this.movePaddle(player, game.paddles[0]);
         else
@@ -26,7 +29,7 @@ export class PhysicsEngine {
       this.movePaddle(player, paddle);
       this.checkPaddleCollision(game, paddle);
       //debug
-      if (player.playerKeys?.get('KeyR')){
+      if (player.playerKeys?.get('KeyR')) {
         game.ball.posX = 0;
         game.ball.posZ = 0;
         game.ball.dirX = 1.;
@@ -38,7 +41,7 @@ export class PhysicsEngine {
     this.moveBall(game);
   }
 
-  private checkPaddleCollision(game: StateGame, paddle: Paddle){
+  private checkPaddleCollision(game: StateGame, paddle: Paddle) {
     const maxBound = game.table.bounds.depth * .5 - paddle.width * .5 - this.config.wall.thickness;
     paddle.posZ = Math.sign(paddle.posZ) * Math.min(Math.abs(paddle.posZ), maxBound);
   }
@@ -61,7 +64,7 @@ export class PhysicsEngine {
     return false;
   }
 
-  private moveBall(game: StateGame):void {
+  private moveBall(game: StateGame): void {
     this.moveBallZ(game);
 
     const ball = game.ball;
@@ -73,21 +76,21 @@ export class PhysicsEngine {
     ball.posX += ball.dirX * ball.speed;
 
     if (Math.abs(ball.posX) > maxX
-      && this.checkBallCollision(ball, paddle)){
+      && this.checkBallCollision(ball, paddle)) {
       ball.posX = Math.sign(ball.posX) * (maxX - (Math.abs(ball.posX) - maxX));
 
-      let angle = Math.PI/4. + Math.PI/4. * Math.sign(-ball.dirX) // start angle
+      let angle = Math.PI / 4. + Math.PI / 4. * Math.sign(-ball.dirX) // start angle
         - Math.sign(ball.posZ - paddle.posZ) * Math.sign(ball.dirX) // which way to add angle
-          * (Math.PI/6. //min
-            + Math.PI/3. //variation
-              * (Math.abs(ball.posZ - paddle.posZ) / (paddle.width * .5 + radius)));
-      
+        * (Math.PI / 6. //min
+          + Math.PI / 3. //variation
+          * (Math.abs(ball.posZ - paddle.posZ) / (paddle.width * .5 + radius)));
+
       ball.dirZ = Math.cos(angle);
       ball.dirX = Math.sin(angle);
       console.log(angle, Math.cos(angle), Math.sin(angle))
       //ball.speed *= 1.05;
     }
-    else if (Math.abs(ball.posX) - radius * 2. >= maxX){
+    else if (Math.abs(ball.posX) - radius * 2. >= maxX) {
       //paddle lost
       ball.posX = 0;
       ball.posZ = 0;
@@ -114,7 +117,7 @@ export class PhysicsEngine {
 
   public handlePlayerInput(
     player: PlayerBase,
-    input: { key: string, type: boolean}
+    input: { key: string, type: boolean }
   ) {
     player.playerKeys?.set(input.key, input.type);
   }

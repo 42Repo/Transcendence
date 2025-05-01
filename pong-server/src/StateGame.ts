@@ -1,4 +1,4 @@
-import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
+import { type WebSocket } from '@fastify/websocket';
 
 export interface TableBounds {
   width: number;
@@ -25,12 +25,18 @@ export interface Paddle {
   speed: number;
 }
 
- export interface PlayerStats {
+export interface Time {
+  dateStr: string;
+  matchDate: Date;
+  matchDuration: number;
+}
+
+export interface PlayerStats {
   score: number;
   touchedBall: number;
   missedBall: number;
-  touchedBallInRaw: number;
-  missedBallInRaw: number;
+  touchedBallInRow: number;
+  missedBallInRow: number;
   lastTouch: boolean;
 }
 
@@ -38,7 +44,7 @@ export interface PlayerBase {
   id: string;
   name: string;
   socket: WebSocket | null;
-  playerKeys : Map<string, boolean> | null;
+  playerKeys: Map<string, boolean> | null;
 }
 
 export type Player = PlayerBase & PlayerStats;
@@ -47,6 +53,8 @@ export interface StateGame {
   table: {
     bounds: TableBounds;
   };
+
+  time: Time;
 
   ball: Ball;
 

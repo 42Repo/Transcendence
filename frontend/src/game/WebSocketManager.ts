@@ -31,21 +31,19 @@ export class WebSocketManager {
     const { type } = msg;
     switch (type) {
       case 'wait':
-        console.log('Wait for other player');
         this.stateManager.changeState(State.WAIT);
         break;
       case 'start':
-        console.log('game ready');
         this.stateManager.changeState(State.START);
         break;
       case 'update':
         this.stateManager.updateStateGame(msg.data);
         break;
       case 'lose':
-        this.stateManager.changeState(State.LOSE);
+        this.stateManager.changeState(State.LOSE, msg.data.message);
+        this.socket.send(JSON.stringify({ type: 'close' }));
         break;
       case 'win':
-        console.log('win game state', msg);
         this.stateManager.changeState(State.WIN, msg.data.message);
         this.socket.send(JSON.stringify({ type: 'close' }));
         break;

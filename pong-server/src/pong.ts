@@ -4,6 +4,7 @@ import { defaultConfig } from './DefaultConf';
 import { createInitialState } from './createInitialState';
 import { PhysicsEngine } from './PhysicsEngine';
 import { StateGame, PlayerBase } from './StateGame';
+import { StateEngine } from './StateEngine';
 
 export class MatchMaking {
   private players: PlayerBase[];
@@ -32,6 +33,7 @@ export class GameManager {
   private game: StateGame = createInitialState();
   private gameInterval: NodeJS.Timeout | null = null;
   private physicsEngine: PhysicsEngine;
+  private statesEngine: StateEngine;
 
   constructor(player1: PlayerBase, player2: PlayerBase) {
     this.game.players[0].id = player1.id;
@@ -46,7 +48,8 @@ export class GameManager {
     this.game.paddles[1].id = player2.id;
     this.game.paddles[1].playerName = player2.name;
     this.game.players[1].playerKeys = player2.playerKeys;
-    this.physicsEngine = new PhysicsEngine(defaultConfig);
+    this.statesEngine = new StateEngine(this.game);
+    this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
     this.startGameLoop();
   }
 
