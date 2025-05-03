@@ -49,6 +49,7 @@ export class GameManager {
     this.game.paddles[1].playerName = player2.name;
     this.game.players[1].playerKeys = player2.playerKeys;
     this.statesEngine = new StateEngine(this.game);
+    this.statesEngine.updateTime(true);
     this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
     this.startGameLoop();
   }
@@ -107,10 +108,12 @@ export class GameManager {
   private startGameLoop() {
     this.gameInterval = setInterval(() => {
       this.physicsEngine.update(this.game);
+      this.statesEngine.updateTime(false);
       const state = {
         paddles: this.game.paddles,
         ball: this.game.ball,
-        //		players: this.players.map(p => ({ id: p.id }))
+        players: this.game.players.map(p => ({ score: p.score })),
+        time: this.statesEngine.getElapsedTime(),
       };
       this.broadcast("update", state);
     }, 1000 / 30); // 30 FPS
