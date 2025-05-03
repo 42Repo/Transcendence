@@ -30,9 +30,10 @@ export class Camera extends GameObject {
       beta,
       radius,
       target,
-      this.game.currentScene
+      this.scene
     );
 
+    this.scene.activeCamera!.maxZ = 1e8;
     this.camera.attachControl(this.game.canvas, true);
     if (options && options.wheelPrecision)
       this.camera.wheelPrecision = options.wheelPrecision;

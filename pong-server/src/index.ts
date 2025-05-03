@@ -4,11 +4,11 @@ import { type FastifyRequest } from 'fastify';
 import { GameManager, MatchMaking } from './pong';
 import { PlayerBase, StateGame } from './StateGame';
 
-const getGameManager = (player : PlayerBase, games : GameManager[]) : GameManager | null => {
+const getGameManager = (player: PlayerBase, games: GameManager[]): GameManager | null => {
   let result = null;
 
-  result = games.find((game : GameManager) => {
-    return game.getPlayers().some((p : PlayerBase) => {
+  result = games.find((game: GameManager) => {
+    return game.getPlayers().some((p: PlayerBase) => {
       return player.id === p.id;
     });
   });
@@ -16,19 +16,19 @@ const getGameManager = (player : PlayerBase, games : GameManager[]) : GameManage
 }
 
 const start = async () => {
-	const server = Fastify({ logger: true });
-	await server.register(fastifyWebsocket);
+  const server = Fastify({ logger: true });
+  await server.register(fastifyWebsocket);
 
-	const gameManagers : GameManager[] = [];
+  const gameManagers: GameManager[] = [];
   const matchMaker = new MatchMaking(gameManagers);
 
-	server.get('/health', async () => ({ status: 'pong-server running' }));
+  server.get('/health', async () => ({ status: 'pong-server running' }));
 
   server.get('/ws',
     { websocket: true },
-    (socket: WebSocket , request: FastifyRequest) => {
+    (socket: WebSocket, request: FastifyRequest) => {
 
-      let player : PlayerBase | null = null;
+      let player: PlayerBase | null = null;
 
       socket.on('message', (msg: string, isBinary: boolean) => {
         const msgStr = isBinary ? msg.toString() : msg as string;
@@ -43,7 +43,7 @@ const start = async () => {
               gameManagers.push(result.game);
               result.game.startGame();
             } else {
-              socket.send(JSON.stringify({type:'wait'}));
+              socket.send(JSON.stringify({ type: 'wait' }));
             }
             break;
           case 'input':
@@ -64,7 +64,7 @@ const start = async () => {
           const gameManager = getGameManager(player, gameManagers);
           if (gameManager) {
             gameManager.removePlayer(player);
-            const gamerleft = gameManager.getPlayers().filter((p)=>{
+            const gamerleft = gameManager.getPlayers().filter((p) => {
               return p.socket;
             });
             const activePlayers = gameManager.getPlayers().filter(p => p.socket);

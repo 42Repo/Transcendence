@@ -70,15 +70,24 @@ export class PhysicsEngine {
     const radius = this.config.ball.diameter * .5;
     const bounds = game.table.bounds;
     const maxX = bounds.width / 2 - this.config.wall.thickness - this.config.paddle.depth - radius;
-    let paddle = (ball.dirX > 0) ? game.paddles[0] : game.paddles[1];
+    const paddle = (ball.dirX > 0) ? game.paddles[0] : game.paddles[1];
 
     ball.posX += ball.dirX * ball.speed;
 
     if (Math.abs(ball.posX) > maxX) {
-      let xPos = paddle.posX - this.config.paddle.depth * .5 * Math.sign(paddle.posX);
-      let zPos = Math.max(Math.min(ball.posZ, paddle.posZ + paddle.width * .5), paddle.posZ - paddle.width * .5);
-      if (Math.sqrt((zPos - ball.posZ) * (zPos - ball.posZ) + (xPos - ball.posX) * (xPos - ball.posX)) <= radius) {
-        let angle = Math.PI / 2. + Math.PI / 2. * Math.sign(ball.dirX) // start angle
+      const xPos = paddle.posX - this.config.paddle.depth * .5 * Math.sign(paddle.posX);
+      const zPos = Math.max(Math.min(ball.posZ, paddle.posZ + paddle.width * .5), paddle.posZ - paddle.width * .5);
+      const dist = Math.sqrt(
+        (zPos - ball.posZ) * (zPos - ball.posZ)
+        + (xPos - ball.posX) * (xPos - ball.posX)
+      );
+      if (dist <= radius) {
+        const hitter = game.players.find((p) => {
+          return p.id === paddle.id;
+        });
+        if (hitter)
+          this.states.updateTouchedBall(hitter);
+        const angle = Math.PI / 2. + Math.PI / 2. * Math.sign(ball.dirX) // start angle
           - Math.sign(ball.posZ - paddle.posZ) * Math.sign(ball.dirX) // which way to add angle
           * (Math.PI / 3. //variation
             * (Math.abs(zPos - paddle.posZ) / (paddle.width * .5)));
@@ -91,6 +100,8 @@ export class PhysicsEngine {
           ball.speed *= 1.03;
       }
       else if (Math.abs(ball.posX) - radius * 2. >= maxX) {
+        const scorer = (ball.dirX > 0) ? game.players[1] : game.players[0];
+        this.states.updateScore(scorer);
         //paddle lost
         this.launchBall(ball);
       }

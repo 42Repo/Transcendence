@@ -21,7 +21,7 @@ const paddle = {
 
 const paddlePositions = {
   left: new Vector3(-paddle.xOffset, 0, 0),
-  right: new Vector3( paddle.xOffset, 0, 0),
+  right: new Vector3(paddle.xOffset, 0, 0),
 };
 
 const wall = {
@@ -90,13 +90,13 @@ export const defaultConfig: PongConfig = {
   },
 
   paddle: {
-    width:  paddle.width,
+    width: paddle.width,
     height: paddle.height,
-    depth:  paddle.depth,
+    depth: paddle.depth,
     rotation: paddle.rotation,
     positions: paddlePositions,
     colors: {
-      left:  paddle.colorLeft,
+      left: paddle.colorLeft,
       right: paddle.colorRight,
     },
   },
@@ -107,20 +107,20 @@ export const defaultConfig: PongConfig = {
   },
 
   wall: {
-    height : wall.height,
-    thickness : wall.thickness,
+    height: wall.height,
+    thickness: wall.thickness,
     wallPositions,
-    color:     wall.color,
-    alpha:     wall.alpha,
+    color: wall.color,
+    alpha: wall.alpha,
   },
 
   skybox: {
     meshName: "Sphere__0",
-    path: "../public/assets/img/DreamlikeLandscape.glb",
+    path: "/assets/img/DreamlikeLandscape.glb",
   },
 
   camera: {
-    angles:       { alpha: Math.PI / 2, beta: Math.PI / 4, radius: 10 },
+    angles: { alpha: Math.PI / 2, beta: Math.PI / 4, radius: 10 },
     targetOffset: Vector3.Zero(),
     followOffset: undefined, //new Vector3(0, 0.5, -3),
   },

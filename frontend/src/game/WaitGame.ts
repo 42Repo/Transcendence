@@ -15,7 +15,7 @@ export class WaitGame {
   public async init(): Promise<void> {
     new Skybox(
       this._stateManager,
-      "../../public/assets/img/winter_night/scene.gltf",
+      "/assets/img/winter_night/scene.gltf",
       "Sphere__0"
     );
 

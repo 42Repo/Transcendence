@@ -50,7 +50,6 @@ export class StateManager {
         await this._game.init();
         break;
       case State.WIN:
-        console.log(message);
         this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine);
         this._winScene = new WinScene(this, message);
@@ -60,6 +59,7 @@ export class StateManager {
         this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine);
         this._loseScene = new LoseScene(this, message);
+        console.log("StateManager", this.currentScene);
         await this._loseScene.init();
         break;
       default:

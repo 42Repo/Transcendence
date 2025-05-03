@@ -21,7 +21,7 @@ export class WinScene {
   public async init(): Promise<void> {
     new Skybox(
       this._stateManager,
-      "../../public/assets/img/firework_sky/scene.gltf",
+      "/assets/img/firework_sky/scene.gltf",
       "Sphere__0"
     );
 

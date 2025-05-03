@@ -18,9 +18,11 @@ export class LoseScene {
   }
 
   public async init(): Promise<void> {
+
+    console.log("lose page", this._stateManager.currentScene);
     new Skybox(
       this._stateManager,
-      "../../public/assets/img/forgotten_ruins/scene.gltf",
+      "/assets/img/forgotten_ruins/scene.gltf",
       "Sphere__0"
     );
 

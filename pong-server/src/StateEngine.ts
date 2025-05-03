@@ -34,6 +34,11 @@ export class StateEngine {
     }
     otherPlayer.missedBall += 1;
     otherPlayer.lastTouch = false;
+    if (player.score == 10) {
+      console.log(player.score);
+      player.socket!.send(JSON.stringify({ type: "win", data: { message: `You beat ${otherPlayer.name}` } }));
+      otherPlayer.socket!.send(JSON.stringify({ type: "lose", data: { message: `${player.name} made you bite the dust` } }));
+    }
   }
 
   updateTouchedBall(player: Player): void {

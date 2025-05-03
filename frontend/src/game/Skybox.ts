@@ -1,7 +1,8 @@
 import { GameObject } from './GameObject.ts';
 import { StateManager } from './StateManager.ts';
-import { AppendSceneAsync } from '@babylonjs/core';
-import "@babylonjs/loaders";
+import { AppendSceneAsync } from "@babylonjs/core";
+import "@babylonjs/loaders/glTF";
+
 
 export class Skybox extends GameObject {
   private meshName: string;
@@ -14,7 +15,10 @@ export class Skybox extends GameObject {
 
   private async init(path: string) {
     await AppendSceneAsync(path, this.scene);
-    const meshBox = this.game.currentScene.getMeshByName(this.meshName);
+    const meshBox = this.scene.getMeshByName(this.meshName);
+    if (meshBox) {
+      meshBox.infiniteDistance = true;
+    }
     if (meshBox) {
       this.game.floorY = meshBox.getBoundingInfo().boundingBox.minimumWorld.y;
     }
