@@ -1,5 +1,4 @@
 import { showLoginModal, logout } from './login';
-import { jwtDecode } from 'jwt-decode';
 import {
   fetchMyProfileData,
   fetchFriendsList,
@@ -21,19 +20,25 @@ const existingPages: string[] = [
   'publicProfile',
 ];
 
-export const isAuthenticated = (): boolean => {
+export const isAuthenticated = async (): Promise<boolean> => {
   const token = localStorage.getItem('authToken');
   if (!token) {
     return false;
   }
+
   try {
-    const decodedToken = jwtDecode(token);
-    if (decodedToken.exp && decodedToken.exp * 1000 < Date.now()) {
-      localStorage.removeItem('authToken');
-      return false;
-    }
-    return true;
+    const response = await fetch('/api/verify-jwt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    const data = await response.json();
+    return data.success === true;
   } catch (error) {
+    console.error('Erreur lors de la vérification du token :', error);
     return false;
   }
 };
@@ -57,7 +62,8 @@ const pageRequiresAuth = (page: string): boolean => {
 };
 
 export const fetchPage = async (page: string): Promise<void> => {
-  if (pageRequiresAuth(page) && !isAuthenticated()) {
+  const isAuth = await isAuthenticated();
+  if (pageRequiresAuth(page) && !isAuth) {
     console.log(
       `Page '${page}' requires authentication. Redirecting to home/login.`
     );
@@ -273,8 +279,10 @@ async function loadHistory(
   }
 }
 
-export const switchPage = (page: string) => {
-  const targetPage = page === 'home' && isAuthenticated() ? 'logged' : page;
+export const switchPage = async (page: string) => {
+  const isAuth = await isAuthenticated();
+  const targetPage = page === 'home' && isAuth ? 'logged' : page;
+
   const currentLogicalPage = history.state?.page || getPageName();
 
   if (targetPage === currentLogicalPage) {
@@ -299,7 +307,7 @@ export const switchPage = (page: string) => {
   void fetchPage(targetPage);
 };
 
-export const loadCurrentPage = () => {
+export const loadCurrentPage = async () => {
   const pageFromState = history.state?.page;
   const pageFromUrl = getPageName();
   let page = pageFromState || pageFromUrl;
@@ -307,8 +315,8 @@ export const loadCurrentPage = () => {
   console.log(
     `Loading current page. From State: ${pageFromState}, From URL: ${pageFromUrl}, Effective page: ${page}`
   );
-
-  if ((page === 'home' || page === '') && isAuthenticated()) {
+  const isAuth = await isAuthenticated();
+  if ((page === 'home' || page === '') && isAuth) {
     console.log(
       "User authenticated on home/root, switching effective page to 'logged'"
     );
@@ -327,13 +335,13 @@ const initializeApp = async () => {
 
 void initializeApp();
 
-window.addEventListener('popstate', (event) => {
+window.addEventListener('popstate', async (event) => {
   console.log('Popstate event triggered (back/forward)', event.state);
   const pageToLoad = event.state?.page;
 
   if (pageToLoad) {
-    const finalPage =
-      pageToLoad === 'home' && isAuthenticated() ? 'logged' : pageToLoad;
+    const isAuth = await isAuthenticated();
+    const finalPage = pageToLoad === 'home' && isAuth ? 'logged' : pageToLoad;
     console.log(`Popstate navigating to effective page: ${finalPage}`);
     void fetchPage(finalPage);
   } else {

@@ -2,8 +2,8 @@ import { isAuthenticated } from './switch-page.ts';
 
 const headerMenu = document.getElementById('desktopMenu');
 
-const setHeaderMenuList = () => {
-  const isAuth = isAuthenticated();
+const setHeaderMenuList = async () => {
+  const isAuth = await isAuthenticated();
 
   if (headerMenu && isAuth) {
     headerMenu.innerHTML = `
@@ -18,9 +18,9 @@ const setHeaderMenuList = () => {
   }
 };
 
-const setHeaderBurgerMenu = () => {
+const setHeaderBurgerMenu = async () => {
   const burgerMenu = document.getElementById('mobileMenu');
-  const isAuth = isAuthenticated();
+  const isAuth = await isAuthenticated();
   if (burgerMenu && isAuth) {
     burgerMenu.innerHTML = `
     <li><a href="#" data-page="home" class="burger-btn block text-white">HOME</a></li>
@@ -33,16 +33,16 @@ const setHeaderBurgerMenu = () => {
   }
 };
 
-const setHeaderProfilePic = () => {
+const setHeaderProfilePic = async () => {
   const profilePic = document.getElementById('loginPic');
-  const isAuth = isAuthenticated();
+  const isAuth = await isAuthenticated();
   if (profilePic && isAuth) {
     profilePic.innerHTML = `
     <img
     src="DefaultProfilePic.png"
     alt="ProfilePic"
     class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300"
-    />`
+    />`;
   } else if (profilePic) {
     profilePic.innerHTML = `
     <a href="#" id="loginLink" class="flex items-center">
