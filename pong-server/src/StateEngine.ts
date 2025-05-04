@@ -1,11 +1,14 @@
 import { Player, StateGame } from './StateGame';
+import { GameManager } from './pong';
 
 export class StateEngine {
   private _states: StateGame;
   private _maxTouch: Map<string, number>;
   private _missTouch: Map<string, number>;
+  private _gameManager: GameManager;
 
-  constructor(state: StateGame) {
+  constructor(gameManager: GameManager, state: StateGame) {
+    this._gameManager = gameManager;
     this._states = state;
     this._maxTouch = new Map([
       [this._states.players[0].id, 0],
@@ -35,9 +38,9 @@ export class StateEngine {
     otherPlayer.missedBall += 1;
     otherPlayer.lastTouch = false;
     if (player.score == 10) {
-      console.log(player.score);
-      player.socket!.send(JSON.stringify({ type: "win", data: { message: `You beat ${otherPlayer.name}` } }));
       otherPlayer.socket!.send(JSON.stringify({ type: "lose", data: { message: `${player.name} made you bite the dust` } }));
+      player.socket!.send(JSON.stringify({ type: "win", data: { message: `You beat ${otherPlayer.name}` } }));
+      this._gameManager.gameOver();
     }
   }
 

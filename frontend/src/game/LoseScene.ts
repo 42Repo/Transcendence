@@ -11,10 +11,15 @@ import { Vector3 } from "@babylonjs/core";
 export class LoseScene {
   private _stateManager: StateManager;
   private _message: string | undefined = undefined;
+  private _exitPromise!: (choice: boolean) => void;
+  private _choicePromise: Promise<boolean>;
 
   constructor(game: StateManager, message?: string) {
     this._stateManager = game;
     this._message = message;
+    this._choicePromise = new Promise((choice) => {
+      return this._exitPromise = choice;
+    })
   }
 
   public async init(): Promise<void> {
@@ -113,6 +118,7 @@ export class LoseScene {
       btnLeave.scaleX = 1;
     });
     btnLeave.onPointerClickObservable.add(() => {
+      this._exitPromise(true);
       switchPage('home');
     });
     grid.addControl(btnLeave, 0, 0);
@@ -137,9 +143,14 @@ export class LoseScene {
       btnRestart.scaleX = 1;
     });
     btnRestart.onPointerClickObservable.add(() => {
+      this._exitPromise(true);
       loadCurrentPage();
     });
     grid.addControl(btnRestart, 0, 1);
     return;
+  }
+
+  public awaitExit(): Promise<boolean> {
+    return this._choicePromise;
   }
 }

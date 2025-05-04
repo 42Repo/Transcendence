@@ -54,14 +54,15 @@ export class StateManager {
         this._currentScene = new Scene(this._engine);
         this._winScene = new WinScene(this, message);
         await this._winScene.init();
-        break;
+        const exitWin = await this._winScene.awitExit();
+        return exitWin;
       case State.LOSE:
         this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine);
         this._loseScene = new LoseScene(this, message);
-        console.log("StateManager", this.currentScene);
         await this._loseScene.init();
-        break;
+        const exitLose = await this._loseScene.awaitExit();
+        return exitLose;
       default:
         break;
     }

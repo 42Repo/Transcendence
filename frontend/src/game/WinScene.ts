@@ -11,11 +11,15 @@ import { switchPage, loadCurrentPage } from '../switch-page.ts';
 export class WinScene {
   private _stateManager: StateManager;
   private _message: string | undefined = undefined;
+  private _exitPromise!: (exit: boolean) => void;
+  private _choicePromise: Promise<boolean>;
 
   constructor(game: StateManager, message?: string) {
     this._stateManager = game;
-    console.log('WinScene constructor', message);
     this._message = message;
+    this._choicePromise = new Promise((choise) => {
+      return this._exitPromise = choise;
+    })
   }
 
   public async init(): Promise<void> {
@@ -113,6 +117,7 @@ export class WinScene {
       btnLeave.scaleX = 1;
     });
     btnLeave.onPointerClickObservable.add(() => {
+      this._exitPromise(true);
       switchPage('home');
     });
     grid.addControl(btnLeave, 0, 0);
@@ -137,9 +142,14 @@ export class WinScene {
       btnRestart.scaleX = 1;
     });
     btnRestart.onPointerClickObservable.add(() => {
+      this._exitPromise(false);
       loadCurrentPage();
     });
     grid.addControl(btnRestart, 0, 1);
     return;
+  }
+
+  public awitExit(): Promise<boolean> {
+    return this._choicePromise;
   }
 }

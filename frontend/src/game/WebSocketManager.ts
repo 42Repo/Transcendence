@@ -26,7 +26,7 @@ export class WebSocketManager {
     this.socket.send(JSON.stringify({ type: 'join', data: { name: 'Chris' } }));
   };
 
-  private onMessage = (event: any) => {
+  private onMessage = async (event: any) => {
     const msg = JSON.parse(event.data);
     const { type } = msg;
     switch (type) {
@@ -40,12 +40,20 @@ export class WebSocketManager {
         this.stateManager.updateStateGame(msg.data);
         break;
       case 'lose':
-        this.stateManager.changeState(State.LOSE, msg.data.message);
-        this.socket.send(JSON.stringify({ type: 'close' }));
+        const exitLose = await this.stateManager.changeState(State.LOSE, msg.data.message);
+        if (exitLose) {
+          this.socket.send(JSON.stringify({ type: 'close' }));
+        } else {
+          this.socket.send(JSON.stringify({ type: 'join', data: { name: 'Chris' } }));
+        }
         break;
       case 'win':
-        this.stateManager.changeState(State.WIN, msg.data.message);
-        this.socket.send(JSON.stringify({ type: 'close' }));
+        const exitWin = await this.stateManager.changeState(State.WIN, msg.data.message);
+        if (exitWin) {
+          this.socket.send(JSON.stringify({ type: 'close' }));
+        } else {
+          this.socket.send(JSON.stringify({ type: 'join', data: { name: 'Chris' } }));
+        }
         break;
       default:
         break;

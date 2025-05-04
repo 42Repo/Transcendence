@@ -48,7 +48,7 @@ export class GameManager {
     this.game.paddles[1].id = player2.id;
     this.game.paddles[1].playerName = player2.name;
     this.game.players[1].playerKeys = player2.playerKeys;
-    this.statesEngine = new StateEngine(this.game);
+    this.statesEngine = new StateEngine(this, this.game);
     this.statesEngine.updateTime(true);
     this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
     this.startGameLoop();
@@ -56,37 +56,17 @@ export class GameManager {
 
 
   removePlayer(player: PlayerBase) {
-    const index = this.game.players.findIndex((p) => {
-      return p.id === player.id;
+    this.gameOver();
+    const remaining = this.game.players.find((p) => {
+      return p.id !== player.id && p.socket;
     });
-    if (index === -1) return;
-
-    const leftPlayer: string = this.game.players[index].name;
-    // 1. Supprime le joueur
-    this.game.players[index].socket = null;
-    this.game.players[index].id = "";
-    this.game.players[index].name = "";
-
-    // 2. Stoppe le jeu s’il ne reste plus de joueurs actifs
-    const activePlayers = this.game.players.filter((p) => {
-      return p.socket !== null;
-    });
-    const activePlayersLen = activePlayers.length;
-    if (activePlayersLen < 2) {
-      if (this.gameInterval && activePlayersLen !== 0) {
-        clearInterval(this.gameInterval);
-        this.gameInterval = null;
-      }
-
-      // 3. Notifie le joueur restant
-      if (activePlayersLen === 1) {
-        const remaining = activePlayers[0];
-        remaining.socket?.send(JSON.stringify({
-          type: 'win',
-          data: { message: `${leftPlayer} left the game !` }
-        }));
-      }
+    if (remaining && remaining.socket) {
+      remaining.socket.send(JSON.stringify({
+        type: 'win',
+        data: { message: `${player.name} left the game !` }
+      }));
     }
+    player.socket = null;
   }
 
   public handlePlayerInput(player: PlayerBase, data: { key: string, type: boolean }) {
@@ -103,6 +83,11 @@ export class GameManager {
 
   public startGame(): void {
     this.broadcast('start', null);
+  }
+
+  public gameOver(): void {
+    clearInterval(this.gameInterval!);
+    this.gameInterval = null;
   }
 
   private startGameLoop() {
