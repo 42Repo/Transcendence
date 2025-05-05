@@ -207,8 +207,8 @@ export class Game {
     scoreGrid.top = "10%";
     scoreGrid.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
     scoreGrid.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-    const avatar1 = this.createAvatar("avatar1", "../../public/assets/img/defaultAvatar.jpg");
-    const avatar2 = this.createAvatar("avatar2", "../../public/assets/img/defaultAvatar.jpg");
+    const avatar1 = this.createAvatar("avatar1", "/assets/img/defaultAvatar.jpg");
+    const avatar2 = this.createAvatar("avatar2", "/assets/img/defaultAvatar.jpg");
     scoreGrid.addControl(avatar1, 0, 0);
     scoreGrid.addControl(avatar2, 0, 6);
     const namePlayer1 = this.createTextBlock(

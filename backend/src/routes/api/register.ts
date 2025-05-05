@@ -7,9 +7,9 @@ import {
 import bcrypt from 'bcrypt';
 
 interface RegisterBody {
-  username?: string; // TODO: Make this required later
-  email?: string; // TODO: Make this required later
-  password?: string; // TODO: Make this required later
+  username?: string;
+  email?: string;
+  password?: string;
 }
 
 function isValidEmail(email: string): boolean {
@@ -25,7 +25,6 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
     ) => {
       const { username, email, password } = request.body;
 
-      // --- Server-Side Validation ---
       const trimmedUsername = username?.trim();
       const trimmedEmail = email?.trim();
 
@@ -55,7 +54,6 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
         });
       }
 
-      // --- Check for existing user ---
       try {
         const checkUserStmt = fastify.db.prepare(
           'SELECT user_id FROM users WHERE username = ? OR (email IS NOT NULL AND email = ?)'
@@ -72,11 +70,9 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
           });
         }
 
-        // --- Hash Password ---
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // --- Insert User into DB ---
         const insertStmt = fastify.db.prepare(
           'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)'
         );

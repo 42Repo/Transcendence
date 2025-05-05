@@ -4,7 +4,7 @@ import { Camera } from "./Camera";
 import { Light } from './Light.ts';
 import { Skybox } from './Skybox.ts';
 import { MyMeshWriter, WriterDef } from './MyMeshWriter.ts';
-import { switchPage, loadCurrentPage } from '../switch-page.ts';
+import { switchPage } from '../switch-page.ts';
 import { Vector3 } from "@babylonjs/core";
 
 
@@ -143,8 +143,7 @@ export class LoseScene {
       btnRestart.scaleX = 1;
     });
     btnRestart.onPointerClickObservable.add(() => {
-      this._exitPromise(true);
-      loadCurrentPage();
+      this._exitPromise(false);
     });
     grid.addControl(btnRestart, 0, 1);
     return;

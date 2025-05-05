@@ -6,7 +6,7 @@ import { Camera } from './Camera.ts';
 import { Light } from './Light.ts';
 import { Skybox } from './Skybox.ts';
 import { MyMeshWriter, WriterDef } from './MyMeshWriter.ts';
-import { switchPage, loadCurrentPage } from '../switch-page.ts';
+import { switchPage } from '../switch-page.ts';
 
 export class WinScene {
   private _stateManager: StateManager;
@@ -143,7 +143,6 @@ export class WinScene {
     });
     btnRestart.onPointerClickObservable.add(() => {
       this._exitPromise(false);
-      loadCurrentPage();
     });
     grid.addControl(btnRestart, 0, 1);
     return;

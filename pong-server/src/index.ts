@@ -1,7 +1,9 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyReply } from 'fastify';
 import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
 import { GameManager, MatchMaking } from './pong';
 import { PlayerBase } from './StateGame';
+import { FastifyRequest } from 'fastify/types/request';
+import fastifyCors from '@fastify/cors';
 
 const getGameManager = (player: PlayerBase, games: GameManager[]): GameManager | null => {
   let result = null;
@@ -17,11 +19,21 @@ const getGameManager = (player: PlayerBase, games: GameManager[]): GameManager |
 const start = async () => {
   const server = Fastify({ logger: true });
   await server.register(fastifyWebsocket);
+  await server.register(fastifyCors, { origin: true });
 
   const gameManagers: GameManager[] = [];
   const matchMaker = new MatchMaking(gameManagers);
 
-  server.get('/health', async () => ({ status: 'pong-server running' }));
+  server.get('/health', () => ({ status: 'pong-server running' }));
+
+  server.get('/user', async (req: FastifyRequest, rep: FastifyReply) => {
+    const token = req.query && (req.query as any).token;
+    if (!token) {
+      return rep.status(400).send({ error: 'Token is required' });
+    }
+
+    rep.status(200).send({ name: 'default', id: null });
+  });
 
   server.get('/ws',
     { websocket: true },

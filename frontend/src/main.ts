@@ -1,6 +1,10 @@
 import { logout } from './login';
 import { setHeaderMenu } from './header';
 import { GoogleAuth } from './googleAuth';
+import './switch-page';
+import './pongGame';
+import './register';
+import './login';
 
 const burger = document.getElementById('burger-icon');
 const mobileMenu = document.getElementById('nav-mobile');

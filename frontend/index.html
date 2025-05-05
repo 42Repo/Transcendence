@@ -8,46 +8,46 @@
 </head>
 
 <body>
-<header>
-  <div class="container mx-auto flex justify-between items-center">
-    <!-- Left: Nav desktop + Burger -->
-    <div class="flex items-center jus">
-      <!-- Burger icon (mobile only) -->
-      <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="md:hidden size-10 cursor-pointer" />
+  <header>
+    <div class="container mx-auto flex justify-between items-center">
+      <!-- Left: Nav desktop + Burger -->
+      <div class="flex items-center jus">
+        <!-- Burger icon (mobile only) -->
+        <img src="BurgerMenu.png" alt="Menu" id="burger-icon" class="md:hidden size-10 cursor-pointer" />
 
-      <!-- Desktop nav -->
-      <nav id="desktopMenu" class="hidden md:flex space-x-6">
+        <!-- Desktop nav -->
+        <nav id="desktopMenu" class="hidden md:flex space-x-6">
 
-      </nav>
+        </nav>
+      </div>
+
+      <!-- Center: Logo/title -->
+      <h1 class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300">
+        <a id="homeButton" data-page="home" href="#">Transcendence</a>
+      </h1>
+
+      <!-- Right: Profile/Login -->
+      <div id="loginPic" class="flex justify-end items-center">
+      </div>
     </div>
 
-    <!-- Center: Logo/title -->
-    <h1 class="text-center text-lightlight font-bold text-2xl hover:text-darkdark duration-300">
-      <a id="homeButton" data-page="home" href="#">Transcendence</a>
-    </h1>
-
-    <!-- Right: Profile/Login -->
-    <div id="loginPic" class="flex justify-end items-center">
+    <!-- Mobile nav (burger menu) -->
+    <div id="nav-mobile" class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19">
+      <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
+        <ul id="mobileMenu" class="space-y-4">
+          <li>
+            <a href="#" data-page="home" class="burger-btn block text-white">HOME</a>
+          </li>
+          <li>
+            <a href="#" data-page="profile" class="burger-btn block text-white">PROFILE</a>
+          </li>
+          <li>
+            <a href="#" data-page="about-us" class="burger-btn block text-white">ABOUT US</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-
-  <!-- Mobile nav (burger menu) -->
-  <div id="nav-mobile" class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19">
-    <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
-      <ul id="mobileMenu" class="space-y-4">
-        <li>
-          <a href="#" data-page="home" class="burger-btn block text-white">HOME</a>
-        </li>
-        <li>
-          <a href="#" data-page="profile" class="burger-btn block text-white">PROFILE</a>
-        </li>
-        <li>
-          <a href="#" data-page="about-us" class="burger-btn block text-white">ABOUT US</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</header>
+  </header>
 
 
   <!-- LOGIN TAB -->
@@ -125,20 +125,16 @@
 
   <main id="content"></main>
 
-  <script src="https://accounts.google.com/gsi/client"></script>
-  <script type="module" src="./src/switch-page.ts" defer></script>
-  <script type="module" src="./src/login.ts" defer></script>
-  <script type="module" src="./src/register.ts" defer></script>
   <script type="module" src="./src/main.ts" defer></script>
 
-<footer>
-  <p>© 2025 Transcendence - All rights reserved</p>
-  <div class="mt-2 flex justify-center space-x-4">
-    <a href="#" data-page="home" class="text-darkdark hover:text-white">Home</a>
-    <a href="#" data-page="about-us" class="text-darkdark hover:text-white">About Us</a>
-    <a href="#" data-page="privacy-policy" class="text-darkdark hover:text-white">Privacy Policy</a>
-  </div>
-</footer>
+  <footer>
+    <p>© 2025 Transcendence - All rights reserved</p>
+    <div class="mt-2 flex justify-center space-x-4">
+      <a href="#" data-page="home" class="text-darkdark hover:text-white">Home</a>
+      <a href="#" data-page="about-us" class="text-darkdark hover:text-white">About Us</a>
+      <a href="#" data-page="privacy-policy" class="text-darkdark hover:text-white">Privacy Policy</a>
+    </div>
+  </footer>
 </body>
 
 </html>

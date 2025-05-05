@@ -1,207 +1,83 @@
 <div id="privateProfile" class="flex flex-col w-full h-full 2xl p-4 items-center">
-  <div class="defdiv flex flex-col min-w-90 w-full">
-    <div class="flex flex-row w-full items-start gap-4">
-      <img
-        id="profilePicture"
-        src="DefaultProfilePic.png"
-        alt="ProfilePicture"
-        class="size-25 rounded-xl m-3"
-      />
-      <div class="flex flex-col w-full gap-2 items-center h- p-3">
-        <h1
-          id="username"
-          class="bg-light text-mediumdark text-4xl w-max p-4 rounded-2xl"
-        >
-          Username
-        </h1>
-        <div class="flex flex-row gap-2">
-          <p>Joined on the</p>
-          <p id="joinDate">2023-10-01</p>
+  <div id="profileLoading" class="text-center p-5 hidden">
+    Loading profile...
+  </div>
+  <div id="profileError" class="text-red-600 text-center p-5 hidden"></div>
+
+  <div id="profileContentArea" class="w-full" style="display: none">
+    <div class="defdiv flex flex-col min-w-90 w-full">
+      <div class="flex flex-row w-full items-start gap-4">
+        <img id="profilePicture" src="/DefaultProfilePic.png" alt="ProfilePicture" class="size-25 rounded-xl m-3" />
+        <div class="flex flex-col w-full gap-2 items-center h- p-3">
+          <h1 id="username" class="bg-light text-mediumdark text-4xl w-max p-4 rounded-2xl"></h1>
+          <div class="flex flex-row gap-2">
+            <p>Joined on:</p>
+            <p id="joinDate"></p>
+          </div>
+          <div class="flex flex-row gap-2">
+            <p>Status:</p>
+            <p id="userStatus"></p>
+          </div>
+          <div class="flex flex-row gap-2">
+            <p>Email:</p>
+            <p id="userEmail"></p>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-row w-full items-start gap-4">
+        <div class="indiv w-full flex h-30 p-3 justify-center items-center">
+          <p id="bioText">Biography will appear here when added to the API.</p>
+        </div>
+        <div class="indiv w-full flex h-30 p-3 justify-center items-center">
+          <ul id="statsList">
+            <li id="statsRank">Rank:</li>
+            <li id="statsWinLoss">W/L Rate:</li>
+            <li id="statsStreak">Best Win Streak:</li>
+            <li>Stats will appear here when added to the API.</li>
+          </ul>
         </div>
       </div>
     </div>
-    <div class="flex flex-row w-full items-start gap-4">
-      <div
-        class="indiv w-full flex h-30 p-3 justify-center items-center"
-      >
-        <p id="bioText">
-          This is a biography sample with some stuff to say, hello everybody
-        </p>
+
+    <!-- Buttons -->
+    <div>
+      <button id="editProfileButton" data-page="edit-profile" href="#"
+        class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-light text-xl w-60">
+        Edit my profile
+      </button>
+      <button id="logoutBtn"
+        class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-red-950 text-xl w-60">
+        Logout
+      </button>
+    </div>
+
+    <!-- Friends List -->
+    <div class="defdiv flex flex-col min-w-90 w-full">
+      <h1 class="text-xl">Friends</h1>
+      <div id="friendsLoading" class="text-center p-3 hidden">
+        Loading friends...
       </div>
-      <div class="indiv w-full flex h-30 p-3 justify-center items-center">
-        <ul id="stats">
-          <li id="stats1">
-            <h3>Rank : 256</h3>
-          </li>
-          <li id="stats2">
-            <h3>W/L Rate : 1,2</h3>
-          </li>
-          <li id="stats3">
-            <h3>Best win streak : 2</h3>
-          </li>
+      <div id="friendsError" class="text-red-600 text-center p-3 hidden"></div>
+      <div class="indiv w-full">
+        <!-- NOTE: Friend list requires backend API -->
+        <ul class="w-full" id="friendsListContainer">
+          <li class="p-3">Friend list will appear here.</li>
         </ul>
       </div>
     </div>
-  </div>
 
-  <div>
-    <button
-      id="editProfileButton"
-      data-page="edit-profile"
-      href="#"
-      class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-light text-xl w-60"
-    >
-      Edit my profile
-    </button>
-    <button
-      id="logoutBtn"
-      class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-red-950 text-xl w-60"
-    >
-      Logout
-    </button>
-  </div>
-
-  <div class="defdiv flex flex-col min-w-90 w-full">
-    <h1 class="text-xl">Friends</h1>
-    <div class="indiv w-full">
-      <ul class="w-full" id="friendsList">
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Last online : 2023-10-02</p>
-            <p>#230</p>
-          </div>
-        </li>
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Last online : 2023-10-02</p>
-            <p>#230</p>
-          </div>
-        </li>
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Last online : 2023-10-02</p>
-            <p>#230</p>
-          </div>
-        </li>
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Last online : 2023-10-02</p>
-            <p>#230</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="defdiv flex flex-col min-w-90 w-full">
-    <h1 class="text-xl">Game History</h1>
-    <div class="indiv w-full">
-      <ul class="w-full" id="gameHistory">
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Lost</p>
-            <p>#230</p>
-          </div>
-        </li>
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Won</p>
-            <p>#230</p>
-          </div>
-        </li>
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Won</p>
-            <p>#230</p>
-          </div>
-        </li>
-        <li id="friend2" class="w-full flex">
-          <div
-            class="flex justify-between items-center w-full p-3 hover:bg-mediumlight"
-          >
-            <div class="flex flex-row items-center">
-              <img
-                src="DefaultProfilePic.png"
-                alt="ProfilePicture"
-                class="size-12 rounded-xl m-3"
-              />
-              <h3 class="text-xl">Friend 2</h3>
-            </div>
-            <p>Lost</p>
-            <p>#230</p>
-          </div>
-        </li>
-      </ul>
+    <!-- Game History -->
+    <div class="defdiv flex flex-col min-w-90 w-full">
+      <h1 class="text-xl">Game History</h1>
+      <div id="historyLoading" class="text-center p-3 hidden">
+        Loading history...
+      </div>
+      <div id="historyError" class="text-red-600 text-center p-3 hidden"></div>
+      <div class="indiv w-full">
+        <ul class="w-full" id="gameHistoryContainer">
+          <li class="p-3">Game history will appear here.</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
