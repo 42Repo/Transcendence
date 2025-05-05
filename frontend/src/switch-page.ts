@@ -79,6 +79,12 @@ export const fetchPage = async (page: string): Promise<void> => {
 
   if (cache.has(page)) {
     content.innerHTML = cache.get(page)!;
+    if (page === 'pongGame') {
+      setTimeout(() => {
+        console.log('sdf');
+        document.dispatchEvent(new Event('pongGameLoaded'));
+      }, 50);
+    }
   } else {
     try {
       const response = await fetch(`src/views/${page}.html`);
@@ -89,6 +95,12 @@ export const fetchPage = async (page: string): Promise<void> => {
       }
       const html = await response.text();
       content.innerHTML = html;
+      if (page === 'pongGame') {
+        setTimeout(() => {
+          console.log('lalalla');
+          document.dispatchEvent(new Event('pongGameLoaded'));
+        }, 50);
+      }
       cache.set(page, html);
     } catch (err) {
       console.error('Error loading page HTML structure:', err);

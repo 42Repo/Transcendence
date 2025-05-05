@@ -1,19 +1,14 @@
-const isGame = document.getElementById('game') as HTMLCanvasElement;
+import { WebSocketManager } from './game/WebSocketManager.ts';
 
-function mainGame() {
-  // const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-  const canvas = document.createElement('canvas');
-  canvas.setAttribute('width', '500px');
-  canvas.setAttribute('height', '500px');
-  document.body.appendChild(canvas);
-  // draw red square
-  const ctx = canvas.getContext('2d')!;
-  ctx.beginPath();
-  ctx.fillStyle = 'rgba(255,0,0,1)';
-  ctx.rect(10, 10, 50, 50);
-  ctx.fill();
-}
-// document.addEventListener('DOMContentLoaded', () => {
+export const mainGame = () => {
+  const container = document.getElementById("game-container");
+  console.log(container);
+  if (!container)
+    return (console.log("Error: container not found!"));
+  new WebSocketManager(container);
+};
 
-// mainGame();
-// });
+document.addEventListener('pongGameLoaded', mainGame);
+//document.addEventListener("DOMContentLoaded", () => {
+//  document.addEventListener('pongGameLoaded', mainGame);
+//});

@@ -47,6 +47,16 @@ services:
       - frontend-dist:/app/dist
     restart: no
 
+  pong-server:
+    build:
+      context: ./pong-server
+    ports:
+      - "4000:4000"
+    networks:
+      - transcendence-net
+    restart: unless-stopped
+
+
 networks:
   transcendence-net:
     driver: bridge
