@@ -52,6 +52,10 @@ html {
 		/* Caché sur mobile */
 	}
 
+	.burger-menu {
+		@apply hidden;
+	}
+
 	.burger-icon {
 		display: block;
 		/* Affiché sur mobile */
