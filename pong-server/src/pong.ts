@@ -25,6 +25,7 @@ export class MatchMaking {
     infoPlayer: { name: string, id: number | null },
     playerKeys: Map<string, boolean> | null
   ): MadeMatch {
+
     const idPlayer = infoPlayer.id !== null
       ? infoPlayer.id.toString()
       : uuidv4();
@@ -37,11 +38,16 @@ export class MatchMaking {
       name: infoPlayer.name,
       playerKeys
     };
+    if (Array.from(this.waitingPlayers.values()).some((p) => {
+      return p.socket === socket;
+    }))
+      return { player, game: null };
     this.waitingPlayers.set(idPlayer, player);
     if (this.waitingPlayers.size >= 2) {
       const [p1, p2] = Array.from(
         this.waitingPlayers.values()
       ).slice(0, 2);
+      console.log('GameStart:', p1.name, p2.name);
       const newGame = new GameManager(p1, p2);
       this.gameManagers.push(newGame);
       this.waitingPlayers.delete(p1.id);
@@ -49,6 +55,13 @@ export class MatchMaking {
       return { player, game: newGame };
     }
     return { player, game: null };
+  }
+
+  public removePlayer(id: string) {
+    const player = this.waitingPlayers.get(id);
+    if (player) {
+      this.waitingPlayers.delete(id);
+    }
   }
 }
 

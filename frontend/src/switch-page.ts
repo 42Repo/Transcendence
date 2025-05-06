@@ -84,6 +84,8 @@ export const fetchPage = async (page: string): Promise<void> => {
         console.log('sdf');
         document.dispatchEvent(new Event('pongGameLoaded'));
       }, 50);
+    } else {
+      document.dispatchEvent(new Event('pong:leaving'));
     }
   } else {
     try {
@@ -97,9 +99,10 @@ export const fetchPage = async (page: string): Promise<void> => {
       content.innerHTML = html;
       if (page === 'pongGame') {
         setTimeout(() => {
-          console.log('lalalla');
           document.dispatchEvent(new Event('pongGameLoaded'));
         }, 50);
+      } else {
+        document.dispatchEvent(new Event('pong:leaving'));
       }
       cache.set(page, html);
     } catch (err) {
