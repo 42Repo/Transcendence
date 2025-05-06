@@ -6,41 +6,49 @@ import { PhysicsEngine } from './PhysicsEngine';
 import { StateGame, PlayerBase } from './StateGame';
 import { StateEngine } from './StateEngine';
 
+type MadeMatch = {
+  player: PlayerBase;
+  game: GameManager | null;
+};
+
 export class MatchMaking {
-  private players: PlayerBase[];
+  private waitingPlayers: Map<string, PlayerBase>;
   private gameManagers: GameManager[];
 
   constructor(gameManagers: GameManager[]) {
-    this.players = [];
+    this.waitingPlayers = new Map();
     this.gameManagers = gameManagers;
   }
 
-  async addPlayer(
+  addPlayer(
     socket: WebSocket,
     infoPlayer: { name: string, id: number | null },
     playerKeys: Map<string, boolean> | null
-  ): Promise<{ player: PlayerBase, game: GameManager | null }> {
-    try {
-      const getInfoPlayer = await fetch(`http://localhost:4000/db/user/${infoPlayer.id}`, { method: "GET" });
-      console.log('getInfoPlayer: ', getInfoPlayer);
-    } catch (error: any) {
-      console.error(error.message);
-    }
+  ): MadeMatch {
+    const idPlayer = infoPlayer.id !== null
+      ? infoPlayer.id.toString()
+      : uuidv4();
+    const existPlayer = this.waitingPlayers.get(idPlayer);
+    if (existPlayer)
+      return { player: existPlayer, game: null };
     const player: PlayerBase = {
-      id: infoPlayer.id ? infoPlayer.id.toString() : uuidv4(),
+      id: idPlayer,
       socket,
       name: infoPlayer.name,
       playerKeys
     };
-    let newGame: GameManager | null = null;
-    this.players.push(player);
-    if (this.players.length >= 2) {
-      const gamePlayers = this.players.slice(0, 2);
-      newGame = new GameManager(gamePlayers[0], gamePlayers[1]);
+    this.waitingPlayers.set(idPlayer, player);
+    if (this.waitingPlayers.size >= 2) {
+      const [p1, p2] = Array.from(
+        this.waitingPlayers.values()
+      ).slice(0, 2);
+      const newGame = new GameManager(p1, p2);
       this.gameManagers.push(newGame);
-      this.players = this.players.slice(2);
+      this.waitingPlayers.delete(p1.id);
+      this.waitingPlayers.delete(p2.id);
+      return { player, game: newGame };
     }
-    return { player: player, game: newGame };
+    return { player, game: null };
   }
 }
 

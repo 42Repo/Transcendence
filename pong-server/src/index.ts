@@ -41,19 +41,20 @@ const start = async () => {
       return rep.status(400).send({ error: 'Token is required' });
     }
     const decodeToken: DecodeToken = jwtDecode(token);
-    console.log(decodeToken);
     rep.status(200).send({ name: decodeToken.username, id: decodeToken.id });
   });
 
   server.get('/db/user/:id', async (req: FastifyRequest, rep: FastifyReply) => {
-    const id = parseInt(req.params && (req.params as any).id);
-    let user;
     try {
-      user = getUserById(id);
+      const id = parseInt(req.params && (req.params as any).id);
+      const user = getUserById(id);
+      if (!user)
+        return rep.status(404).send('Player not found !');
+      return rep.status(200).send(user);
     } catch (error: any) {
-      rep.status(500).send(error.message);
+      req.log.error(error, 'Erreur dans /db/user/:id');
+      return rep.status(500).send('Erreur server');
     }
-    rep.status(200).send(user);
   })
 
   server.get('/ws',
@@ -68,7 +69,7 @@ const start = async () => {
         const { type, data } = message;
         switch (type) {
           case 'join':
-            const result = await (matchMaker.addPlayer(
+            const result = (matchMaker.addPlayer(
               socket,
               data.infoPlayer,
               new Map()

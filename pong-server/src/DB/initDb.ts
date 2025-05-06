@@ -6,7 +6,6 @@ let dbInstance: Database.Database | null = null;
 export function getDbReadOnly(): Database.Database {
   if (dbInstance) return dbInstance;
 
-  //const dbPath = path.join(__dirname, '../database/transcendence.db');
   const dbPath = path.resolve('/app/database/transcendence.db');
 
   try {
