@@ -18,6 +18,7 @@ export class WebSocketManager {
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
     this.connectToServer();
+    document.addEventListener('pong:leaving', this.cleanup)
   }
 
   private onOpen = async () => {
@@ -82,18 +83,29 @@ export class WebSocketManager {
     } else {
       console.log('restart');
       this.connectToServer();
-      this.socket?.send(JSON.stringify({ type: 'join', data: { name: this.player.name } }));
+      this.socket?.send(JSON.stringify({
+        type: 'join', data: {
+          infoPlayer: {
+            name: this.player.name,
+            id: this.player.id
+          }
+        }
+      }));
     }
   };
 
   private connectToServer = async (): Promise<void> => {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.removeEventListener('open', this.onOpen);
+      this.socket.removeEventListener('message', this.onMessage);
+      this.socket.removeEventListener('close', this.onClose);
+      this.socket.close(1000, 'Reconnecting');
+      this.socket = null;
+    }
+    await this.fetchUser();
     const isLocal = location.hostname === 'localhost';
     const socketProtocol = isLocal ? 'ws' : 'wss';
     const host = isLocal ? 'localhost:4000' : location.host;
-    await this.fetchUser();
-    if (this.socket) {
-      this.socket.close();
-    }
     this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
     this.socket.addEventListener('open', this.onOpen);
     this.socket.addEventListener('message', this.onMessage);
@@ -117,7 +129,19 @@ export class WebSocketManager {
       this.player.name = data.name;
       this.player.id = data.id;
     } catch (err: any) {
-      console.log(err.message);
+      console.log(err);
     }
   }
+  private cleanup = () => {
+    document.removeEventListener('keydown', this.keypress);
+    document.removeEventListener('keyup', this.keyup);
+    document.removeEventListener('pong:leaving', this.cleanup);
+    if (this.socket) {
+      this.socket.removeEventListener('open', this.onOpen);
+      this.socket.removeEventListener('message', this.onMessage);
+      this.socket.removeEventListener('close', this.onClose);
+      this.socket.close(1000, 'Navigating away');
+      this.socket = null;
+    }
+  };
 }
