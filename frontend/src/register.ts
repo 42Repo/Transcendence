@@ -154,7 +154,7 @@ function showRegisterModal(): void {
 // --- Event Listener to Open Register Modal ---
 document.addEventListener('click', (event) => {
   const target = event.target as HTMLElement;
-  if (target.closest('#registerLink')) {
+  if (target.closest('.registerLink')) {
     event.preventDefault();
     showRegisterModal();
   }

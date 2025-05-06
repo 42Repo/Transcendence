@@ -45,10 +45,10 @@ const setHeaderProfilePic = async () => {
     />`;
   } else if (profilePic) {
     profilePic.innerHTML = `
-    <a href="#" id="loginLink" class="flex items-center">
-    <h1 id="loginBtn" class="text-white ">Login</h1>
+    <a href="#" id="loginLink" class="flex items-center p-2">
+    <h1 id="loginBtn" class="text-white p-2">Login</h1>
     </a>
-    <a href="#" id="registerLink" class="flex items-center p-2">
+    <a href="#" id="registerLinkBtn" class="registerLink flex items-center p-2">
     <h1 id="registerBtn" class="text-white p-2">Register</h1>
     </a>
     `;
