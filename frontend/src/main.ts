@@ -8,17 +8,19 @@ import './login';
 
 const burger = document.getElementById('burger-icon');
 const mobileMenu = document.getElementById('nav-mobile');
+const burgerBg = document.querySelector('.burger-bg');
 
 if (burger && mobileMenu) {
         burger.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
         });
-
-        document.querySelectorAll('.burger-btn').forEach((link) => {
-                link.addEventListener('click', () => {
-                        mobileMenu.classList.add('hidden');
-                });
-        });
+        
+        mobileMenu.addEventListener('click', (e) => {
+                // Check if click is OUTSIDE the burger-bg panel or on a button
+                if (!burgerBg.contains(e.target) || e.target.classList.contains('burger-btn')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
 }
 
 document.body.addEventListener('click', (event) => {

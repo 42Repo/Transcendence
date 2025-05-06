@@ -9,6 +9,3 @@ export const mainGame = () => {
 };
 
 document.addEventListener('pongGameLoaded', mainGame);
-//document.addEventListener("DOMContentLoaded", () => {
-//  document.addEventListener('pongGameLoaded', mainGame);
-//});

@@ -43,25 +43,23 @@ export class StateManager {
         await this._waitRoom.init();
         break;
       case State.START:
-        this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine);
-        this._engine.hideLoadingUI();
         this._game = new Game(this, defaultConfig);
         await this._game.init();
         break;
       case State.WIN:
-        this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine);
         this._winScene = new WinScene(this, message);
         await this._winScene.init();
         const exitWin = await this._winScene.awitExit();
+        this._currentScene.dispose();
         return exitWin;
       case State.LOSE:
-        this._engine.hideLoadingUI();
         this._currentScene = new Scene(this._engine);
         this._loseScene = new LoseScene(this, message);
         await this._loseScene.init();
         const exitLose = await this._loseScene.awaitExit();
+        this._currentScene.dispose();
         return exitLose;
       default:
         break;

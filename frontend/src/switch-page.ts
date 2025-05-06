@@ -85,6 +85,8 @@ export const fetchPage = async (page: string): Promise<void> => {
       setTimeout(() => {
         document.dispatchEvent(new Event('pongGameLoaded'));
       }, 50);
+    } else {
+      document.dispatchEvent(new Event('pong:leaving'));
     }
   } else {
     try {
@@ -100,6 +102,8 @@ export const fetchPage = async (page: string): Promise<void> => {
         setTimeout(() => {
           document.dispatchEvent(new Event('pongGameLoaded'));
         }, 50);
+      } else {
+        document.dispatchEvent(new Event('pong:leaving'));
       }
       cache.set(page, html);
     } catch (err) {

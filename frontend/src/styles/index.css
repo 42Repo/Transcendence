@@ -71,6 +71,10 @@ html {
 	.defdiv {
 		@apply w-full max-w-full;
 	}
+
+	#registerLinkBtn {
+		@apply hidden;
+	}
 }
 
 @media (max-width: 400px) {
