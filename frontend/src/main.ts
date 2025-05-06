@@ -5,6 +5,8 @@ import './switch-page';
 import './pongGame';
 import './register';
 import './login';
+import { editProfile } from './editProfileData';
+import { downloadData, deleteAccount } from './userService';
 
 const burger = document.getElementById('burger-icon');
 const mobileMenu = document.getElementById('nav-mobile');
@@ -14,13 +16,16 @@ if (burger && mobileMenu) {
         burger.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
         });
-        
+
         mobileMenu.addEventListener('click', (e) => {
                 // Check if click is OUTSIDE the burger-bg panel or on a button
-                if (!burgerBg.contains(e.target) || e.target.classList.contains('burger-btn')) {
-                    mobileMenu.classList.add('hidden');
+                if (
+                        !burgerBg.contains(e.target) ||
+                        e.target.classList.contains('burger-btn')
+                ) {
+                        mobileMenu.classList.add('hidden');
                 }
-            });
+        });
 }
 
 document.body.addEventListener('click', (event) => {
@@ -30,6 +35,18 @@ document.body.addEventListener('click', (event) => {
         if (logoutButtonClicked) {
                 event.preventDefault();
                 logout();
+        }
+        const editProfileClicked = target.closest('#editProfileButton');
+        if (editProfileClicked) {
+                editProfile();
+        }
+        const downloadDataClicked = target.closest('#downloadData');
+        if (downloadDataClicked) {
+                downloadData();
+        }
+        const deleteAccountClicked = target.closest('#deleteAccount');
+        if (deleteAccountClicked) {
+                deleteAccount();
         }
 });
 
