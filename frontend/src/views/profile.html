@@ -1,83 +1,98 @@
-<div id="privateProfile" class="flex flex-col w-full h-full 2xl p-4 items-center">
+<div id="privateProfile" class="flex flex-col w-full h-full p-4 items-center">
   <div id="profileLoading" class="text-center p-5 hidden">
     Loading profile...
   </div>
   <div id="profileError" class="text-red-600 text-center p-5 hidden"></div>
 
-  <div id="profileContentArea" class="w-full" style="display: none">
-    <div class="defdiv flex flex-col min-w-90 w-full">
-      <div class="flex flex-row w-full items-start gap-4">
-        <img id="profilePicture" src="/DefaultProfilePic.png" alt="ProfilePicture" class="size-25 rounded-xl m-3" />
-        <div class="flex flex-col w-full gap-2 items-center h- p-3">
-          <h1 id="username" class="bg-light text-mediumdark text-4xl w-max p-4 rounded-2xl"></h1>
-          <div class="flex flex-row gap-2">
-            <p>Joined on:</p>
-            <p id="joinDate"></p>
-          </div>
-          <div class="flex flex-row gap-2">
-            <p>Status:</p>
-            <p id="userStatus"></p>
-          </div>
-          <div class="flex flex-row gap-2">
-            <p>Email:</p>
-            <p id="userEmail"></p>
-          </div>
-        </div>
-      </div>
-      <div class="flex flex-row w-full items-start gap-4">
-        <div class="indiv w-full flex h-30 p-3 justify-center items-center">
-          <p id="bioText">Biography will appear here when added to the API.</p>
-        </div>
-        <div class="indiv w-full flex h-30 p-3 justify-center items-center">
-          <ul id="statsList">
-            <li id="statsWins">Wins: </li>
-            <li id="statsLosses">Losses: </li>
-            <li id="statsWinLossRate">W/L Rate: </li>
-            <li id="statsRank">Rank: (Needs API)</li>
-            <li id="statsStreak">Best Win Streak: (Needs API)</li>          </ul>
+  <div
+    id="profileContentArea"
+    class="w-full max-w-6xl space-y-6"
+    style="display: none"
+  >
+    <!-- Header: Photo + Infos -->
+    <div
+      class="flex flex-col md:flex-row w-full gap-6 bg-light p-6 rounded-2xl bg-mediumlight"
+    >
+      <img
+        id="profilePicture"
+        src="/DefaultProfilePic.png"
+        alt="ProfilePicture"
+        class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover mx-auto md:mx-0"
+      />
+      <div class="flex flex-col justify-center w-full gap-2">
+        <h1
+          id="username"
+          class="text-mediumdark text-3xl md:text-4xl font-bold text-center md:text-left"
+        ></h1>
+        <div
+          class="flex flex-wrap gap-x-4 justify-center md:justify-start text-mediumdark"
+        >
+          <p><strong>Joined on:</strong> <span id="joinDate"></span></p>
+          <p><strong>Status:</strong> <span id="userStatus"></span></p>
+          <p><strong>Email:</strong> <span id="userEmail"></span></p>
         </div>
       </div>
     </div>
 
-    <!-- Buttons -->
-    <div>
-      <button id="editProfileButton" data-page="edit-profile" href="#"
-        class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-light text-xl w-60">
-        Edit my profile
-      </button>
-      <button id="logoutBtn"
-        class="bg-mediumlightdark rounded-xl p-3 hover:bg-mediumdark m-1 text-red-950 text-xl w-60">
-        Logout
-      </button>
+    <!-- Bio + Stats + Boutons -->
+    <div class="flex flex-col lg:flex-row gap-6 w-full">
+      <div class="flex-1 bg-light p-6 rounded-2xl bg-mediumlight">
+        <h2 class="text-xl font-semibold mb-2">Biography</h2>
+        <p id="bioText" class="text-mediumdark">
+          Biography will appear here when added to the API.
+        </p>
+      </div>
+      <div class="flex-1 bg-light p-6 rounded-2xl bg-mediumlight">
+        <h2 class="text-xl font-semibold mb-2">Stats</h2>
+        <ul id="statsList" class="space-y-1 text-mediumdark">
+          <li id="statsWins">Wins:</li>
+          <li id="statsLosses">Losses:</li>
+          <li id="statsWinLossRate">W/L Rate:</li>
+          <li id="statsRank">Rank: (Needs API)</li>
+          <li id="statsStreak">Best Win Streak: (Needs API)</li>
+        </ul>
+      </div>
+      <div
+        class="flex-1 bg-light p-6 rounded-2xl bg-mediumlight flex flex-col gap-4 items-center justify-center"
+      >
+        <button
+          id="editProfileButton"
+          data-page="edit-profile"
+          class="bg-mediumlightdark rounded-xl px-6 py-3 hover:bg-mediumdark text-light text-lg w-full"
+        >
+          Edit my profile
+        </button>
+        <button
+          id="logoutBtn"
+          class="bg-mediumlightdark rounded-xl px-6 py-3 hover:bg-mediumdark text-red-950 text-lg w-full"
+        >
+          Logout
+        </button>
+      </div>
     </div>
 
     <!-- Friends List -->
-    <div class="defdiv flex flex-col min-w-90 w-full">
-      <h1 class="text-xl">Friends</h1>
+    <div class="bg-light p-6 rounded-2xl bg-mediumlight w-full">
+      <h2 class="text-xl font-semibold mb-4">Friends</h2>
       <div id="friendsLoading" class="text-center p-3 hidden">
         Loading friends...
       </div>
       <div id="friendsError" class="text-red-600 text-center p-3 hidden"></div>
-      <div class="indiv w-full">
-        <ul class="w-full" id="friendsListContainer">
-          <li class="p-3">Friend list will appear here. (Needs API)</li>
-        </ul>
-      </div>
+      <ul id="friendsListContainer" class="space-y-2">
+        <li class="p-3">Friend list will appear here. (Needs API)</li>
+      </ul>
     </div>
 
     <!-- Game History -->
-    <div class="defdiv flex flex-col min-w-90 w-full">
-      <h1 class="text-xl">Game History</h1>
+    <div class="bg-light p-6 rounded-2xl bg-mediumlight w-full">
+      <h2 class="text-xl font-semibold mb-4">Game History</h2>
       <div id="historyLoading" class="text-center p-3 hidden">
         Loading history...
       </div>
       <div id="historyError" class="text-red-600 text-center p-3 hidden"></div>
-      <div class="indiv w-full">
-        <ul class="w-full" id="gameHistoryContainer">
-          <!-- Game history items will be dynamically inserted here -->
-          <li class="p-3">Game history will appear here.</li>
-        </ul>
-      </div>
+      <ul id="gameHistoryContainer" class="space-y-2">
+        <li class="p-3">Game history will appear here.</li>
+      </ul>
     </div>
   </div>
 </div>
