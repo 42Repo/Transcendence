@@ -23,12 +23,17 @@ const setHeaderBurgerMenu = async () => {
   const isAuth = await isAuthenticated();
   if (burgerMenu && isAuth) {
     burgerMenu.innerHTML = `
+    <hr></hr>
     <li><a href="#" data-page="home" class="burger-btn block text-white">HOME</a></li>
+    <hr></hr>
     <li><a href="#" data-page="profile" class="burger-btn block text-white">PROFILE</a></li>
+    <hr></hr>
     <li><a href="#" data-page="about-us" class="burger-btn block text-white">ABOUT US</a></li>`;
   } else if (burgerMenu) {
     burgerMenu.innerHTML = `
+    <hr></hr>
     <li><a href="#" data-page="home" class="burger-btn block text-white">HOME</a></li>
+    <hr></hr>
     <li><a href="#" data-page="about-us" class="burger-btn block text-white">ABOUT US</a></li>`;
   }
 };
