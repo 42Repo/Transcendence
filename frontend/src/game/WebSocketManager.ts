@@ -82,7 +82,14 @@ export class WebSocketManager {
     } else {
       console.log('restart');
       this.connectToServer();
-      this.socket?.send(JSON.stringify({ type: 'join', data: { name: this.player.name } }));
+      this.socket?.send(JSON.stringify({
+        type: 'join', data: {
+          infoPlayer: {
+            name: this.player.name,
+            id: this.player.id
+          }
+        }
+      }));
     }
   };
 
@@ -117,7 +124,7 @@ export class WebSocketManager {
       this.player.name = data.name;
       this.player.id = data.id;
     } catch (err: any) {
-      console.log(err.message);
+      console.log(err);
     }
   }
 }
