@@ -112,7 +112,10 @@ export const fetchPage = async (page: string): Promise<void> => {
   try {
     if (page === 'profile') {
       await loadAndPopulateProfileData();
+    } else if (page === 'edit-profile') {
+      await loadAndPopulateEditProfileData();
     }
+
     // else if (page === 'publicProfile') {
     // }
     else if (page === 'logged') {
@@ -125,6 +128,83 @@ export const fetchPage = async (page: string): Promise<void> => {
     );
   }
 };
+
+async function loadAndPopulateEditProfileData() {
+  console.log('Attempting to load and populate profile data...');
+
+  const loadingIndicator = document.getElementById('profileLoading');
+  const errorDisplay = document.getElementById('profileError');
+  const profileContentArea = document.getElementById('profileContentArea');
+
+  const usernameElem = document.getElementById('username') as HTMLInputElement;
+  const joinDateElem = document.getElementById('joinDate');
+  const emailElem = document.getElementById('userEmail') as HTMLInputElement;
+  const profilePicElem = document.getElementById(
+    'profilePicture'
+  ) as HTMLImageElement | null;
+  const bioElem = document.getElementById(
+    'bioText'
+  ) as HTMLParagraphElement | null;
+
+  if (
+    !loadingIndicator ||
+    !errorDisplay ||
+    !profileContentArea ||
+    !usernameElem ||
+    !joinDateElem ||
+    !emailElem ||
+    !profilePicElem ||
+    !bioElem
+  ) {
+    console.error(
+      'Profile page structure is missing required elements. Check IDs in profile.html and this function.'
+    );
+    content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
+    return;
+  }
+
+  loadingIndicator.style.display = 'block';
+  errorDisplay.style.display = 'none';
+  errorDisplay.textContent = '';
+  profileContentArea.style.display = 'none';
+
+  try {
+    const userData: UserPrivateData = await fetchMyProfileData();
+
+    usernameElem.value = userData.username;
+    joinDateElem.textContent = new Date(
+      userData.created_at
+    ).toLocaleDateString();
+    emailElem.placeholder = userData.email || 'Not set';
+    if (userData.avatar_url && userData.avatar_url !== '/default-avatar.png') {
+      profilePicElem.src = userData.avatar_url;
+    } else {
+      profilePicElem.src = '/DefaultProfilePic.png';
+    }
+    bioElem.textContent = userData.bio || 'No biography set.';
+
+    profileContentArea.style.display = 'block';
+    errorDisplay.style.display = 'none';
+  } catch (error) {
+    console.error('Error loading profile data:', error);
+    errorDisplay.style.display = 'block';
+    profileContentArea.style.display = 'none';
+
+    if (error instanceof Error) {
+      errorDisplay.textContent = `Error loading profile: ${error.message}`;
+      if (error.message === 'Unauthorized') {
+        errorDisplay.textContent += ' Please log in again.';
+        logout();
+        showLoginModal();
+      }
+    } else {
+      errorDisplay.textContent =
+        'An unknown error occurred while loading the profile.';
+    }
+  } finally {
+    loadingIndicator.style.display = 'none';
+  }
+}
 
 async function loadAndPopulateProfileData() {
   console.log('Attempting to load and populate profile data...');
@@ -369,6 +449,17 @@ export const switchPage = async (page: string) => {
     return;
   }
 
+  if (targetPage === currentLogicalPage && targetPage !== 'edit-profile') {
+    console.log(`Already on page '${targetPage}', no full switch.`);
+    return;
+  }
+  if (targetPage === currentLogicalPage && targetPage === 'edit-profile') {
+    console.log(
+      `Already on page '${targetPage}', re-fetching data if applicable.`
+    );
+    await loadAndPopulateEditProfileData();
+    return;
+  }
   const newPath =
     targetPage === 'home' || targetPage === 'logged' ? '/' : `/${targetPage}`;
 
