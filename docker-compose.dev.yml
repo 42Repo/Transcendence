@@ -23,3 +23,14 @@ services:
       - ./frontend/tailwind.config.js:/app/tailwind.config.js:ro
       - frontend-node-modules:/app/node_modules
     restart: unless-stopped
+
+  pong-server:
+    build:
+      context: ./pong-server
+      target: development
+    command: npm run dev
+    volumes:
+      - ./pong-server/src:/app/src:rw
+      - pong-node-modules:/app/node_modules
+    expose:
+      - 4000

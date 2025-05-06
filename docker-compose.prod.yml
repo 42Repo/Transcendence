@@ -17,3 +17,13 @@ services:
       target: builder
     volumes:
       - frontend-dist:/app/dist
+
+  pong-server:
+    build:
+      context: ./pong-server
+      target: production
+    command: node dist/index.js
+    volumes:
+      - /app/node_modules
+    expose:
+      - 4000

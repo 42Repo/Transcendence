@@ -4,6 +4,15 @@ import { GameManager, MatchMaking } from './pong';
 import { PlayerBase } from './StateGame';
 import { FastifyRequest } from 'fastify/types/request';
 import fastifyCors from '@fastify/cors';
+import { jwtDecode } from 'jwt-decode';
+import { getUserById } from './DB/dbQuerys';
+
+interface DecodeToken {
+  username: string;
+  id: number;
+}
+
+
 
 const getGameManager = (player: PlayerBase, games: GameManager[]): GameManager | null => {
   let result = null;
@@ -31,9 +40,21 @@ const start = async () => {
     if (!token) {
       return rep.status(400).send({ error: 'Token is required' });
     }
-
-    rep.status(200).send({ name: 'default', id: null });
+    const decodeToken: DecodeToken = jwtDecode(token);
+    console.log(decodeToken);
+    rep.status(200).send({ name: decodeToken.username, id: decodeToken.id });
   });
+
+  server.get('/db/user/:id', async (req: FastifyRequest, rep: FastifyReply) => {
+    const id = parseInt(req.params && (req.params as any).id);
+    let user;
+    try {
+      user = getUserById(id);
+    } catch (error: any) {
+      rep.status(500).send(error.message);
+    }
+    rep.status(200).send(user);
+  })
 
   server.get('/ws',
     { websocket: true },
@@ -41,13 +62,17 @@ const start = async () => {
 
       let player: PlayerBase | null = null;
 
-      socket.on('message', (msg: string, isBinary: boolean) => {
+      socket.on('message', async (msg: string, isBinary: boolean) => {
         const msgStr = isBinary ? msg.toString() : msg as string;
         const message = JSON.parse(msgStr);
         const { type, data } = message;
         switch (type) {
           case 'join':
-            const result = (matchMaker.addPlayer(socket, data.name, new Map()));
+            const result = await (matchMaker.addPlayer(
+              socket,
+              data.infoPlayer,
+              new Map()
+            ));
             player = result.player;
             if (result.game) {
               gameManagers.push(result.game);

@@ -22,7 +22,14 @@ export class WebSocketManager {
 
   private onOpen = async () => {
     console.log('✅ Connected to Pong Server');
-    this.socket?.send(JSON.stringify({ type: 'join', data: { name: this.player.name } }));
+    this.socket?.send(JSON.stringify({
+      type: 'join', data: {
+        infoPlayer: {
+          name: this.player.name,
+          id: this.player.id
+        }
+      }
+    }));
   };
 
   private onMessage = async (event: any) => {
@@ -84,7 +91,6 @@ export class WebSocketManager {
     const socketProtocol = isLocal ? 'ws' : 'wss';
     const host = isLocal ? 'localhost:4000' : location.host;
     await this.fetchUser();
-    console.log('Player', this.player.name);
     if (this.socket) {
       this.socket.close();
     }
@@ -102,22 +108,16 @@ export class WebSocketManager {
       return;
     const safeToken = encodeURIComponent(token);
     const url = `http://${host}/user?token=${safeToken}`;
-    console.log('→ Fetching URL:', url);
     try {
-      const res = await fetch(url,
-        {
-          method: "GET",
-        }
-      );
+      const res = await fetch(url, { method: "GET" });
       if (!res.ok) {
         throw new Error(`Status ${res.status}\nError: fetch user data`);
       }
       const data = await res.json();
-      console.log(data);
       this.player.name = data.name;
       this.player.id = data.id;
     } catch (err: any) {
-      console.error(err.message);
+      console.log(err.message);
     }
   }
 }

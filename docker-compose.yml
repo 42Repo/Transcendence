@@ -50,10 +50,13 @@ services:
   pong-server:
     build:
       context: ./pong-server
+      target: base
     ports:
       - "4000:4000"
     networks:
       - transcendence-net
+    volumes:
+      - database-data:/app/database:ro
     restart: unless-stopped
 
 
@@ -65,4 +68,5 @@ volumes:
   frontend-dist:
   backend-node-modules:
   frontend-node-modules:
+  pong-node-modules:
   database-data:

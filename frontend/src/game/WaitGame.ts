@@ -34,7 +34,7 @@ export class WaitGame {
     const text1: WriterDef = {
       scale: 1,
       writer: {
-        text: 'Wait Room',
+        text: 'Waiting Room',
         anchor: "center",
         'letter-height': 8,
         'letter-thickness': 2,

@@ -15,8 +15,23 @@ export class MatchMaking {
     this.gameManagers = gameManagers;
   }
 
-  addPlayer(socket: WebSocket, name: string, playerKeys: Map<string, boolean> | null): { player: PlayerBase, game: GameManager | null } {
-    const player: PlayerBase = { id: uuidv4(), socket, name, playerKeys };
+  async addPlayer(
+    socket: WebSocket,
+    infoPlayer: { name: string, id: number | null },
+    playerKeys: Map<string, boolean> | null
+  ): Promise<{ player: PlayerBase, game: GameManager | null }> {
+    try {
+      const getInfoPlayer = await fetch(`http://localhost:4000/db/user/${infoPlayer.id}`, { method: "GET" });
+      console.log('getInfoPlayer: ', getInfoPlayer);
+    } catch (error: any) {
+      console.error(error.message);
+    }
+    const player: PlayerBase = {
+      id: infoPlayer.id ? infoPlayer.id.toString() : uuidv4(),
+      socket,
+      name: infoPlayer.name,
+      playerKeys
+    };
     let newGame: GameManager | null = null;
     this.players.push(player);
     if (this.players.length >= 2) {

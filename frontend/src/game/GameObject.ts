@@ -10,7 +10,7 @@ export class GameObject {
 
   constructor(game: StateManager) {
     this.game = game;
-    this.scene = game.currentScene;
+    this.scene = game.currentScene!;
   }
 
   setColor(color: Color3, alpha?: number) {
@@ -28,7 +28,7 @@ export class GameObject {
     this.mesh.rotation[axe] = degrees;
   }
 
-  updateX(num: number) {
+  updateX(num: number): void {
     const x = this.mesh.position.x;
 
     if (Math.abs(x - num) > .001)
