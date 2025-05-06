@@ -30,11 +30,11 @@
         </div>
         <div class="indiv w-full flex h-30 p-3 justify-center items-center">
           <ul id="statsList">
-            <li id="statsRank">Rank:</li>
-            <li id="statsWinLoss">W/L Rate:</li>
-            <li id="statsStreak">Best Win Streak:</li>
-            <li>Stats will appear here when added to the API.</li>
-          </ul>
+            <li id="statsWins">Wins: </li>
+            <li id="statsLosses">Losses: </li>
+            <li id="statsWinLossRate">W/L Rate: </li>
+            <li id="statsRank">Rank: (Needs API)</li>
+            <li id="statsStreak">Best Win Streak: (Needs API)</li>          </ul>
         </div>
       </div>
     </div>
@@ -59,9 +59,8 @@
       </div>
       <div id="friendsError" class="text-red-600 text-center p-3 hidden"></div>
       <div class="indiv w-full">
-        <!-- NOTE: Friend list requires backend API -->
         <ul class="w-full" id="friendsListContainer">
-          <li class="p-3">Friend list will appear here.</li>
+          <li class="p-3">Friend list will appear here. (Needs API)</li>
         </ul>
       </div>
     </div>
@@ -75,6 +74,7 @@
       <div id="historyError" class="text-red-600 text-center p-3 hidden"></div>
       <div class="indiv w-full">
         <ul class="w-full" id="gameHistoryContainer">
+          <!-- Game history items will be dynamically inserted here -->
           <li class="p-3">Game history will appear here.</li>
         </ul>
       </div>

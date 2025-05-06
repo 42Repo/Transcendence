@@ -8,15 +8,39 @@ export interface UserPublicData {
 
 export interface UserPrivateData extends UserPublicData {
   email: string | null;
-  preferred_language: string;
+  bio: string | null;
   updated_at: string;
-  description: string | null;
+  total_wins: number;
+  total_losses: number;
+}
+
+export interface GameMatch {
+  match_id: number;
+  player1_username: string;
+  player1_avatar_url?: string;
+  player2_username: string;
+  player2_avatar_url?: string;
+  player1_score: number;
+  player2_score: number;
+  winner_id: number | null;
+  match_date: string;
+}
+
+export function getMatchResultForUser(
+  match: GameMatch,
+  currentUserId: number
+): 'win' | 'loss' | 'draw' {
+  if (match.winner_id === null) return 'draw';
+  if (match.winner_id === currentUserId) return 'win';
+  return 'loss';
 }
 
 interface ApiResponse<T> {
   success: boolean;
   user?: T;
+  matches?: T;
   message?: string;
+  requested_for_user_id?: number;
 }
 
 export async function fetchMyProfileData(): Promise<UserPrivateData> {
@@ -64,7 +88,14 @@ export async function fetchMyProfileData(): Promise<UserPrivateData> {
 
     if (data.success && data.user) {
       console.log('User data fetched successfully:', data.user);
-      return data.user;
+
+      const userWithDefaults = {
+        total_wins: 0,
+        total_losses: 0,
+        bio: null,
+        ...data.user,
+      };
+      return userWithDefaults;
     } else {
       console.error(
         'API reported success=false or missing user data:',
@@ -84,21 +115,49 @@ export async function fetchMyProfileData(): Promise<UserPrivateData> {
   }
 }
 
+export async function fetchGameHistory(
+  userId: string | number
+): Promise<GameMatch[]> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('Unauthorized: No token');
+  }
+
+  try {
+    const response = await fetch(`/api/users/${userId}/matches`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+
+    if (response.status === 401) throw new Error('Unauthorized');
+    if (response.status === 404)
+      throw new Error('User or match history not found');
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || `Server error: ${response.status}`);
+    }
+
+    const data: ApiResponse<GameMatch[]> = await response.json();
+
+    if (data.success && Array.isArray(data.matches)) {
+      return data.matches;
+    } else {
+      throw new Error(data.message || 'Failed to retrieve game history.');
+    }
+  } catch (error) {
+    console.error(`Error fetching game history for user ${userId}:`, error);
+    throw error;
+  }
+}
+
 // TODO - Implement fetchUserProfileData(identifier)
 export async function fetchFriendsList(): Promise<any[]> {
   console.warn(
     'fetchFriendsList function needs implementation (requires backend API).'
-  );
-
-  // Simulate network delay for placeholder
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return []; // Return empty array for now
-}
-
-// TODO - Replace 'any' with your actual GameHistoryItem interface when available
-export async function fetchGameHistory(): Promise<any[]> {
-  console.warn(
-    'fetchGameHistory function needs implementation (requires backend API).'
   );
 
   // Simulate network delay for placeholder

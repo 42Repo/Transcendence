@@ -26,7 +26,7 @@ export const getDb = () => {
 
     if (!dbExists || !isSchemaApplied(dbInstance)) {
       console.log(
-        'Database file created or schema not applied. Applying schema...'
+        'Database file created or schema not fully applied. Applying schema...'
       );
       if (fs.existsSync(dbSchemaPath)) {
         const schemaSql = fs.readFileSync(dbSchemaPath, 'utf-8');
@@ -51,11 +51,26 @@ export const getDb = () => {
 
 function isSchemaApplied(db: Database.Database): boolean {
   try {
-    const stmt = db.prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
-    );
-    const result = stmt.get();
-    return !!result;
+    const usersTableCheck = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+      )
+      .get();
+    const gameMatchesTableCheck = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='game_matches'"
+      )
+      .get();
+
+    if (usersTableCheck && gameMatchesTableCheck) {
+      console.log("Schema check: 'users' and 'game_matches' tables exist.");
+      return true;
+    } else {
+      if (!usersTableCheck) console.log("Schema check: 'users' table missing.");
+      if (!gameMatchesTableCheck)
+        console.log("Schema check: 'game_matches' table missing.");
+      return false;
+    }
   } catch (error) {
     console.error('Error checking schema application status:', error);
     return false;
