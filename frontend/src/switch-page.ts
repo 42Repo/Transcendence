@@ -4,6 +4,8 @@ import {
   fetchFriendsList,
   fetchGameHistory,
   UserPrivateData,
+  GameMatch,
+  getMatchResultForUser,
 } from './userService';
 
 const content = document.getElementById('content') as HTMLElement;
@@ -81,7 +83,6 @@ export const fetchPage = async (page: string): Promise<void> => {
     content.innerHTML = cache.get(page)!;
     if (page === 'pongGame') {
       setTimeout(() => {
-        console.log('sdf');
         document.dispatchEvent(new Event('pongGameLoaded'));
       }, 50);
     }
@@ -97,7 +98,6 @@ export const fetchPage = async (page: string): Promise<void> => {
       content.innerHTML = html;
       if (page === 'pongGame') {
         setTimeout(() => {
-          console.log('lalalla');
           document.dispatchEvent(new Event('pongGameLoaded'));
         }, 50);
       }
@@ -114,12 +114,6 @@ export const fetchPage = async (page: string): Promise<void> => {
       await loadAndPopulateProfileData();
     }
     // else if (page === 'publicProfile') {
-    //    const identifier = window.location.pathname.split('/').pop();
-    //    if (identifier && identifier !== 'publicProfile') {
-    //        await loadPublicProfileData(identifier);
-    //    } else {
-    //        console.warn("Could not determine user identifier for public profile page.");
-    //    }
     // }
     else if (page === 'logged') {
       console.log("Landed on 'logged' page. Implement data loading if needed.");
@@ -146,10 +140,18 @@ async function loadAndPopulateProfileData() {
   const profilePicElem = document.getElementById(
     'profilePicture'
   ) as HTMLImageElement | null;
-  const bioElem = document.getElementById('bioText');
+  const bioElem = document.getElementById(
+    'bioText'
+  ) as HTMLParagraphElement | null;
+
+  const statsWinsElem = document.getElementById('statsWins');
+  const statsLossesElem = document.getElementById('statsLosses');
+  const statsWinLossRateElem = document.getElementById('statsWinLossRate');
+
   const friendsLoading = document.getElementById('friendsLoading');
   const friendsError = document.getElementById('friendsError');
   const friendsContainer = document.getElementById('friendsListContainer');
+
   const historyLoading = document.getElementById('historyLoading');
   const historyError = document.getElementById('historyError');
   const historyContainer = document.getElementById('gameHistoryContainer');
@@ -163,7 +165,10 @@ async function loadAndPopulateProfileData() {
     !statusElem ||
     !emailElem ||
     !profilePicElem ||
-    !bioElem
+    !bioElem ||
+    !statsWinsElem ||
+    !statsLossesElem ||
+    !statsWinLossRateElem
   ) {
     console.error(
       'Profile page structure is missing required elements. Check IDs in profile.html and this function.'
@@ -191,18 +196,34 @@ async function loadAndPopulateProfileData() {
     } else {
       profilePicElem.src = '/DefaultProfilePic.png';
     }
-    // bioElem.textContent = userData.bio || "No biography set.";
+    bioElem.textContent = userData.bio || 'No biography set.';
+
+    statsWinsElem.textContent = `Wins: ${userData.total_wins}`;
+    statsLossesElem.textContent = `Losses: ${userData.total_losses}`;
+    if (userData.total_losses > 0) {
+      const ratio = userData.total_wins / userData.total_losses;
+      statsWinLossRateElem.textContent = `W/L Rate: ${ratio.toFixed(2)}`;
+    } else if (userData.total_wins > 0) {
+      statsWinLossRateElem.textContent = `W/L Rate: Perfect! (∞)`;
+    } else {
+      statsWinLossRateElem.textContent = `W/L Rate: N/A`;
+    }
 
     const rankElem = document.getElementById('statsRank');
-    // if (rankElem && userData.rank) rankElem.textContent = `Rank: ${userData.rank}`;
-    // else if (rankElem) rankElem.textContent = `Rank: Unranked`;
     if (rankElem) rankElem.textContent = `Rank: (Needs API)`;
+    const streakElem = document.getElementById('statsStreak');
+    if (streakElem) streakElem.textContent = `Best Win Streak: (Needs API)`;
 
     profileContentArea.style.display = 'block';
     errorDisplay.style.display = 'none';
 
     void loadFriends(friendsContainer, friendsLoading, friendsError);
-    void loadHistory(historyContainer, historyLoading, historyError);
+    void loadHistory(
+      userData.user_id,
+      historyContainer,
+      historyLoading,
+      historyError
+    );
   } catch (error) {
     console.error('Error loading profile data:', error);
     errorDisplay.style.display = 'block';
@@ -240,7 +261,7 @@ async function loadFriends(
     const friends = await fetchFriendsList();
     if (friends.length === 0) {
       container.innerHTML =
-        '<li class="p-3 text-gray-500">No friends added yet.</li>';
+        '<li class="p-3 text-gray-500">Friend list functionality needs API.</li>';
     } else {
       container.innerHTML = friends
         .map((friend) => `<li class="p-3">Friend: ${friend.name}</li>`)
@@ -257,6 +278,7 @@ async function loadFriends(
 }
 
 async function loadHistory(
+  currentUserId: number,
   container: HTMLElement | null,
   loading: HTMLElement | null,
   errorDisplay: HTMLElement | null
@@ -269,22 +291,60 @@ async function loadHistory(
   errorDisplay.style.display = 'none';
   container.innerHTML = '';
   try {
-    const history = await fetchGameHistory();
-    if (history.length === 0) {
+    const historyItems: GameMatch[] = await fetchGameHistory(currentUserId);
+    if (historyItems.length === 0) {
       container.innerHTML =
         '<li class="p-3 text-gray-500">No game history found.</li>';
     } else {
-      container.innerHTML = history
-        .map(
-          (game) =>
-            `<li class="p-3">Game vs ${game.opponent} - ${game.result}</li>`
-        )
+      const historyHtml = historyItems
+        .map((item) => {
+          const result = getMatchResultForUser(item, currentUserId);
+          const opponentUsername =
+            currentUserId === item.player1_id
+              ? item.player2_username
+              : item.player1_username;
+          const opponentAvatar =
+            currentUserId === item.player1_id
+              ? item.player1_avatar_url
+              : item.player2_avatar_url;
+          const userScore =
+            currentUserId === item.player1_id
+              ? item.player1_score
+              : item.player2_score;
+          const opponentScore =
+            currentUserId === item.player1_id
+              ? item.player2_score
+              : item.player1_score;
+
+          const resultClass =
+            result === 'win'
+              ? 'text-green-500'
+              : result === 'loss'
+                ? 'text-red-500'
+                : 'text-gray-500';
+          const avatarSrc =
+            opponentAvatar && opponentAvatar !== '/default-avatar.png'
+              ? opponentAvatar
+              : '/DefaultProfilePic.png';
+
+          return `
+          <li class="flex items-center justify-between p-3 border-b border-mediumlightdark hover:bg-mediumdark">
+            <div class="flex items-center">
+              <img src="${avatarSrc}" alt="${opponentUsername}" class="size-10 rounded-full mr-3">
+              <span>vs ${opponentUsername}</span>
+            </div>
+            <span class="${resultClass} font-semibold">${result.toUpperCase()} (${userScore} - ${opponentScore})</span>
+            <span>${new Date(item.match_date).toLocaleDateString()}</span>
+          </li>
+        `;
+        })
         .join('');
+      container.innerHTML = historyHtml;
     }
   } catch (e) {
     console.error('Error loading game history:', e);
     errorDisplay.style.display = 'block';
-    errorDisplay.textContent = `Could not load game history.${e instanceof Error ? ` (${e.message})` : ''}`;
+    errorDisplay.textContent = `Could not load game history. ${e instanceof Error ? `(${e.message})` : ''}`;
     container.innerHTML = '';
   } finally {
     loading.style.display = 'none';
@@ -297,13 +357,15 @@ export const switchPage = async (page: string) => {
 
   const currentLogicalPage = history.state?.page || getPageName();
 
-  if (targetPage === currentLogicalPage) {
+  if (targetPage === currentLogicalPage && targetPage !== 'profile') {
+    console.log(`Already on page '${targetPage}', no full switch.`);
+    return;
+  }
+  if (targetPage === currentLogicalPage && targetPage === 'profile') {
     console.log(
       `Already on page '${targetPage}', re-fetching data if applicable.`
     );
-    if (targetPage === 'profile') {
-      void loadAndPopulateProfileData();
-    }
+    await loadAndPopulateProfileData();
     return;
   }
 
@@ -341,7 +403,6 @@ export const loadCurrentPage = async () => {
 
 const initializeApp = async () => {
   console.log('Initializing app...');
-  // await prefetchAllPages();
   loadCurrentPage();
 };
 
@@ -349,17 +410,20 @@ void initializeApp();
 
 window.addEventListener('popstate', async (event) => {
   console.log('Popstate event triggered (back/forward)', event.state);
-  const pageToLoad = event.state?.page;
+  let pageToLoad = event.state?.page;
 
-  if (pageToLoad) {
-    const isAuth = await isAuthenticated();
-    const finalPage = pageToLoad === 'home' && isAuth ? 'logged' : pageToLoad;
-    console.log(`Popstate navigating to effective page: ${finalPage}`);
-    void fetchPage(finalPage);
-  } else {
-    console.log('Popstate has no state, loading based on URL.');
-    loadCurrentPage();
+  if (!pageToLoad) {
+    pageToLoad = getPageName();
   }
+
+  const isAuth = await isAuthenticated();
+  const finalPage =
+    (pageToLoad === 'home' || pageToLoad === '') && isAuth
+      ? 'logged'
+      : pageToLoad;
+
+  console.log(`Popstate navigating to effective page: ${finalPage}`);
+  void fetchPage(finalPage);
 });
 
 document.body.addEventListener('click', (e) => {
@@ -372,13 +436,5 @@ document.body.addEventListener('click', (e) => {
     if (page) {
       switchPage(page);
     }
-  }
-
-  const logoutButton = target.closest('#logoutBtn');
-  if (logoutButton) {
-    e.preventDefault();
-    console.log('Logout button clicked.');
-    logout();
-    switchPage('home');
   }
 });
