@@ -5,7 +5,6 @@ import {
   FastifyReply,
 } from 'fastify';
 import bcrypt from 'bcrypt';
-import FastifyJwt from '@fastify/jwt';
 
 interface LoginBody {
   loginIdentifier: string; // Username or email
