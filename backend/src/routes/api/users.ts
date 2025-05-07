@@ -5,6 +5,7 @@ import {
   FastifyReply,
   RouteShorthandOptions,
 } from 'fastify';
+import bcrypt from 'bcrypt';
 
 interface UserParams {
   identifier: string;
@@ -38,6 +39,19 @@ interface GameMatchData {
   player2_score: number;
   winner_id: number | null;
   match_date: string;
+}
+
+interface UpdateUserBody {
+  username?: string;
+  email?: string;
+  bio?: string;
+  current_password?: string;
+  new_password?: string;
+  // avatar_url?: string; // For future avatar updates
+}
+
+function isValidEmail(email: string): boolean {
+  return /\S+@\S+\.\S+/.test(email);
 }
 
 export default function userRoutes(
@@ -94,6 +108,202 @@ export default function userRoutes(
       } catch (err) {
         request.log.error(err, `Error fetching data for user ID: ${userId}`);
         return reply.internalServerError('Failed to retrieve user data.');
+      }
+    }
+  );
+
+  fastify.put<{ Body: UpdateUserBody }>(
+    '/users/me',
+    routeOpts,
+    async (request, reply) => {
+      const userId = request.user.id;
+      const { username, email, bio, current_password, new_password } =
+        request.body;
+
+      const updates: { [key: string]: any } = {};
+      const params: any[] = [];
+      let usernameChanged = false;
+
+      try {
+        const currentUserStmt = fastify.db.prepare(
+          'SELECT username, email, password_hash FROM users WHERE user_id = ?'
+        );
+        const currentUserData = currentUserStmt.get(userId) as
+          | {
+              username: string;
+              email: string | null;
+              password_hash: string | null;
+            }
+          | undefined;
+
+        if (!currentUserData) {
+          return reply.notFound('User not found.');
+        }
+
+        if (
+          username !== undefined &&
+          username.trim() !== currentUserData.username
+        ) {
+          const trimmedUsername = username.trim();
+          if (trimmedUsername.length < 3) {
+            return reply.badRequest(
+              'Username must be at least 3 characters long.'
+            );
+          }
+          const existingUserStmt = fastify.db.prepare(
+            'SELECT user_id FROM users WHERE username = ? AND user_id != ?'
+          );
+          const existingUser = existingUserStmt.get(trimmedUsername, userId);
+          if (existingUser) {
+            return reply.conflict('Username already taken.');
+          }
+          updates.username = trimmedUsername;
+          usernameChanged = true;
+        }
+
+        if (email !== undefined) {
+          const trimmedEmail = email.trim();
+          if (trimmedEmail === '' && currentUserData.email !== null) {
+            updates.email = null;
+          } else if (
+            trimmedEmail !== '' &&
+            trimmedEmail !== currentUserData.email
+          ) {
+            if (!isValidEmail(trimmedEmail)) {
+              return reply.badRequest('Invalid email format.');
+            }
+            const existingUserStmt = fastify.db.prepare(
+              'SELECT user_id FROM users WHERE email = ? AND user_id != ?'
+            );
+            const existingUser = existingUserStmt.get(trimmedEmail, userId);
+            if (existingUser) {
+              return reply.conflict('Email already taken.');
+            }
+            updates.email = trimmedEmail;
+          }
+        }
+
+        if (bio !== undefined) {
+          updates.bio = bio.trim().substring(0, 300);
+        }
+
+        if (new_password) {
+          if (!current_password) {
+            return reply.badRequest(
+              'Current password is required to change password.'
+            );
+          }
+          if (!currentUserData.password_hash) {
+            return reply.badRequest(
+              'No current password set for this account. Cannot change password.'
+            );
+          }
+          const match = await bcrypt.compare(
+            current_password,
+            currentUserData.password_hash
+          );
+          if (!match) {
+            return reply.unauthorized('Incorrect current password.');
+          }
+          if (new_password.length < 6) {
+            return reply.badRequest(
+              'New password must be at least 6 characters long.'
+            );
+          }
+          updates.password_hash = await bcrypt.hash(new_password, 10);
+        } else if (current_password && !new_password) {
+          return reply.badRequest(
+            'New password is required when current password is provided for a password change.'
+          );
+        }
+
+        if (Object.keys(updates).length === 0) {
+          return reply.send({ success: true, message: 'No changes detected.' });
+        }
+
+        const setClauses = Object.keys(updates)
+          .map((key) => `${key} = ?`)
+          .join(', ');
+        params.push(...Object.values(updates));
+        params.push(userId);
+
+        const updateQuery = `UPDATE users SET ${setClauses}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?`;
+        const stmt = fastify.db.prepare(updateQuery);
+        stmt.run(...params);
+
+        const updatedUserStmt = fastify.db.prepare(
+          'SELECT user_id, username, email, avatar_url, status, created_at, updated_at, bio FROM users WHERE user_id = ?'
+        );
+        const updatedUser = updatedUserStmt.get(userId) as
+          | UserPrivateDataWithStats
+          | undefined;
+
+        if (!updatedUser) {
+          return reply.internalServerError(
+            'Failed to retrieve updated user details.'
+          );
+        }
+
+        let newToken: string | undefined = undefined;
+        if (usernameChanged) {
+          newToken = await reply.jwtSign(
+            {
+              id: updatedUser.user_id,
+              username: updatedUser.username,
+            },
+            { expiresIn: '1h' }
+          );
+        }
+
+        return reply.send({
+          success: true,
+          message: 'Profile updated successfully.',
+          user: updatedUser,
+          token: newToken,
+        });
+      } catch (err) {
+        request.log.error(err, 'Error updating user profile');
+        if (
+          err instanceof Error &&
+          (err.message.includes('UNIQUE constraint failed: users.username') ||
+            err.message.includes('UNIQUE constraint failed: users.email'))
+        ) {
+          return reply.conflict(
+            err.message.includes('users.username')
+              ? 'Username already taken.'
+              : 'Email already taken.'
+          );
+        }
+        return reply.internalServerError('Failed to update profile.');
+      }
+    }
+  );
+
+  fastify.delete(
+    '/users/me',
+    routeOpts,
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = request.user.id;
+
+      try {
+        const stmt = fastify.db.prepare('DELETE FROM users WHERE user_id = ?');
+        const info = stmt.run(userId);
+
+        if (info.changes > 0) {
+          request.log.info(`User ${userId} deleted successfully.`);
+          return reply.send({
+            success: true,
+            message: 'Account deleted successfully.',
+          });
+        } else {
+          request.log.warn(
+            `Attempted to delete non-existent user or user already deleted: ${userId}`
+          );
+          return reply.notFound('User not found or already deleted.');
+        }
+      } catch (err) {
+        request.log.error(err, `Error deleting user ID: ${userId}`);
+        return reply.internalServerError('Failed to delete account.');
       }
     }
   );
@@ -182,7 +392,6 @@ export default function userRoutes(
           whereClause = 'username = ? COLLATE NOCASE';
         }
 
-        // TODO: Add bio and stats here too if public profiles should show them
         const stmt = fastify.db.prepare(
           `SELECT user_id, username, avatar_url, status, created_at FROM users WHERE ${whereClause}`
         );
@@ -206,6 +415,6 @@ export default function userRoutes(
   );
 
   fastify.log.info(
-    'Registered /api/users routes: /me, /:identifier, /:identifier/matches'
+    'Registered /api/users routes: GET /me, PUT /me, DELETE /me, GET /:identifier, GET /:identifier/matches'
   );
 }
