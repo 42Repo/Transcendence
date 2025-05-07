@@ -19,9 +19,9 @@ interface LoginBody {
 function googleRegister(user: GoogleUser, fastify: FastifyInstance) {
   console.log(user);
   const insertStmt = fastify.db.prepare(
-    'INSERT INTO users (username, email) VALUES (?, ?)'
+    'INSERT INTO users (username, email, avatar_url) VALUES (?, ?, ?)'
   );
-  const info = insertStmt.run(user.name, user.email);
+  const info = insertStmt.run(user.name, user.email, user.picture);
 
   return info;
 }
