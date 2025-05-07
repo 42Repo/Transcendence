@@ -52,6 +52,7 @@ export function createInitialState(): StateGame {
       {
         id: '',
         name: '',
+        avatar: '',
         socket: null,
         playerKeys: null,
         score: 0,
@@ -64,6 +65,7 @@ export function createInitialState(): StateGame {
       {
         id: '',
         name: '',
+        avatar: '',
         socket: null,
         playerKeys: new Map(),
         score: 0,

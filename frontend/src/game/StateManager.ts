@@ -31,7 +31,7 @@ export class StateManager {
     });;
   }
 
-  public changeState = async (state: State, message?: string) => {
+  public changeState = async (state: State, data?: any) => {
     if (this._currentScene) {
       this._currentScene.dispose();
     }
@@ -43,19 +43,19 @@ export class StateManager {
         break;
       case State.START:
         this._currentScene = new Scene(this._engine);
-        this._game = new Game(this, defaultConfig);
+        this._game = new Game(this, defaultConfig, data.players);
         await this._game.init();
         break;
       case State.WIN:
         this._currentScene = new Scene(this._engine);
-        this._winScene = new WinScene(this, message);
+        this._winScene = new WinScene(this, data.message);
         await this._winScene.init();
         const exitWin = await this._winScene.awitExit();
         this.cleanup();
         return exitWin;
       case State.LOSE:
         this._currentScene = new Scene(this._engine);
-        this._loseScene = new LoseScene(this, message);
+        this._loseScene = new LoseScene(this, data.message);
         await this._loseScene.init();
         const exitLose = await this._loseScene.awaitExit();
         this.cleanup();

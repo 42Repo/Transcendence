@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         googleAuth.initialize();
         googleAuth.renderButton('googleButtonContainer');
+        googleAuth.renderButton('googleRegisterButtonContainer');
 });
 
 const closeModal = () => {

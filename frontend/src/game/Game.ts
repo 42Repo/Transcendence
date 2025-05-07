@@ -37,10 +37,21 @@ export type GameState = {
   time: number;
 };
 
+type Player = {
+  name: string;
+  id: string;
+  avatar: string;
+};
+
+type Players = {
+  player1: Player;
+  player2: Player;
+}
 export class Game {
   private _conf: PongConfig;
   public scene!: Scene;
   public canvas: HTMLCanvasElement;
+  private _players: Players;
   private _leftPaddle: Paddle | null = null;
   private _rightPaddle: Paddle | null = null;
   private _ball: Ball | null = null;
@@ -50,9 +61,13 @@ export class Game {
   private _elapseMin: GUI.TextBlock;
   private _elapseSec: GUI.TextBlock;
 
-  constructor(stateManager: StateManager, conf: PongConfig) {
+  constructor(stateManager: StateManager, conf: PongConfig, data: Players) {
+    console.log(data);
     this._conf = conf;
-    this._stateManager = stateManager
+    this._stateManager = stateManager;
+    this._players = data;
+
+    console.log('player avatar', this._players.player1.avatar);
     this.canvas = stateManager.canvas;
     this.scene = stateManager.currentScene!;
     this._scorePlayer1 = this.createTextBlock(
@@ -207,17 +222,18 @@ export class Game {
     scoreGrid.top = "10%";
     scoreGrid.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
     scoreGrid.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-    const avatar1 = this.createAvatar("avatar1", "/assets/img/defaultAvatar.jpg");
-    const avatar2 = this.createAvatar("avatar2", "/assets/img/defaultAvatar.jpg");
+    console.log('player avatar', this._players.player1.avatar);
+    const avatar1 = this.createAvatar("avatar1", this._players.player1.avatar);
+    const avatar2 = this.createAvatar("avatar2", this._players.player2.avatar);
     scoreGrid.addControl(avatar1, 0, 0);
     scoreGrid.addControl(avatar2, 0, 6);
     const namePlayer1 = this.createTextBlock(
-      "Chris",
+      this._players.player1.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
       28,
     );
     const namePlayer2 = this.createTextBlock(
-      "Cindy",
+      this._players.player2.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
       24,
     );

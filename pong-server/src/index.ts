@@ -41,6 +41,7 @@ const start = async () => {
       return rep.status(400).send({ error: 'Token is required' });
     }
     const decodeToken: DecodeToken = jwtDecode(token);
+    console.log('decode Token', decodeToken);
     rep.status(200).send({ name: decodeToken.username, id: decodeToken.id });
   });
 

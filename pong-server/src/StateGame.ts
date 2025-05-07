@@ -43,6 +43,7 @@ export interface PlayerStats {
 export interface PlayerBase {
   id: string;
   name: string;
+  avatar: string;
   socket: WebSocket | null;
   playerKeys: Map<string, boolean> | null;
 }
