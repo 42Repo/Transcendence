@@ -23,7 +23,6 @@ export class StateManager {
   constructor(container: HTMLElement) {
     this._canvas = this.createCanvas(container, defaultConfig['canvas']);
     this._engine = new Engine(this._canvas, true);
-    this._engine.hideLoadingUI();
     this.conf = defaultConfig;
     this._engine.runRenderLoop(() => {
       if (this._currentScene) {
@@ -52,14 +51,14 @@ export class StateManager {
         this._winScene = new WinScene(this, message);
         await this._winScene.init();
         const exitWin = await this._winScene.awitExit();
-        this._currentScene.dispose();
+        this.cleanup();
         return exitWin;
       case State.LOSE:
         this._currentScene = new Scene(this._engine);
         this._loseScene = new LoseScene(this, message);
         await this._loseScene.init();
         const exitLose = await this._loseScene.awaitExit();
-        this._currentScene.dispose();
+        this.cleanup();
         return exitLose;
       default:
         break;
@@ -77,6 +76,12 @@ export class StateManager {
     canvas.style.borderRadius = conf.borderRadius;
     container.appendChild(canvas);
     return canvas;
+  }
+
+  private cleanup(): void {
+    this._currentScene?.dispose();
+    this._engine.dispose();
+    this._canvas.remove();
   }
 
   public updateStateGame(state: GameState) {

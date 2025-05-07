@@ -6,13 +6,14 @@ interface Player {
 }
 
 export class WebSocketManager {
+  private container: HTMLElement;
   private keyMap: Map<string, boolean>;
   private socket: WebSocket | null = null;
   private stateManager: StateManager;
   private player: Player = { name: 'UnKnown', id: null };
 
   constructor(container: HTMLElement) {
-
+    this.container = container;
     this.keyMap = new Map();
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
@@ -81,7 +82,7 @@ export class WebSocketManager {
     if (exit) {
       this.socket?.send(JSON.stringify({ type: 'close' }));
     } else {
-      console.log('restart');
+      this.stateManager = new StateManager(this.container);
       this.connectToServer();
       this.socket?.send(JSON.stringify({
         type: 'join', data: {
