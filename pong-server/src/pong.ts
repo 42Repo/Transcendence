@@ -22,7 +22,7 @@ export class MatchMaking {
 
   addPlayer(
     socket: WebSocket,
-    infoPlayer: { name: string, id: number | null },
+    infoPlayer: { name: string, id: number | null, avatar: string },
     playerKeys: Map<string, boolean> | null
   ): MadeMatch {
 
@@ -36,6 +36,7 @@ export class MatchMaking {
       id: idPlayer,
       socket,
       name: infoPlayer.name,
+      avatar: infoPlayer.avatar,
       playerKeys
     };
     if (Array.from(this.waitingPlayers.values()).some((p) => {
@@ -47,7 +48,6 @@ export class MatchMaking {
       const [p1, p2] = Array.from(
         this.waitingPlayers.values()
       ).slice(0, 2);
-      console.log('GameStart:', p1.name, p2.name);
       const newGame = new GameManager(p1, p2);
       this.gameManagers.push(newGame);
       this.waitingPlayers.delete(p1.id);
@@ -78,12 +78,14 @@ export class GameManager {
     this.game.paddles[0].id = player1.id;
     this.game.paddles[0].playerName = player1.name;
     this.game.players[0].playerKeys = player1.playerKeys;
+    this.game.players[0].avatar = player1.avatar;
     this.game.players[1].id = player2.id;
     this.game.players[1].socket = player2.socket;
     this.game.players[1].name = player2.name;
     this.game.paddles[1].id = player2.id;
     this.game.paddles[1].playerName = player2.name;
     this.game.players[1].playerKeys = player2.playerKeys;
+    this.game.players[1].avatar = player2.avatar;
     this.statesEngine = new StateEngine(this, this.game);
     this.statesEngine.updateTime(true);
     this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
@@ -118,12 +120,29 @@ export class GameManager {
   }
 
   public startGame(): void {
-    this.broadcast('start', null);
+    this.broadcast('start', {
+      players: {
+        player1: this.createDataPlayer(this.game.players[0]),
+        player2: this.createDataPlayer(this.game.players[1]),
+      }
+    });
   }
 
   public gameOver(): void {
     clearInterval(this.gameInterval!);
     this.gameInterval = null;
+  }
+
+  private createDataPlayer(player: PlayerBase): {
+    name: string,
+    id: string,
+    avatar: string
+  } {
+    return {
+      name: player.name,
+      id: player.id,
+      avatar: player.avatar
+    };
   }
 
   private startGameLoop() {

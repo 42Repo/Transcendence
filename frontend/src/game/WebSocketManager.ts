@@ -3,6 +3,7 @@ import { StateManager, State } from './StateManager.ts';
 interface Player {
   name: string;
   id: number | null;
+  avatar: string;
 }
 
 export class WebSocketManager {
@@ -10,7 +11,7 @@ export class WebSocketManager {
   private keyMap: Map<string, boolean>;
   private socket: WebSocket | null = null;
   private stateManager: StateManager;
-  private player: Player = { name: 'UnKnown', id: null };
+  private player: Player = { name: 'UnKnown', id: null, avatar: '/assets/img/defaultAvatar.jpg' };
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -28,7 +29,8 @@ export class WebSocketManager {
       type: 'join', data: {
         infoPlayer: {
           name: this.player.name,
-          id: this.player.id
+          id: this.player.id,
+          avatar: this.player.avatar
         }
       }
     }));
@@ -42,18 +44,18 @@ export class WebSocketManager {
         this.stateManager.changeState(State.WAIT);
         break;
       case 'start':
-        this.stateManager.changeState(State.START);
+        this.stateManager.changeState(State.START, msg.data);
         break;
       case 'update':
         this.stateManager.updateStateGame(msg.data);
         break;
       case 'lose':
-        const exitLose = await this.stateManager.changeState(State.LOSE, msg.data.message);
+        const exitLose = await this.stateManager.changeState(State.LOSE, msg.data);
         if (exitLose !== undefined)
           this.handleEndGame(exitLose);
         break;
       case 'win':
-        const exitWin = await this.stateManager.changeState(State.WIN, msg.data.message);
+        const exitWin = await this.stateManager.changeState(State.WIN, msg.data);
         if (exitWin !== undefined)
           this.handleEndGame(exitWin);
         break;
@@ -88,7 +90,8 @@ export class WebSocketManager {
         type: 'join', data: {
           infoPlayer: {
             name: this.player.name,
-            id: this.player.id
+            id: this.player.id,
+            avatar: this.player.avatar
           }
         }
       }));
