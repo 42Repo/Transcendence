@@ -15,14 +15,37 @@ interface GoogleUser {
 interface LoginBody {
   credential: string;
 }
+function sanitizeUsername(name: string): string {
+  return name.normalize('NFKD').replace(/[^\w]/g, '');
+}
+
+function getUserByName(fastify: FastifyInstance, username: string) {
+  const findUserStmt = fastify.db.prepare(
+    'SELECT user_id, username FROM users WHERE username = ?'
+  );
+  return findUserStmt.get(username) as
+    | { user_id: number; username: string }
+    | undefined;
+}
 
 function googleRegister(user: GoogleUser, fastify: FastifyInstance) {
-  console.log(user);
+  let baseName = sanitizeUsername(user.name);
+  let i = 0;
+  let name = baseName;
+  let userTmp = getUserByName(fastify, name);
+
+  while (userTmp) {
+    i++;
+    name = baseName + i;
+    userTmp = getUserByName(fastify, name);
+  }
+
   const insertStmt = fastify.db.prepare(
     'INSERT INTO users (username, email, avatar_url) VALUES (?, ?, ?)'
   );
-  const info = insertStmt.run(user.name, user.email, user.picture);
+  const info = insertStmt.run(name, user.email, user.picture);
 
+  if (info) console.log('User "%s" created successfully!', name);
   return info;
 }
 
