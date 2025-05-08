@@ -59,10 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         googleAuth.initialize();
         googleAuth.renderButton('googleButtonContainer');
+        googleAuth.renderButton('googleRegisterButtonContainer');
 });
 
 const closeModal = () => {
-        // Tu adaptes ça selon comment tu fermes le menu :
         if (mobileMenu) mobileMenu.classList.add('hidden');
 };
 
@@ -75,7 +75,6 @@ const handleResize = (e: MediaQueryListEvent) => {
 };
 mediaQuery.addEventListener('change', handleResize);
 
-// Optionnel : fermer au chargement si déjà en grand écran
 if (mediaQuery.matches) {
         closeModal();
 }

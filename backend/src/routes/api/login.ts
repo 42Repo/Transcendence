@@ -5,7 +5,6 @@ import {
   FastifyReply,
 } from 'fastify';
 import bcrypt from 'bcrypt';
-import FastifyJwt from '@fastify/jwt';
 
 interface LoginBody {
   loginIdentifier: string; // Username or email
@@ -22,15 +21,15 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
       const { loginIdentifier, password } = request.body;
 
       const trimmedIdentifier = loginIdentifier?.trim();
+      const trimmedPassword = password?.trim();
 
-      if (!trimmedIdentifier || !password) {
+      if (!trimmedIdentifier || !trimmedPassword) {
         return reply.status(400).send({
           success: false,
           message: 'Username/email and password are required.',
         });
       }
 
-      // --- Check for existing user ---
       try {
         const findUserStmt = fastify.db.prepare(
           'SELECT user_id, username, password_hash FROM users WHERE username = ? OR email = ?'
@@ -46,7 +45,7 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
             .send({ success: false, message: 'Invalid credentials.' });
         }
 
-        const match = await bcrypt.compare(password, user.password_hash);
+        const match = await bcrypt.compare(trimmedPassword, user.password_hash);
 
         if (match) {
           fastify.log.info(`User ${user.username} logged in successfully.`);

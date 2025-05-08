@@ -1,7 +1,20 @@
 import { isAuthenticated } from './switch-page.ts';
 
 const headerMenu = document.getElementById('desktopMenu');
-
+export interface UserPublicData {
+  user_id: number;
+  username: string;
+  avatar_url: string | null;
+  status: string;
+  created_at: string;
+}
+interface ApiResponse<T> {
+  success: boolean;
+  user?: T;
+  matches?: T;
+  message?: string;
+  requested_for_user_id?: number;
+}
 const setHeaderMenuList = async () => {
   const isAuth = await isAuthenticated();
 
@@ -39,17 +52,63 @@ const setHeaderBurgerMenu = async () => {
 };
 
 const setHeaderProfilePic = async () => {
-  const profilePic = document.getElementById('loginPic');
   const isAuth = await isAuthenticated();
-  if (profilePic && isAuth) {
-    profilePic.innerHTML = `
+  const profilePicElem = document.getElementById('loginPic');
+  if (isAuth) {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      console.error('No auth token found.');
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetch('/api/users/me', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+
+    if (response.status === 401) {
+      console.error('Authentication failed (token invalid or expired).');
+      throw new Error('Unauthorized');
+    }
+    if (response.status === 404) {
+      console.error('User data not found on server for /me endpoint.');
+      throw new Error('User not found');
+    }
+
+    if (!response.ok) {
+      console.error(`Server error: ${response.status} ${response.statusText}`);
+      let errorMsg = `Server error: ${response.status}`;
+      try {
+        const errData = await response.json();
+        if (errData && errData.message) {
+          errorMsg = errData.message;
+        }
+      } catch (e) {
+        console.warn('Could not parse error response body as JSON.');
+      }
+      throw new Error(errorMsg);
+    }
+    const data: ApiResponse<UserPublicData> = await response.json();
+    let profilePic = data.user?.avatar_url ?? 'DefaultProfilePicture.png';
+
+    if (profilePicElem) {
+      profilePicElem.innerHTML =
+        `
     <img
-    src="DefaultProfilePic.png"
+    src="` +
+        profilePic +
+        `"
     alt="ProfilePic"
     class="size-12 rounded-xl hover:rounded-3xl hover:brightness-200 duration-300"
     />`;
-  } else if (profilePic) {
-    profilePic.innerHTML = `
+    }
+  } else if (profilePicElem) {
+    profilePicElem.innerHTML = `
     <a href="#" id="loginLink" class="flex items-center p-2">
     <h1 id="loginBtn" class="text-white p-2">Login</h1>
     </a>

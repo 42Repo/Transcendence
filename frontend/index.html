@@ -40,9 +40,7 @@
         class="hidden fixed inset-0 z-49 bg-darkdark bg-darkdark/[.50] mt-19"
       >
         <div class="burger-bg bg-mediumdark w-2/3 h-full p-6">
-          <ul id="mobileMenu" class="space-y-0">
-            
-          </ul>
+          <ul id="mobileMenu" class="space-y-0"></ul>
         </div>
       </div>
     </header>
@@ -148,7 +146,10 @@
             <!-- Added ID -->
           </div>
         </div>
-
+        <div
+          id="googleRegisterButtonContainer"
+          class="flex justify-center m-2 my-[2.4em]"
+        ></div>
         <li
           class="container mx-auto flex space-x-4 justify-center items-center"
         >
@@ -163,9 +164,8 @@
     </div>
 
     <main id="content"></main>
-
+    <script src="https://accounts.google.com/gsi/client"></script>
     <script type="module" src="./src/main.ts" defer></script>
-
     <footer>
       <p>© 2025 Transcendence - All rights reserved</p>
       <div class="mt-2 flex justify-center space-x-4">
