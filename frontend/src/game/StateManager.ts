@@ -78,7 +78,7 @@ export class StateManager {
     return canvas;
   }
 
-  private cleanup(): void {
+  public cleanup(): void {
     this._currentScene?.dispose();
     this._engine.dispose();
     this._canvas.remove();

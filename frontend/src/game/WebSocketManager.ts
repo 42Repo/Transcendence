@@ -15,8 +15,8 @@ export class WebSocketManager {
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
-    this.connectToServer();
     document.addEventListener('pong:leaving', this.cleanup)
+    this.connectToServer();
   }
 
   private onOpen = async () => {
@@ -96,18 +96,17 @@ export class WebSocketManager {
       this.socket.close(1000, 'Reconnecting');
       this.socket = null;
     }
-    setTimeout(() => {
-      const isLocal = location.hostname === 'localhost';
-      const socketProtocol = isLocal ? 'ws' : 'wss';
-      const host = isLocal ? 'localhost:4000' : location.host;
-      this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
-      this.socket.addEventListener('open', this.onOpen);
-      this.socket.addEventListener('message', this.onMessage);
-      this.socket.addEventListener('close', this.onClose);
-    }, 1500)
+    const isLocal = location.hostname === 'localhost';
+    const socketProtocol = isLocal ? 'ws' : 'wss';
+    const host = isLocal ? 'localhost:4000' : location.host;
+    this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
+    this.socket.addEventListener('open', this.onOpen);
+    this.socket.addEventListener('message', this.onMessage);
+    this.socket.addEventListener('close', this.onClose);
   };
 
-  private cleanup = () => {
+  public cleanup = () => {
+    this.stateManager.cleanup();
     document.removeEventListener('keydown', this.keypress);
     document.removeEventListener('keyup', this.keyup);
     document.removeEventListener('pong:leaving', this.cleanup);

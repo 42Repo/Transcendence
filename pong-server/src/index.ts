@@ -97,6 +97,7 @@ const start = async () => {
 
       socket.on('close', () => {
         if (player) {
+          console.log('player remove back', player.id);
           matchMaker.removePlayer(player.id);
           const gameManager = getGameManager(player, gameManagers);
           if (gameManager) {
