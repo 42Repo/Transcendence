@@ -25,7 +25,7 @@ export class MatchMaking {
     infoPlayer: { name: string, id: number | null, avatar: string },
     playerKeys: Map<string, boolean> | null
   ): MadeMatch {
-
+    console.log(infoPlayer);
     const idPlayer = infoPlayer.id !== null
       ? infoPlayer.id.toString()
       : uuidv4();

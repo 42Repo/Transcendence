@@ -1,21 +1,17 @@
+import { InfoPlayer } from '../pongGame.ts';
 import { StateManager, State } from './StateManager.ts';
-
-interface Player {
-  name: string;
-  id: number | null;
-  avatar: string;
-}
 
 export class WebSocketManager {
   private container: HTMLElement;
   private keyMap: Map<string, boolean>;
   private socket: WebSocket | null = null;
   private stateManager: StateManager;
-  private player: Player = { name: 'UnKnown', id: null, avatar: '/assets/img/defaultAvatar.jpg' };
+  private player: InfoPlayer;
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, player: InfoPlayer) {
     this.container = container;
     this.keyMap = new Map();
+    this.player = player;
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
@@ -27,11 +23,7 @@ export class WebSocketManager {
     console.log('✅ Connected to Pong Server');
     this.socket?.send(JSON.stringify({
       type: 'join', data: {
-        infoPlayer: {
-          name: this.player.name,
-          id: this.player.id,
-          avatar: this.player.avatar
-        }
+        infoPlayer: { ...this.player }
       }
     }));
   };
@@ -69,13 +61,13 @@ export class WebSocketManager {
   };
 
   private keypress = (event: any) => {
-    if (this.socket && this.keyMap.get(event.code) != true)
+    if (this.socket && this.socket.readyState === WebSocket.OPEN && this.keyMap.get(event.code) != true)
       this.socket.send(JSON.stringify({ type: 'input', data: { type: true, key: event.code } }));
     this.keyMap.set(event.code, true);
   };
 
   private keyup = (event: any) => {
-    if (this.socket && this.keyMap.get(event.code) != false)
+    if (this.socket && this.socket.readyState === WebSocket.OPEN && this.keyMap.get(event.code) != false)
       this.socket.send(JSON.stringify({ type: 'input', data: { type: false, key: event.code } }));
     this.keyMap.set(event.code, false);
   };
@@ -86,15 +78,13 @@ export class WebSocketManager {
     } else {
       this.stateManager = new StateManager(this.container);
       this.connectToServer();
-      this.socket?.send(JSON.stringify({
-        type: 'join', data: {
-          infoPlayer: {
-            name: this.player.name,
-            id: this.player.id,
-            avatar: this.player.avatar
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        this.socket?.send(JSON.stringify({
+          type: 'join', data: {
+            infoPlayer: { ...this.player }
           }
-        }
-      }));
+        }));
+      }
     }
   };
 
@@ -106,36 +96,17 @@ export class WebSocketManager {
       this.socket.close(1000, 'Reconnecting');
       this.socket = null;
     }
-    await this.fetchUser();
-    const isLocal = location.hostname === 'localhost';
-    const socketProtocol = isLocal ? 'ws' : 'wss';
-    const host = isLocal ? 'localhost:4000' : location.host;
-    this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
-    this.socket.addEventListener('open', this.onOpen);
-    this.socket.addEventListener('message', this.onMessage);
-    this.socket.addEventListener('close', this.onClose);
+    setTimeout(() => {
+      const isLocal = location.hostname === 'localhost';
+      const socketProtocol = isLocal ? 'ws' : 'wss';
+      const host = isLocal ? 'localhost:4000' : location.host;
+      this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
+      this.socket.addEventListener('open', this.onOpen);
+      this.socket.addEventListener('message', this.onMessage);
+      this.socket.addEventListener('close', this.onClose);
+    }, 1500)
   };
 
-  private fetchUser = async (): Promise<void> => {
-    const isLocal = location.hostname === 'localhost';
-    const host = isLocal ? 'localhost:4000' : location.host;
-    const token = localStorage.getItem('authToken');
-    if (token === null)
-      return;
-    const safeToken = encodeURIComponent(token);
-    const url = `http://${host}/user?token=${safeToken}`;
-    try {
-      const res = await fetch(url, { method: "GET" });
-      if (!res.ok) {
-        throw new Error(`Status ${res.status}\nError: fetch user data`);
-      }
-      const data = await res.json();
-      this.player.name = data.name;
-      this.player.id = data.id;
-    } catch (err: any) {
-      console.log(err);
-    }
-  }
   private cleanup = () => {
     document.removeEventListener('keydown', this.keypress);
     document.removeEventListener('keyup', this.keyup);
