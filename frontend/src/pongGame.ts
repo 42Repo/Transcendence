@@ -6,6 +6,8 @@ export type InfoPlayer = {
   avatar: string;
 }
 
+let currentWSManager: WebSocketManager | null = null;
+
 const fetchUser = async (): Promise<InfoPlayer> => {
   const player: InfoPlayer = { name: 'Unknown', id: null, avatar: '/assets/img/defaultAvatar.jpg' };
   const isLocal = location.hostname === 'localhost';
@@ -29,23 +31,31 @@ const fetchUser = async (): Promise<InfoPlayer> => {
   return player;
 }
 
-const onSubmit = async (event: Event, container: HTMLElement, player: InfoPlayer) => {
+const onSubmit = async (event: Event, container: HTMLElement, player: InfoPlayer, form: HTMLFormElement) => {
   event.preventDefault();
   const modal = document.getElementById("modal-pong");
   if (!modal) {
+    form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
     return;
   }
   const alias: string = (document.getElementById("alias") as HTMLInputElement).value;
   if (!alias) {
+    form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
     return;
   }
   player.name = alias;
   modal.classList.add("hidden");
-  document.removeEventListener("submit", (event) => onSubmit(event, container, player));
-  new WebSocketManager(container, player);
+
+  form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
+  if (!currentWSManager) {
+    currentWSManager = new WebSocketManager(container, player);
+  }
 }
 
 export const mainGame = async () => {
+  if (currentWSManager) {
+    return;
+  }
   const container = document.getElementById("game-container");
   if (!container)
     return (console.log("Error: container not found!"));
@@ -55,14 +65,36 @@ export const mainGame = async () => {
       const modal = document.getElementById("modal-pong");
       if (modal) {
         modal.classList.remove("hidden");
-        document.addEventListener("submit", (event) => onSubmit(event, container, player));
+        const form = document.getElementById("alias-form") as HTMLFormElement;
+        if (form)
+          form.addEventListener('submit', (e) => onSubmit(e, container, player, form));
       } else {
-        new WebSocketManager(container, player);
+        currentWSManager = new WebSocketManager(container, player);
       }
+    } else {
+      currentWSManager = new WebSocketManager(container, player);
     }
   } catch (error) {
     console.log(error);
   }
 };
 
-document.addEventListener('pongGameLoaded', mainGame);
+const cleanupGame = () => {
+  if (currentWSManager) {
+    currentWSManager = null;
+  }
+};
+
+const removeAllEventListeners = () => {
+  document.removeEventListener('pongGameLoaded', mainGame);
+  document.removeEventListener('pong:leaving', cleanupGame);
+};
+
+const setupEventListeners = () => {
+  removeAllEventListeners();
+
+  document.addEventListener('pongGameLoaded', mainGame);
+  document.addEventListener('pong:leaving', cleanupGame);
+};
+
+setupEventListeners();

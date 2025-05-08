@@ -25,7 +25,6 @@ export class MatchMaking {
     infoPlayer: { name: string, id: number | null, avatar: string },
     playerKeys: Map<string, boolean> | null
   ): MadeMatch {
-    console.log(infoPlayer);
     const idPlayer = infoPlayer.id !== null
       ? infoPlayer.id.toString()
       : uuidv4();
@@ -70,6 +69,7 @@ export class GameManager {
   private gameInterval: NodeJS.Timeout | null = null;
   private physicsEngine: PhysicsEngine;
   private statesEngine: StateEngine;
+  private finished: boolean = false;
 
   constructor(player1: PlayerBase, player2: PlayerBase) {
     this.game.players[0].id = player1.id;
@@ -94,6 +94,8 @@ export class GameManager {
 
 
   removePlayer(player: PlayerBase) {
+    if (this.finished)
+      return;
     this.gameOver();
     const remaining = this.game.players.find((p) => {
       return p.id !== player.id && p.socket;
@@ -131,6 +133,7 @@ export class GameManager {
   public gameOver(): void {
     clearInterval(this.gameInterval!);
     this.gameInterval = null;
+    this.finished = true;
   }
 
   private createDataPlayer(player: PlayerBase): {
