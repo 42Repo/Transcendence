@@ -162,6 +162,43 @@
         </li>
       </div>
     </div>
+    <!-- A2F Registration Modal -->
+
+    <div
+      id="A2FRefModal"
+      class="fixed inset-0 bg-darkdark/[.50] z-50 flex justify-center items-center hidden"
+    >
+      <div class="bg-medium rounded-lg p-6 w-120 flex justify-center">
+        <div
+          class="bg-light rounded-lg p-3 size-full flex flex-col justify-center items-center"
+        >
+          <div class="flex justify-between w-full">
+            <h1 class="ml-2 mb-2 text-dark">Confirm your identity</h1>
+            <button
+              id="closeA2FRegModal"
+              class="mb-3 text-lightlight bg-mediumdark rounded-4xl pl-1 pr-1 hover:bg-medium"
+            >
+              X
+            </button>
+          </div>
+          <input
+            id="A2FRegInput"
+            pattern="\d{6}"
+            maxlength="6"
+            type="text"
+            placeholder="A2F App Code"
+            class="text-darkdark bg-lightlight p-2 pb-1 mb-3 w-full rounded-4xl"
+            required
+          />
+          <p class="text-dark text-sm mb-3 h-4">
+            Enter the code provided by your 2FA App :)
+          </p>
+          <div class="flex justify-center mb-0">
+            <button id="A2FConfirm" class="btn btn-confirm">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <main id="content"></main>
     <script src="https://accounts.google.com/gsi/client"></script>
