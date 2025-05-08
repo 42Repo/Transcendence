@@ -90,6 +90,7 @@ export class GameManager {
     this.statesEngine.updateTime(true);
     this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
     this.startGameLoop();
+    this.physicsEngine.startPhysics();//call when ready
   }
 
 

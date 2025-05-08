@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE, -- Nullable if only remote auth is used initially
     password_hash TEXT, -- Nullable for remote auth only users
-    avatar_url TEXT DEFAULT '/default-avatar.png',
+    avatar_url TEXT DEFAULT '/DefaultProfilePic.png',
     status TEXT CHECK(status IN ('online', 'offline', 'ingame')) DEFAULT 'offline',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

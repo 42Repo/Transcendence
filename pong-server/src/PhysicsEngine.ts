@@ -5,10 +5,18 @@ import { StateEngine } from './StateEngine';
 export class PhysicsEngine {
   private config: PongConfig;
   private states: StateEngine;
+  private ballMoving: boolean;
+  private ballCooldownUntil: number;
 
   constructor(config: PongConfig, states: StateEngine) {
     this.config = config;
     this.states = states;
+    this.ballMoving = false;
+    this.ballCooldownUntil = 0;
+  }
+
+  public startPhysics(){
+    this.ballCooldownUntil = Date.now() + 1000;
   }
 
   public update(game: StateGame): void {
@@ -38,7 +46,10 @@ export class PhysicsEngine {
       }
       //
     });
-    this.moveBall(game);
+    if (this.ballCooldownUntil != 0 && Date.now() >= this.ballCooldownUntil)
+      this.ballMoving = true;
+    if (this.ballMoving)
+      this.moveBall(game);
   }
 
   private launchBall(ball: Ball) {
@@ -49,6 +60,9 @@ export class PhysicsEngine {
     ball.dirZ = Math.sin(angle);
     ball.posX = 0;
     ball.posZ = 0;
+    ball.speed = .1;
+    this.ballCooldownUntil = Date.now() + 500;
+    this.ballMoving = false;
   }
 
   private checkPaddleCollision(game: StateGame, paddle: Paddle) {
