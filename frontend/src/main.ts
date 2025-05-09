@@ -21,8 +21,8 @@ if (burger && mobileMenu) {
         mobileMenu.addEventListener('click', (e) => {
                 // Check if click is OUTSIDE the burger-bg panel or on a button
                 if (
-                        !burgerBg.contains(e.target) ||
-                        e.target.classList.contains('burger-btn')
+                        !burgerBg?.contains(e.target as Node | null) ||
+                        (e.target as HTMLElement).classList.contains('burger-btn')
                 ) {
                         mobileMenu.classList.add('hidden');
                 }

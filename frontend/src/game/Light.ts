@@ -4,11 +4,11 @@ import * as BABYLON from '@babylonjs/core';
 import { HemisphericLight, Vector3 } from '@babylonjs/core';
 
 export class Light extends GameObject {
-  public light: BABYLON.Light;
+        public light: BABYLON.Light;
 
-  constructor(game: StateManager, name: string, pos: Vector3) {
-    super(game);
+        constructor(game: StateManager, name: string, pos: Vector3) {
+                super(game);
 
-    this.light = new HemisphericLight(name, pos, this.game.currentScene);
-  }
+                this.light = new HemisphericLight(name, pos, this.game.currentScene!);
+        }
 }

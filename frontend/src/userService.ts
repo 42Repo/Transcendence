@@ -105,11 +105,11 @@ export async function fetchMyProfileData(): Promise<UserPrivateData> {
 
     if (data.success && data.user) {
       const userWithDefaults = {
+        ...data.user,
         total_wins: 0,
         total_losses: 0,
         bio: null,
         has_password: false,
-        ...data.user,
       };
       return userWithDefaults;
     } else {
