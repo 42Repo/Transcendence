@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE, -- Nullable if only remote auth is used initially
     password_hash TEXT, -- Nullable for remote auth only users
+    google_id TEXT UNIQUE,
     avatar_url TEXT DEFAULT '/DefaultProfilePic.png',
     status TEXT CHECK(status IN ('online', 'offline', 'ingame')) DEFAULT 'offline',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS game_matches (
 -- Indexes for performance
 -- -----------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE INDEX IF NOT EXISTS idx_game_matches_player1 ON game_matches(player1_id);
 CREATE INDEX IF NOT EXISTS idx_game_matches_player2 ON game_matches(player2_id);
 CREATE INDEX IF NOT EXISTS idx_game_matches_winner ON game_matches(winner_id);

@@ -25,6 +25,7 @@ interface UserPrivateDataWithStats extends UserPublicData {
   updated_at: string;
   total_wins: number;
   total_losses: number;
+  has_password?: boolean;
 }
 
 interface GameMatchData {
@@ -71,18 +72,25 @@ export default function userRoutes(
       try {
         const userStmt = fastify.db.prepare(
           `SELECT
-             user_id, username, email, avatar_url, status, created_at, updated_at, bio
+             user_id, username, email, avatar_url, status, created_at, updated_at, bio, password_hash
            FROM users
            WHERE user_id = ?`
         );
+        type UserWithPasswordHash = Omit<
+          UserPrivateDataWithStats,
+          'total_wins' | 'total_losses' | 'has_password'
+        > & { password_hash: string | null };
+
         const userBase = userStmt.get(userId) as
-          | Omit<UserPrivateDataWithStats, 'total_wins' | 'total_losses'>
+          | UserWithPasswordHash
           | undefined;
 
         if (!userBase) {
           return reply.notFound('User data not found for authenticated user.');
         }
 
+        const has_password = !!userBase.password_hash;
+        const { password_hash, ...userBaseWithoutPasswordHash } = userBase;
         const winsStmt = fastify.db.prepare(
           'SELECT COUNT(*) as count FROM game_matches WHERE winner_id = ?'
         );
@@ -99,9 +107,10 @@ export default function userRoutes(
         const total_losses = lossesResult.count;
 
         const user: UserPrivateDataWithStats = {
-          ...userBase,
+          ...userBaseWithoutPasswordHash,
           total_wins,
           total_losses,
+          has_password,
         };
 
         return reply.send({ success: true, user });
@@ -188,33 +197,33 @@ export default function userRoutes(
         }
 
         if (new_password) {
-          if (!current_password) {
-            return reply.badRequest(
-              'Current password is required to change password.'
-            );
-          }
-          if (!currentUserData.password_hash) {
-            return reply.badRequest(
-              'No current password set for this account. Cannot change password.'
-            );
-          }
-          const match = await bcrypt.compare(
-            current_password,
-            currentUserData.password_hash
-          );
-          if (!match) {
-            return reply.unauthorized('Incorrect current password.');
-          }
           if (new_password.length < 6) {
             return reply.badRequest(
               'New password must be at least 6 characters long.'
             );
           }
+          if (currentUserData.password_hash) {
+            if (!current_password) {
+              return reply.badRequest(
+                'Current password is required to change password.'
+              );
+            }
+            const match = await bcrypt.compare(
+              current_password,
+              currentUserData.password_hash
+            );
+            if (!match) {
+              return reply.unauthorized('Incorrect current password.');
+            }
+          } else {
+          }
           updates.password_hash = await bcrypt.hash(new_password, 10);
         } else if (current_password && !new_password) {
-          return reply.badRequest(
-            'New password is required when current password is provided for a password change.'
-          );
+          if (currentUserData.password_hash) {
+            return reply.badRequest(
+              'New password is required when current password is provided for a password change.'
+            );
+          }
         }
 
         if (Object.keys(updates).length === 0) {
@@ -232,33 +241,46 @@ export default function userRoutes(
         stmt.run(...params);
 
         const updatedUserStmt = fastify.db.prepare(
-          'SELECT user_id, username, email, avatar_url, status, created_at, updated_at, bio FROM users WHERE user_id = ?'
+          'SELECT user_id, username, email, avatar_url, status, created_at, updated_at, bio, password_hash FROM users WHERE user_id = ?'
         );
-        const updatedUser = updatedUserStmt.get(userId) as
-          | UserPrivateDataWithStats
+        type UpdatedUserWithPasswordHash = UserPrivateDataWithStats & {
+          password_hash: string | null;
+        };
+        const updatedUserData = updatedUserStmt.get(userId) as
+          | UpdatedUserWithPasswordHash
           | undefined;
 
-        if (!updatedUser) {
+        if (!updatedUserData) {
           return reply.internalServerError(
             'Failed to retrieve updated user details.'
           );
         }
 
+        const has_password_after_update = !!updatedUserData.password_hash;
+
+        const { password_hash: _, ...updatedUserWithoutPasswordHash } =
+          updatedUserData;
+
         let newToken: string | undefined = undefined;
         if (usernameChanged) {
           newToken = await reply.jwtSign(
             {
-              id: updatedUser.user_id,
-              username: updatedUser.username,
+              id: updatedUserWithoutPasswordHash.user_id,
+              username: updatedUserWithoutPasswordHash.username,
             },
             { expiresIn: '1h' }
           );
         }
 
+        const finalUpdatedUser: UserPrivateDataWithStats = {
+          ...updatedUserWithoutPasswordHash,
+          has_password: has_password_after_update,
+        };
+
         return reply.send({
           success: true,
           message: 'Profile updated successfully.',
-          user: updatedUser,
+          user: finalUpdatedUser,
           token: newToken,
         });
       } catch (err) {

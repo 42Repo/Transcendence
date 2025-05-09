@@ -8,6 +8,7 @@
     id="profileContentArea"
     class="w-full max-w-screen-lg"
     style="display: none"
+    data-has-password="false"
   >
     <!-- A2F MODAL -->
     <div
@@ -115,21 +116,23 @@
 
         <!-- Password -->
         <div class="w-full lg:w-1/3 flex flex-col gap-3 text-dark">
-          <h3 class="text-light text-lg mb-2">Change Password</h3>
-          <input
-            type="password"
-            placeholder="Current Password"
-            id="userOldPswd"
-            class="bg-light rounded-xl ps-3 p-2 placeholder-gray-500"
-            minlength="6"
-            maxlength="50"
-            autocomplete="current-password"
-          />
+          <h3 id="passwordSectionTitle" class="text-light text-lg mb-2">Change Password</h3>
+          <div id="currentPasswordContainer">
+            <input
+              type="password"
+              placeholder="Current Password"
+              id="userOldPswd"
+              class="bg-light rounded-xl ps-3 p-2 placeholder-gray-500 w-full"
+              minlength="6"
+              maxlength="50"
+              autocomplete="current-password"
+            />
+          </div>
           <input
             type="password"
             placeholder="New Password"
             id="userNewPswd"
-            class="bg-light rounded-xl ps-3 p-2 placeholder-gray-500"
+            class="bg-light rounded-xl ps-3 p-2 placeholder-gray-500 mt-1 w-full"
             minlength="6"
             maxlength="50"
             autocomplete="new-password"
@@ -138,7 +141,7 @@
             type="password"
             placeholder="Confirm New Password"
             id="userNewPswdVerif"
-            class="bg-light rounded-xl ps-3 p-2 placeholder-gray-500"
+            class="bg-light rounded-xl ps-3 p-2 placeholder-gray-500 mt-1 w-full"
             minlength="6"
             maxlength="50"
             autocomplete="new-password"
