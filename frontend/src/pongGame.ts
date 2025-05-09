@@ -39,11 +39,11 @@ const onSubmit = async (event: Event, container: HTMLElement, player: InfoPlayer
     return;
   }
   const alias: string = (document.getElementById("alias") as HTMLInputElement).value;
-  if (!alias) {
+  if (!alias || !alias.trim()) {
     form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
     return;
   }
-  player.name = alias;
+  player.name = alias.trim();
   modal.classList.add("hidden");
 
   form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));

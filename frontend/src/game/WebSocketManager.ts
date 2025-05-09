@@ -15,7 +15,8 @@ export class WebSocketManager {
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
-    document.addEventListener('pong:leaving', this.cleanup)
+    document.addEventListener('pong:leaving', this.cleanup);
+    document.addEventListener('playerReady', this.gamereadyToStart, { once: true });
     this.connectToServer();
   }
 
@@ -105,11 +106,19 @@ export class WebSocketManager {
     this.socket.addEventListener('close', this.onClose);
   };
 
+  private gamereadyToStart = () => {
+    console.log('ready player', this.player.name);
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({ type: 'ready' }));
+    }
+  };
+
   public cleanup = () => {
     this.stateManager.cleanup();
     document.removeEventListener('keydown', this.keypress);
     document.removeEventListener('keyup', this.keyup);
     document.removeEventListener('pong:leaving', this.cleanup);
+    document.removeEventListener('playerReady', this.gamereadyToStart);
     if (this.socket) {
       this.socket.removeEventListener('open', this.onOpen);
       this.socket.removeEventListener('message', this.onMessage);

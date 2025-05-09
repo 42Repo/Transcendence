@@ -62,12 +62,10 @@ export class Game {
   private _elapseSec: GUI.TextBlock;
 
   constructor(stateManager: StateManager, conf: PongConfig, data: Players) {
-    console.log(data);
     this._conf = conf;
     this._stateManager = stateManager;
     this._players = data;
 
-    console.log('player avatar', this._players.player1.avatar);
     this.canvas = stateManager.canvas;
     this.scene = stateManager.currentScene!;
     this._scorePlayer1 = this.createTextBlock(
@@ -186,6 +184,9 @@ export class Game {
     container.addControl(scoreGrid);
     gui.addControl(container);
 
+    this.scene.onReadyObservable.add(() => {
+      document.dispatchEvent(new Event('playerReady'));
+    });
     return;
   }
 
@@ -222,7 +223,6 @@ export class Game {
     scoreGrid.top = "10%";
     scoreGrid.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
     scoreGrid.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-    console.log('player avatar', this._players.player1.avatar);
     const avatar1 = this.createAvatar("avatar1", this._players.player1.avatar);
     const avatar2 = this.createAvatar("avatar2", this._players.player2.avatar);
     scoreGrid.addControl(avatar1, 0, 0);
@@ -235,7 +235,7 @@ export class Game {
     const namePlayer2 = this.createTextBlock(
       this._players.player2.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      24,
+      28,
     );
     scoreGrid.addControl(namePlayer1, 0, 1);
     scoreGrid.addControl(namePlayer2, 0, 5);

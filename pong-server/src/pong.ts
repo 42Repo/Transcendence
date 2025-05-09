@@ -70,6 +70,7 @@ export class GameManager {
   private physicsEngine: PhysicsEngine;
   private statesEngine: StateEngine;
   private finished: boolean = false;
+  private playersReady: Map<string, boolean> = new Map();
 
   constructor(player1: PlayerBase, player2: PlayerBase) {
     this.game.players[0].id = player1.id;
@@ -90,7 +91,6 @@ export class GameManager {
     this.statesEngine.updateTime(true);
     this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
     this.startGameLoop();
-    this.physicsEngine.startPhysics();//call when ready
   }
 
 
@@ -136,6 +136,13 @@ export class GameManager {
     this.gameInterval = null;
     this.finished = true;
   }
+
+  public addPlayerReady = (id: string) => {
+    this.playersReady.set(id, true);
+    if (this.playersReady.size === 2) {
+      this.physicsEngine.startPhysics();
+    }
+  };
 
   private createDataPlayer(player: PlayerBase): {
     name: string,
