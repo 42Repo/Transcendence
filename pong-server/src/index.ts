@@ -12,8 +12,6 @@ interface DecodeToken {
   id: number;
 }
 
-
-
 const getGameManager = (player: PlayerBase, games: GameManager[]): GameManager | null => {
   let result = null;
 
@@ -90,6 +88,15 @@ const start = async () => {
                 gameManager.handlePlayerInput(player, data);
               }
             }
+            break;
+          case 'ready':
+            if (player) {
+              const gameManager = getGameManager(player, gameManagers);
+              if (gameManager) {
+                gameManager.addPlayerReady(player.id);
+              }
+            }
+            break;
           default:
             break;
         }
@@ -97,7 +104,6 @@ const start = async () => {
 
       socket.on('close', () => {
         if (player) {
-          console.log('player remove back', player.id);
           matchMaker.removePlayer(player.id);
           const gameManager = getGameManager(player, gameManagers);
           if (gameManager) {
