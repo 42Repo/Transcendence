@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     bio TEXT DEFAULT 'im a gamer',
     two_factor_secret TEXT,
-    is_two_factor_enabled INTEGER DEFAULT 0 NOT NULL,
+    is_two_factor_enabled INTEGER DEFAULT 0 NOT NULL
 );
 
 -- Trigger to update `updated_at` timestamp on users table
