@@ -41,7 +41,6 @@ export const getDb = () => {
     }
 
     dbInstance.pragma('foreign_keys = ON');
-
     return dbInstance;
   } catch (err) {
     console.error('Failed to initialize database:', err);
