@@ -4,7 +4,8 @@ docker-sync.yml
 node_modules/
 npm-debug.log
 yarn-error.log
-dist/
+dist/*.*
+!dist/.gitkeep
 build/
 *.tsbuildinfo
 *.db
