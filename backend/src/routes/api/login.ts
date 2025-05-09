@@ -32,17 +32,40 @@ export default function (fastify: FastifyInstance, opts: FastifyPluginOptions) {
 
       try {
         const findUserStmt = fastify.db.prepare(
-          'SELECT user_id, username, password_hash FROM users WHERE username = ? OR email = ?'
+          'SELECT user_id, username, password_hash, google_id FROM users WHERE username = ? OR email = ?'
         );
         const user = findUserStmt.get(trimmedIdentifier, trimmedIdentifier) as
-          | { user_id: number; username: string; password_hash: string }
+          | {
+              user_id: number;
+              username: string;
+              password_hash: string | null;
+              google_id: string | null;
+            }
           | undefined;
 
-        if (!user || !user.password_hash) {
-          // TODO : User not found or user has no password (e.g., registered via OAuth later)
+        if (!user) {
           return reply
             .status(401)
             .send({ success: false, message: 'Invalid credentials.' });
+        }
+
+        if (!user.password_hash && user.google_id) {
+          return reply.status(401).send({
+            success: false,
+            message:
+              'This account is linked with Google. Please use Google Sign-In.',
+            code: 'GOOGLE_ACCOUNT_NO_PASSWORD',
+          });
+        }
+
+        if (!user.password_hash) {
+          request.log.warn(
+            `User ${user.username} (ID: ${user.user_id}) has no password set and is not a Google-only account. Login denied.`
+          );
+          return reply.status(401).send({
+            success: false,
+            message: 'Invalid credentials or account setup issue.',
+          });
         }
 
         const match = await bcrypt.compare(trimmedPassword, user.password_hash);

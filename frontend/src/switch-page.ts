@@ -80,7 +80,7 @@ export const fetchPage = async (page: string): Promise<void> => {
   console.log('Fetching page structure for:', page);
   if (page !== 'pongGame') {
     document.dispatchEvent(new Event('pong:leaving'));
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   if (cache.has(page)) {
@@ -134,7 +134,7 @@ export const fetchPage = async (page: string): Promise<void> => {
 };
 
 async function loadAndPopulateEditProfileData() {
-  console.log('Attempting to load and populate profile data...');
+  console.log('Attempting to load and populate edit profile data...');
 
   const loadingIndicator = document.getElementById('profileLoading');
   const errorDisplay = document.getElementById('profileError');
@@ -148,7 +148,12 @@ async function loadAndPopulateEditProfileData() {
   ) as HTMLImageElement | null;
   const bioElem = document.getElementById(
     'bioText'
-  ) as HTMLParagraphElement | null;
+  ) as HTMLTextAreaElement | null;
+
+  const currentPasswordContainer = document.getElementById(
+    'currentPasswordContainer'
+  );
+  const passwordSectionTitle = document.getElementById('passwordSectionTitle');
 
   if (
     !loadingIndicator ||
@@ -158,10 +163,12 @@ async function loadAndPopulateEditProfileData() {
     !joinDateElem ||
     !emailElem ||
     !profilePicElem ||
-    !bioElem
+    !bioElem ||
+    !currentPasswordContainer ||
+    !passwordSectionTitle
   ) {
     console.error(
-      'Profile page structure is missing required elements. Check IDs in profile.html and this function.'
+      'Edit Profile page structure is missing required elements. Check IDs in edit-profile.html and this function.'
     );
     content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
     return;
@@ -176,21 +183,40 @@ async function loadAndPopulateEditProfileData() {
     const userData: UserPrivateData = await fetchMyProfileData();
 
     usernameElem.value = userData.username;
+    usernameElem.defaultValue = userData.username;
+
     joinDateElem.textContent = new Date(
       userData.created_at
     ).toLocaleDateString();
-    emailElem.placeholder = userData.email || 'Not set';
+
+    emailElem.value = userData.email || '';
+    emailElem.defaultValue = userData.email || '';
+
     if (userData.avatar_url && userData.avatar_url !== '/default-avatar.png') {
       profilePicElem.src = userData.avatar_url;
     } else {
       profilePicElem.src = '/DefaultProfilePic.png';
     }
-    bioElem.textContent = userData.bio || 'No biography set.';
+    bioElem.value = userData.bio || '';
+    bioElem.defaultValue = userData.bio || '';
+
+    profileContentArea.setAttribute(
+      'data-has-password',
+      String(userData.has_password)
+    );
+
+    if (userData.has_password) {
+      currentPasswordContainer.style.display = 'block';
+      passwordSectionTitle.textContent = 'Change Password';
+    } else {
+      currentPasswordContainer.style.display = 'none';
+      passwordSectionTitle.textContent = 'Set Password';
+    }
 
     profileContentArea.style.display = 'block';
     errorDisplay.style.display = 'none';
   } catch (error) {
-    console.error('Error loading profile data:', error);
+    console.error('Error loading edit profile data:', error);
     errorDisplay.style.display = 'block';
     profileContentArea.style.display = 'none';
 
@@ -391,6 +417,11 @@ async function loadHistory(
             currentUserId === item.player1_id
               ? item.player1_avatar_url
               : item.player2_avatar_url;
+          const finalOpponentAvatar =
+            currentUserId === item.player1_id
+              ? item.player2_avatar_url
+              : item.player1_avatar_url;
+
           const userScore =
             currentUserId === item.player1_id
               ? item.player1_score
@@ -407,8 +438,8 @@ async function loadHistory(
                 ? 'text-red-500'
                 : 'text-gray-500';
           const avatarSrc =
-            opponentAvatar && opponentAvatar !== '/default-avatar.png'
-              ? opponentAvatar
+            finalOpponentAvatar && finalOpponentAvatar !== '/default-avatar.png'
+              ? finalOpponentAvatar
               : '/DefaultProfilePic.png';
 
           return `
@@ -441,7 +472,11 @@ export const switchPage = async (page: string) => {
 
   const currentLogicalPage = history.state?.page || getPageName();
 
-  if (targetPage === currentLogicalPage && targetPage !== 'profile') {
+  if (
+    targetPage === currentLogicalPage &&
+    targetPage !== 'profile' &&
+    targetPage !== 'edit-profile'
+  ) {
     console.log(`Already on page '${targetPage}', no full switch.`);
     return;
   }
@@ -453,14 +488,8 @@ export const switchPage = async (page: string) => {
     return;
   }
 
-  if (targetPage === currentLogicalPage && targetPage !== 'edit-profile') {
-    console.log(`Already on page '${targetPage}', no full switch.`);
-    return;
-  }
   if (targetPage === currentLogicalPage && targetPage === 'edit-profile') {
-    console.log(
-      `Already on page '${targetPage}', re-fetching data if applicable.`
-    );
+    console.log(`Already on page '${targetPage}', re-fetching data.`);
     await loadAndPopulateEditProfileData();
     return;
   }

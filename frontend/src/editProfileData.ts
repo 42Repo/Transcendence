@@ -1,8 +1,31 @@
 import { switchPage } from './switch-page';
-import { updateMyProfileData, UpdateProfilePayload } from './userService';
+import {
+  updateMyProfileData,
+  UpdateProfilePayload,
+  UserPrivateData,
+} from './userService';
 import { showFeedback, clearFeedback } from './utils/modalUtils';
 
 const EDIT_PROFILE_FEEDBACK_ID = 'editProfileFeedback';
+
+function updatePasswordUI(hasPassword: boolean) {
+  const currentPasswordContainer = document.getElementById(
+    'currentPasswordContainer'
+  );
+  const passwordSectionTitle = document.getElementById('passwordSectionTitle');
+  const profileContentArea = document.getElementById('profileContentArea');
+
+  if (currentPasswordContainer && passwordSectionTitle && profileContentArea) {
+    profileContentArea.setAttribute('data-has-password', String(hasPassword));
+    if (hasPassword) {
+      currentPasswordContainer.style.display = 'block';
+      passwordSectionTitle.textContent = 'Change Password';
+    } else {
+      currentPasswordContainer.style.display = 'none';
+      passwordSectionTitle.textContent = 'Set Password';
+    }
+  }
+}
 
 export async function editProfile() {
   const usernameInput = document.getElementById(
@@ -23,18 +46,17 @@ export async function editProfile() {
   const confirmPasswordInput = document.getElementById(
     'userNewPswdVerif'
   ) as HTMLInputElement | null;
+  const profileContentArea = document.getElementById('profileContentArea');
 
   const feedbackElement = document.getElementById(EDIT_PROFILE_FEEDBACK_ID);
-  if (!feedbackElement && document.getElementById('profileContentArea')) {
+  if (!feedbackElement && profileContentArea) {
     const newFeedbackElem = document.createElement('p');
     newFeedbackElem.id = EDIT_PROFILE_FEEDBACK_ID;
     newFeedbackElem.className = 'text-center mt-4 h-6';
-    document
-      .getElementById('profileContentArea')
-      ?.parentNode?.insertBefore(
-        newFeedbackElem,
-        document.getElementById('profileContentArea')?.nextSibling || null
-      );
+    profileContentArea.parentNode?.insertBefore(
+      newFeedbackElem,
+      profileContentArea.nextSibling || null
+    );
   }
 
   if (
@@ -43,7 +65,8 @@ export async function editProfile() {
     !bioTextarea ||
     !oldPasswordInput ||
     !newPasswordInput ||
-    !confirmPasswordInput
+    !confirmPasswordInput ||
+    !profileContentArea
   ) {
     console.error(
       'One or more form elements are missing from edit-profile.html'
@@ -55,6 +78,9 @@ export async function editProfile() {
     );
     return;
   }
+
+  const hasPasswordInitially =
+    profileContentArea.getAttribute('data-has-password') === 'true';
 
   const username = usernameInput.value.trim();
   const email = emailInput.value.trim();
@@ -77,19 +103,24 @@ export async function editProfile() {
   }
 
   const payload: UpdateProfilePayload = {};
-  if (usernameInput.defaultValue !== username) payload.username = username;
-  if (emailInput.defaultValue !== email) payload.email = email;
+  if (usernameInput.defaultValue !== username && username !== '')
+    payload.username = username;
+  else if (usernameInput.defaultValue !== username && username === '') {
+    showFeedback(EDIT_PROFILE_FEEDBACK_ID, 'Username cannot be empty.', true);
+    return;
+  }
+
+  if (emailInput.defaultValue !== email) {
+    if (email === '' && emailInput.defaultValue !== '') {
+      payload.email = '';
+    } else if (email !== '') {
+      payload.email = email;
+    }
+  }
+
   if (bioTextarea.defaultValue !== bio) payload.bio = bio;
 
   if (newPassword) {
-    if (!oldPassword) {
-      showFeedback(
-        EDIT_PROFILE_FEEDBACK_ID,
-        'Current password is required to set a new password.',
-        true
-      );
-      return;
-    }
     if (newPassword !== confirmPassword) {
       showFeedback(
         EDIT_PROFILE_FEEDBACK_ID,
@@ -106,9 +137,19 @@ export async function editProfile() {
       );
       return;
     }
-    payload.current_password = oldPassword;
     payload.new_password = newPassword;
-  } else if (oldPassword && !newPassword) {
+    if (hasPasswordInitially) {
+      if (!oldPassword) {
+        showFeedback(
+          EDIT_PROFILE_FEEDBACK_ID,
+          'Current password is required to change password.',
+          true
+        );
+        return;
+      }
+      payload.current_password = oldPassword;
+    }
+  } else if (oldPassword && hasPasswordInitially) {
     showFeedback(
       EDIT_PROFILE_FEEDBACK_ID,
       'Please enter the new password and confirm it if you wish to change your password.',
@@ -127,24 +168,27 @@ export async function editProfile() {
 
   try {
     const response = await updateMyProfileData(payload);
-    if (response.success) {
+    if (response.success && response.user) {
+      const updatedUser: UserPrivateData = response.user;
       showFeedback(
         EDIT_PROFILE_FEEDBACK_ID,
         'Profile updated successfully!',
         false
       );
 
-      if (payload.username !== undefined)
-        usernameInput.defaultValue = payload.username;
-      if (payload.email !== undefined) emailInput.defaultValue = payload.email;
-      if (payload.bio !== undefined) bioTextarea.defaultValue = payload.bio;
+      usernameInput.defaultValue = updatedUser.username;
+      emailInput.defaultValue = updatedUser.email || '';
+      bioTextarea.defaultValue = updatedUser.bio || '';
 
       oldPasswordInput.value = '';
       newPasswordInput.value = '';
       confirmPasswordInput.value = '';
-      oldPasswordInput.defaultValue = '';
-      newPasswordInput.defaultValue = '';
-      confirmPasswordInput.defaultValue = '';
+
+      updatePasswordUI(updatedUser.has_password);
+      profileContentArea.setAttribute(
+        'data-has-password',
+        String(updatedUser.has_password)
+      );
 
       if (response.token) {
         console.log('New JWT received, updating localStorage.');
