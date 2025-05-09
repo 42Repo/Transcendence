@@ -1,6 +1,6 @@
 import Fastify, { FastifyReply } from 'fastify';
 import fastifyWebsocket, { type WebSocket } from '@fastify/websocket';
-import { GameManager, MatchMaking } from './pong';
+import { GameManager, MatchMaking, TournamentManager } from './pong';
 import { PlayerBase } from './StateGame';
 import { FastifyRequest } from 'fastify/types/request';
 import fastifyCors from '@fastify/cors';
@@ -29,7 +29,8 @@ const start = async () => {
   await server.register(fastifyCors, { origin: true });
 
   const gameManagers: GameManager[] = [];
-  const matchMaker = new MatchMaking(gameManagers);
+  const tournamentManagers: TournamentManager[] = [];
+  const matchMaker = new MatchMaking(gameManagers, tournamentManagers);
 
   server.get('/health', () => ({ status: 'pong-server running' }));
 
@@ -77,6 +78,9 @@ const start = async () => {
             if (result.game) {
               gameManagers.push(result.game);
               result.game.startGame();
+            } 
+            else if (result.tournament){
+              tournamentManagers.push(result.tournament);
             } else {
               socket.send(JSON.stringify({ type: 'wait' }));
             }

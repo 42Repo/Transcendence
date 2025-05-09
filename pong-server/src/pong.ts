@@ -9,15 +9,20 @@ import { StateEngine } from './StateEngine';
 type MadeMatch = {
   player: PlayerBase;
   game: GameManager | null;
+  tournament : TournamentManager | null;
 };
 
 export class MatchMaking {
   private waitingPlayers: Map<string, PlayerBase>;
   private gameManagers: GameManager[];
+  private waitingPlayersTournament: Map<string, PlayerBase>;
+  private tournamentManagers: TournamentManager[];
 
-  constructor(gameManagers: GameManager[]) {
+  constructor(gameManagers: GameManager[], tournamentManagers: TournamentManager[]) {
     this.waitingPlayers = new Map();
+    this.waitingPlayersTournament = new Map();
     this.gameManagers = gameManagers;
+    this.tournamentManagers = tournamentManagers;
   }
 
   addPlayer(
@@ -30,7 +35,7 @@ export class MatchMaking {
       : uuidv4();
     const existPlayer = this.waitingPlayers.get(idPlayer);
     if (existPlayer)
-      return { player: existPlayer, game: null };
+      return { player: existPlayer, game: null, tournament: null};
     const player: PlayerBase = {
       id: idPlayer,
       socket,
@@ -41,8 +46,11 @@ export class MatchMaking {
     if (Array.from(this.waitingPlayers.values()).some((p) => {
       return p.socket === socket;
     }))
-      return { player, game: null };
-    this.waitingPlayers.set(idPlayer, player);
+      return { player, game: null, tournament: null};
+    if (true)//TODO mettre la vraie condition
+      this.waitingPlayersTournament.set(idPlayer, player);
+    else
+      this.waitingPlayers.set(idPlayer, player);
     if (this.waitingPlayers.size >= 2) {
       const [p1, p2] = Array.from(
         this.waitingPlayers.values()
@@ -51,9 +59,21 @@ export class MatchMaking {
       this.gameManagers.push(newGame);
       this.waitingPlayers.delete(p1.id);
       this.waitingPlayers.delete(p2.id);
-      return { player, game: newGame };
+      return { player, game: newGame, tournament: null};
     }
-    return { player, game: null };
+    if (this.waitingPlayersTournament.size >= 4) {
+      const pArr = Array.from(
+        this.waitingPlayersTournament.values()
+      ).slice(0, 4);
+      const newTournament = new TournamentManager(pArr);
+      this.tournamentManagers.push(newTournament);
+      this.waitingPlayersTournament.delete(pArr[0].id);
+      this.waitingPlayersTournament.delete(pArr[1].id);
+      this.waitingPlayersTournament.delete(pArr[2].id);
+      this.waitingPlayersTournament.delete(pArr[3].id);
+      return { player, game: null, tournament: newTournament};
+    }
+    return { player, game: null, tournament: null};
   }
 
   public removePlayer(id: string) {
@@ -61,6 +81,37 @@ export class MatchMaking {
     if (player) {
       this.waitingPlayers.delete(id);
     }
+  }
+}
+
+export class TournamentManager {
+  private players : PlayerBase[];
+  private games : GameManager[];
+
+  constructor(pArr: PlayerBase[]){
+    this.players = pArr;
+    this.games = [];
+  }
+
+  createFirstGame() : MadeMatch {
+    const newGame = new GameManager(this.players[0], this.players[1]);
+    this.games.push(newGame);
+    return { player: this.players[0], game: newGame, tournament: this};
+  }
+
+  createSecondGame() : MadeMatch {
+    const newGame = new GameManager(this.players[2], this.players[3]);
+    this.games.push(newGame);
+    return { player: this.players[2], game: newGame, tournament: this};
+  }
+
+  createLastGame(): MadeMatch {
+    let p1 : PlayerBase | null = this.games[0].getWinner();
+    let p2 : PlayerBase | null = this.games[1].getWinner();
+    if (!p1 || !p2)
+      return {player: this.players[0], game: null, tournament: null}
+    const newGame = new GameManager(p1, p2);
+    return { player: p1, game: newGame, tournament: this};
   }
 }
 
@@ -97,6 +148,10 @@ export class GameManager {
   removePlayer(player: PlayerBase) {
     if (this.finished)
       return;
+    const gamePlayer = this.game.players.find(p => p.id === player.id);
+    if (gamePlayer) {
+      gamePlayer.score = -1;
+    }
     this.gameOver();
     const remaining = this.game.players.find((p) => {
       return p.id !== player.id && p.socket;
@@ -135,6 +190,14 @@ export class GameManager {
     clearInterval(this.gameInterval!);
     this.gameInterval = null;
     this.finished = true;
+  }
+
+  public getWinner(): PlayerBase | null {
+    if (!this.finished)
+      return null;
+    if (this.game.players[0].score > this.game.players[1].score)
+      return this.game.players[0];
+    return this.game.players[1];
   }
 
   public addPlayerReady = (id: string) => {
