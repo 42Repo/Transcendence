@@ -7,7 +7,7 @@ import './register';
 import './login';
 import { editProfile } from './editProfileData';
 import { downloadData, deleteAccount } from './userService';
-import { manageA2F, showA2FModal, hideA2FModal } from './A2F';
+import { confirmA2F, showA2FModal, hideA2FModal } from './A2F';
 
 const burger = document.getElementById('burger-icon');
 const mobileMenu = document.getElementById('nav-mobile');
@@ -48,8 +48,8 @@ document.body.addEventListener('click', (event) => {
 
         const enableA2FClicked = target.closest('#enableA2F');
         if (enableA2FClicked) showA2FModal();
-        const confirmA2F = target.closest('#A2FConfirm');
-        if (confirmA2F) manageA2F();
+        const confirmA2FClicked = target.closest('#A2FConfirm');
+        if (confirmA2FClicked) confirmA2F();
         const closeA2F = target.closest('#closeA2FModal');
         if (closeA2F) hideA2FModal();
 });
