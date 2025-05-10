@@ -6,6 +6,8 @@ import {
 } from './utils/modalUtils';
 import { switchPage } from './switch-page';
 import { setHeaderMenu } from './header';
+import { UserPrivateData } from './userService';
+import { GetDOMTextContent } from '@babylonjs/core';
 
 interface LoginResponse {
         success: boolean;
@@ -77,6 +79,12 @@ loginConfirmButton?.addEventListener('click', (event: Event) => {
                         const data: LoginResponse = (await response.json()) as LoginResponse;
 
                         if (response.ok && data.success) {
+                                const verif2fa = await check2FA(identifier);
+                                if (!verif2fa) {
+                                        console.log('bah mon reuf');
+                                        return;
+                                }
+                                console.log('glaglaglagla');
                                 showFeedback(LOGIN_FEEDBACK_ID, 'Login successful!', false);
 
                                 // --- Post-Login Actions ---
@@ -170,6 +178,82 @@ document.addEventListener('click', (event) => {
 document.addEventListener('openLoginModalRequest', () => {
         showLoginModal();
 });
+
+export async function check2FA(username: string): Promise<boolean> {
+        try {
+                const response = await fetch('/api/2fa/isenabled', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username }),
+                });
+
+                if (!response.ok) return false;
+
+                const data = await response.json();
+
+                if (!data.is_two_factor_enabled) return true; // pas de 2FA, donc on peut continuer
+
+                const login2FAModal = document.getElementById('A2FRefModal') as HTMLElement;
+                if (!login2FAModal) {
+                        console.error('Modal 2FA non trouvé');
+                        return false;
+                }
+
+                openModal(login2FAModal);
+
+                const confirm2FAButton = document.getElementById(
+                        'A2FRegConfirm'
+                ) as HTMLButtonElement | null;
+                const input2FAField = document.getElementById(
+                        'A2FRegInput'
+                ) as HTMLInputElement | null;
+
+                if (!confirm2FAButton || !input2FAField) {
+                        console.error('Bouton ou champ 2FA manquant');
+                        return false;
+                }
+
+                // ⚠️ On retourne une Promise ici
+                return new Promise<boolean>((resolve) => {
+                        confirm2FAButton.onclick = async () => {
+                                const code = input2FAField.value.trim();
+                                if (!code) {
+                                        alert('Veuillez entrer un code 2FA.');
+                                        return;
+                                }
+
+                                try {
+                                        const verifyResponse = await fetch('/api/2fa/login', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ username, code }),
+                                        });
+
+                                        if (!verifyResponse.ok) {
+                                                alert('Échec de la vérification 2FA.');
+                                                resolve(false);
+                                                return;
+                                        }
+
+                                        const verifyResult = await verifyResponse.json();
+                                        if (verifyResult.success) {
+                                                closeModal(login2FAModal);
+                                                resolve(true);
+                                        } else {
+                                                alert('Code 2FA invalide.');
+                                                resolve(false);
+                                        }
+                                } catch (err) {
+                                        console.error('Erreur lors de la vérification du code 2FA :', err);
+                                        resolve(false);
+                                }
+                        };
+                });
+        } catch (error) {
+                console.error('Erreur dans check2FA :', error);
+                return false;
+        }
+}
 
 export const logout = () => {
         console.log('Logout function called');
