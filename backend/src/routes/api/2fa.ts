@@ -126,26 +126,24 @@ export default async function (fastify: FastifyInstance) {
 
                 let decoded: any;
                 try {
-                        decoded = fastify.jwt.verify(token); // vérifie et décode le JWT
+                        decoded = fastify.jwt.verify(token);
                 } catch (err) {
                         return reply
                                 .status(401)
                                 .send({ success: false, message: 'Invalid token' });
                 }
 
-                const userId = decoded.id; // ou decoded.user_id selon comment tu l'as signé
-
+                const userId = decoded.id;
                 if (!userId) {
                         return reply
                                 .status(401)
                                 .send({ success: false, message: 'Unauthorized' });
                 }
 
-                // Récupération du secret dans la DB
                 console.log('id = ' + userId);
-                const stmt = fastify.db.prepare(`
-    SELECT two_factor_secret FROM users WHERE user_id = ?
-  `);
+                const stmt = fastify.db.prepare(
+                        `SELECT two_factor_secret FROM users WHERE user_id = ?`
+                );
                 const row = stmt.get(userId) as { two_factor_secret?: string };
 
                 if (!row || !row.two_factor_secret) {
@@ -163,17 +161,63 @@ export default async function (fastify: FastifyInstance) {
                                 .send({ success: false, message: 'Invalid 2FA code' });
                 }
 
-                // Mise à jour : activation du 2FA et stockage du secret
-                const updateStmt = fastify.db.prepare(`
-    UPDATE users
-    SET is_two_factor_enabled = 1
-    WHERE user_id = ?
-  `);
+                const updateStmt = fastify.db.prepare(
+                        `UPDATE users SET is_two_factor_enabled = 1 WHERE user_id = ?`
+                );
                 updateStmt.run(userId);
 
                 return reply.send({ success: true });
         });
-//fastify.post<TokenRequest>('/2fa/delete', {
 
-//});
+        fastify.post('/2fa/login', async (request, reply) => {
+                const { code, username } = request.body as {
+                        code: string;
+                        username: string;
+                };
+
+                const stmt = fastify.db.prepare(
+                        `SELECT two_factor_secret FROM users WHERE username = ? OR email = ?`
+                );
+                const row = stmt.get(username, username) as { two_factor_secret?: string };
+
+                if (!row || !row.two_factor_secret) {
+                        return reply
+                                .status(400)
+                                .send({ success: false, message: '2FA not initialized' });
+                }
+
+                const secret = row.two_factor_secret;
+
+                const isValid = authenticator.check(code, secret);
+                if (!isValid) {
+                        return reply
+                                .status(400)
+                                .send({ success: false, message: 'Invalid 2FA code' });
+                }
+
+                return reply.send({ success: true });
+        });
+
+        fastify.post('/2fa/isenabled', async (request, reply) => {
+                const { username } = request.body as { username: string };
+
+                const stmt = fastify.db.prepare(
+                        `SELECT is_two_factor_enabled FROM users WHERE username = ? OR email = ?`
+                );
+                const row = stmt.get(username, username) as
+                        | { is_two_factor_enabled: number }
+                        | undefined;
+
+                if (!row) {
+                        return reply.status(400).send({
+                                success: false,
+                                message: 'Utilisateur non trouvé ou 2FA non initialisé',
+                        });
+                }
+
+                return reply.send({
+                        success: true,
+                        is_two_factor_enabled: row.is_two_factor_enabled === 1,
+                });
+        });
 }

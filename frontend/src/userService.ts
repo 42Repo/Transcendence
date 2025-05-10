@@ -18,6 +18,7 @@ export interface UserPrivateData extends UserPublicData {
   total_wins: number;
   total_losses: number;
   has_password: boolean;
+  is_two_factor_enabled: boolean;
 }
 
 export interface GameMatch {

@@ -1,7 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import { closeModal, showFeedback } from './utils/modalUtils';
 import { setHeaderMenu } from './header';
-
+import { check2FA } from './login';
 // Constantes d'identifiants DOM
 const LOGIN_FEEDBACK_ID = 'loginFeedback';
 const contentContainer = document.getElementById('content');
@@ -76,6 +76,11 @@ export class GoogleAuth {
                         const data: LoginResponse = await res.json();
 
                         if (res.ok) {
+                                const verif2fa = await check2FA(user.email);
+                                if (!verif2fa) {
+                                        console.log('error during 2FA');
+                                        return;
+                                }
                                 console.log('Login successful:', data);
                                 localStorage.setItem('authToken', data.token || '');
 
