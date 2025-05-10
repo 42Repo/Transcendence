@@ -48,7 +48,7 @@ interface UpdateUserBody {
   bio?: string;
   current_password?: string;
   new_password?: string;
-  // avatar_url?: string; // For future avatar updates
+  avatar_url?: string;
 }
 
 function isValidEmail(email: string): boolean {
@@ -126,7 +126,7 @@ export default function userRoutes(
     routeOpts,
     async (request, reply) => {
       const userId = request.user.id;
-      const { username, email, bio, current_password, new_password } =
+      const { username, email, bio, current_password, new_password, avatar_url } =
         request.body;
 
       const updates: { [key: string]: any } = {};
@@ -139,10 +139,10 @@ export default function userRoutes(
         );
         const currentUserData = currentUserStmt.get(userId) as
           | {
-              username: string;
-              email: string | null;
-              password_hash: string | null;
-            }
+            username: string;
+            email: string | null;
+            password_hash: string | null;
+          }
           | undefined;
 
         if (!currentUserData) {
@@ -224,6 +224,10 @@ export default function userRoutes(
               'New password is required when current password is provided for a password change.'
             );
           }
+        }
+
+        if (avatar_url !== undefined) {
+          updates.avatar_url = avatar_url.trim();
         }
 
         if (Object.keys(updates).length === 0) {
