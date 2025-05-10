@@ -18,6 +18,7 @@ export interface UserPrivateData extends UserPublicData {
   total_wins: number;
   total_losses: number;
   has_password: boolean;
+  is_two_factor_enabled: boolean;
 }
 
 export interface GameMatch {
@@ -32,6 +33,14 @@ export interface GameMatch {
   player2_score: number;
   winner_id: number | null;
   match_date: string;
+  player1_touched_ball: number;
+  player1_missed_ball: number;
+  player1_touched_ball_in_row: number;
+  player1_missed_ball_in_row: number;
+  player2_touched_ball: number;
+  player2_missed_ball: number;
+  player2_touched_ball_in_row: number;
+  player2_missed_ball_in_row: number;
 }
 
 export function getMatchResultForUser(
@@ -104,13 +113,19 @@ export async function fetchMyProfileData(): Promise<UserPrivateData> {
     const data: ApiResponse<UserPrivateData> = await response.json();
 
     if (data.success && data.user) {
-      const userWithDefaults = {
+      // Correctly use backend values, provide defaults only if properties might be missing
+      // and are optional in the UserPrivateData interface but expected by parts of the frontend.
+      // total_wins and total_losses are not optional in UserPrivateData and should always come from backend.
+      const userWithDefaults: UserPrivateData = {
         ...data.user,
-        total_wins: 0,
-        total_losses: 0,
-        bio: null,
-        has_password: false,
+        bio: data.user.bio || null, // Ensure bio is null not undefined if backend omits it
+        // has_password should be sent by backend. If it could be missing:
+        // has_password: data.user.has_password === undefined ? false : data.user.has_password,
+        // is_two_factor_enabled should be sent by backend. If it could be missing:
+        // is_two_factor_enabled: data.user.is_two_factor_enabled === undefined ? false : data.user.is_two_factor_enabled,
       };
+      // The backend should already be sending total_wins and total_losses directly.
+      // So, data.user already contains them. No need to override or default them here.
       return userWithDefaults;
     } else {
       throw new Error(

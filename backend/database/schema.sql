@@ -41,6 +41,14 @@ CREATE TABLE IF NOT EXISTS game_matches (
     player2_score INTEGER NOT NULL,
     winner_id INTEGER,
     match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    player1_touched_ball INTEGER DEFAULT 0,
+    player1_missed_ball INTEGER DEFAULT 0,
+    player1_touched_ball_in_row INTEGER DEFAULT 0,
+    player1_missed_ball_in_row INTEGER DEFAULT 0,
+    player2_touched_ball INTEGER DEFAULT 0,
+    player2_missed_ball INTEGER DEFAULT 0,
+    player2_touched_ball_in_row INTEGER DEFAULT 0,
+    player2_missed_ball_in_row INTEGER DEFAULT 0,
     FOREIGN KEY (player1_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (player2_id) REFERENCES users(user_id) ON DELETE CASCADE, -- Or handle AI/guest players differently
     FOREIGN KEY (winner_id) REFERENCES users(user_id) ON DELETE SET NULL -- If winner user is deleted, set winner_id to NULL

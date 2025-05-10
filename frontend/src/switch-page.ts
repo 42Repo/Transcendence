@@ -236,6 +236,32 @@ async function loadAndPopulateEditProfileData() {
         }
 }
 
+function calculateBestWinStreak(matches: GameMatch[], currentUserId: number): number {
+    let bestStreak = 0;
+    let currentStreak = 0;
+    // Matches are typically fetched in reverse chronological order (newest first).
+    // To calculate streaks correctly, we should process them chronologically.
+    const chronologicalMatches = [...matches].reverse();
+
+    for (const match of chronologicalMatches) {
+        const result = getMatchResultForUser(match, currentUserId);
+        if (result === 'win') {
+            currentStreak++;
+        } else {
+            if (currentStreak > bestStreak) {
+                bestStreak = currentStreak;
+            }
+            currentStreak = 0; // Reset streak on loss or draw
+        }
+    }
+    // Check one last time in case the streak was at the end of the list
+    if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+    }
+    return bestStreak;
+}
+
+
 async function loadAndPopulateProfileData() {
         console.log('Attempting to load and populate profile data...');
 
@@ -257,6 +283,7 @@ async function loadAndPopulateProfileData() {
         const statsWinsElem = document.getElementById('statsWins');
         const statsLossesElem = document.getElementById('statsLosses');
         const statsWinLossRateElem = document.getElementById('statsWinLossRate');
+        const statsBestWinStreakElem = document.getElementById('statsBestWinStreak'); // New element
 
         const friendsLoading = document.getElementById('friendsLoading');
         const friendsError = document.getElementById('friendsError');
@@ -278,7 +305,8 @@ async function loadAndPopulateProfileData() {
                 !bioElem ||
                 !statsWinsElem ||
                 !statsLossesElem ||
-                !statsWinLossRateElem
+                !statsWinLossRateElem ||
+                !statsBestWinStreakElem // Check for the new element
         ) {
                 console.error(
                         'Profile page structure is missing required elements. Check IDs in profile.html and this function.'
@@ -308,8 +336,11 @@ async function loadAndPopulateProfileData() {
                 }
                 bioElem.textContent = userData.bio || 'No biography set.';
 
+                // Populate Wins and Losses from userData (which gets it from backend)
                 statsWinsElem.textContent = `Wins: ${userData.total_wins}`;
                 statsLossesElem.textContent = `Losses: ${userData.total_losses}`;
+
+                // Calculate and Populate W/L Ratio
                 if (userData.total_losses > 0) {
                         const ratio = userData.total_wins / userData.total_losses;
                         statsWinLossRateElem.textContent = `W/L Rate: ${ratio.toFixed(2)}`;
@@ -318,21 +349,28 @@ async function loadAndPopulateProfileData() {
                 } else {
                         statsWinLossRateElem.textContent = `W/L Rate: N/A`;
                 }
-
+                
                 const rankElem = document.getElementById('statsRank');
                 if (rankElem) rankElem.textContent = `Rank: (Needs API)`;
-                const streakElem = document.getElementById('statsStreak');
-                if (streakElem) streakElem.textContent = `Best Win Streak: (Needs API)`;
+                
+                // Fetch history to calculate best win streak
+                const historyItems: GameMatch[] = await fetchGameHistory(userData.user_id);
+                const bestStreak = calculateBestWinStreak(historyItems, userData.user_id);
+                statsBestWinStreakElem.textContent = `Best Win Streak: ${bestStreak}`;
+                // TODO: For a true "best ever" win streak, this should ideally be calculated and stored by the backend.
+                // This calculation is based on the last 50 fetched matches.
 
                 profileContentArea.style.display = 'block';
                 errorDisplay.style.display = 'none';
 
                 void loadFriends(friendsContainer, friendsLoading, friendsError);
+                // Pass historyItems to loadHistory to avoid fetching it again
                 void loadHistory(
                         userData.user_id,
                         historyContainer,
                         historyLoading,
-                        historyError
+                        historyError,
+                        historyItems
                 );
         } catch (error) {
                 console.error('Error loading profile data:', error);
@@ -391,7 +429,8 @@ async function loadHistory(
         currentUserId: number,
         container: HTMLElement | null,
         loading: HTMLElement | null,
-        errorDisplay: HTMLElement | null
+        errorDisplay: HTMLElement | null,
+        historyItemsToDisplay?: GameMatch[] // Optional: pass pre-fetched items
 ) {
         if (!container || !loading || !errorDisplay) {
                 console.error('Game history elements missing');
@@ -401,7 +440,9 @@ async function loadHistory(
         errorDisplay.style.display = 'none';
         container.innerHTML = '';
         try {
-                const historyItems: GameMatch[] = await fetchGameHistory(currentUserId);
+                // If historyItemsToDisplay is not provided, fetch them. Otherwise, use the provided ones.
+                const historyItems: GameMatch[] = historyItemsToDisplay ?? await fetchGameHistory(currentUserId);
+                
                 if (historyItems.length === 0) {
                         container.innerHTML =
                                 '<li class="p-3 text-gray-500">No game history found.</li>';
@@ -413,10 +454,6 @@ async function loadHistory(
                                                 currentUserId === item.player1_id
                                                         ? item.player2_username
                                                         : item.player1_username;
-                                        //  const opponentAvatar =
-                                        //          currentUserId === item.player1_id
-                                        //                  ? item.player1_avatar_url
-                                        //                  : item.player2_avatar_url;
                                         const finalOpponentAvatar =
                                                 currentUserId === item.player1_id
                                                         ? item.player2_avatar_url
@@ -431,6 +468,23 @@ async function loadHistory(
                                                         ? item.player2_score
                                                         : item.player1_score;
 
+                                        const userTouchedBall =
+                                                currentUserId === item.player1_id
+                                                        ? item.player1_touched_ball
+                                                        : item.player2_touched_ball;
+                                        const userMissedBall =
+                                                currentUserId === item.player1_id
+                                                        ? item.player1_missed_ball
+                                                        : item.player2_missed_ball;
+                                        const opponentTouchedBall =
+                                                currentUserId === item.player1_id
+                                                        ? item.player2_touched_ball
+                                                        : item.player1_touched_ball;
+                                        const opponentMissedBall =
+                                                currentUserId === item.player1_id
+                                                        ? item.player2_missed_ball
+                                                        : item.player1_missed_ball;
+
                                         const resultClass =
                                                 result === 'win'
                                                         ? 'text-green-500'
@@ -443,13 +497,19 @@ async function loadHistory(
                                                         : '/DefaultProfilePic.png';
 
                                         return `
-          <li class="flex items-center justify-between p-3 border-b border-mediumlightdark hover:bg-mediumdark">
-            <div class="flex items-center">
-              <img src="${avatarSrc}" alt="${opponentUsername}" class="size-10 rounded-full mr-3">
-              <span>vs ${opponentUsername}</span>
+          <li class="flex flex-col p-3 border-b border-mediumlightdark hover:bg-mediumdark text-light">
+            <div class="flex items-center justify-between w-full">
+              <div class="flex items-center">
+                <img src="${avatarSrc}" alt="${opponentUsername}" class="w-10 h-10 rounded-full mr-3 object-cover">
+                <span>vs ${opponentUsername}</span>
+              </div>
+              <span class="${resultClass} font-semibold">${result.toUpperCase()} (${userScore} - ${opponentScore})</span>
+              <span>${new Date(item.match_date).toLocaleDateString()}</span>
             </div>
-            <span class="${resultClass} font-semibold">${result.toUpperCase()} (${userScore} - ${opponentScore})</span>
-            <span>${new Date(item.match_date).toLocaleDateString()}</span>
+            <div class="text-xs text-gray-400 mt-1 pl-12">
+              <p>Your Performance: Touched: ${userTouchedBall}, Missed: ${userMissedBall}</p>
+              <p>Opponent's Performance: Touched: ${opponentTouchedBall}, Missed: ${opponentMissedBall}</p>
+            </div>
           </li>
         `;
                                 })

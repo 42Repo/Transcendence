@@ -26,6 +26,7 @@ interface UserPrivateDataWithStats extends UserPublicData {
   total_wins: number;
   total_losses: number;
   has_password?: boolean;
+  is_two_factor_enabled?: boolean;
 }
 
 interface GameMatchData {
@@ -40,6 +41,14 @@ interface GameMatchData {
   player2_score: number;
   winner_id: number | null;
   match_date: string;
+  player1_touched_ball: number;
+  player1_missed_ball: number;
+  player1_touched_ball_in_row: number;
+  player1_missed_ball_in_row: number;
+  player2_touched_ball: number;
+  player2_missed_ball: number;
+  player2_touched_ball_in_row: number;
+  player2_missed_ball_in_row: number;
 }
 
 interface UpdateUserBody {
@@ -72,9 +81,9 @@ export default function userRoutes(
       try {
         const userStmt = fastify.db.prepare(
           `SELECT
-             user_id, username, email, avatar_url, status, created_at, updated_at, bio, password_hash
-           FROM users
-           WHERE user_id = ?`
+       user_id, username, email, avatar_url, status, created_at, updated_at, bio, password_hash, is_two_factor_enabled
+     FROM users
+     WHERE user_id = ?`
         );
         type UserWithPasswordHash = Omit<
           UserPrivateDataWithStats,
@@ -88,7 +97,7 @@ export default function userRoutes(
         if (!userBase) {
           return reply.notFound('User data not found for authenticated user.');
         }
-
+        const is_two_factor_enabled = !!userBase.is_two_factor_enabled;
         const has_password = !!userBase.password_hash;
         const { password_hash, ...userBaseWithoutPasswordHash } = userBase;
         const winsStmt = fastify.db.prepare(
@@ -99,7 +108,7 @@ export default function userRoutes(
 
         const lossesStmt = fastify.db.prepare(
           `SELECT COUNT(*) as count FROM game_matches
-           WHERE ((player1_id = ? AND winner_id != ?) OR (player2_id = ? AND winner_id != ?)) AND winner_id IS NOT NULL`
+     WHERE ((player1_id = ? AND winner_id != ?) OR (player2_id = ? AND winner_id != ?)) AND winner_id IS NOT NULL`
         );
         const lossesResult = lossesStmt.get(userId, userId, userId, userId) as {
           count: number;
@@ -111,6 +120,7 @@ export default function userRoutes(
           total_wins,
           total_losses,
           has_password,
+          is_two_factor_enabled,
         };
 
         return reply.send({ success: true, user });
@@ -356,25 +366,33 @@ export default function userRoutes(
         }
 
         const matchesStmt = fastify.db.prepare(`
-          SELECT
-            gm.match_id,
-            gm.player1_id,
-            p1.username as player1_username,
-            p1.avatar_url as player1_avatar_url,
-            gm.player2_id,
-            p2.username as player2_username,
-            p2.avatar_url as player2_avatar_url,
-            gm.player1_score,
-            gm.player2_score,
-            gm.winner_id,
-            gm.match_date
-          FROM game_matches gm
-          JOIN users p1 ON gm.player1_id = p1.user_id
-          JOIN users p2 ON gm.player2_id = p2.user_id
-          WHERE gm.player1_id = ? OR gm.player2_id = ?
-          ORDER BY gm.match_date DESC
-          LIMIT 50
-        `);
+    SELECT
+      gm.match_id,
+      gm.player1_id,
+      p1.username as player1_username,
+      p1.avatar_url as player1_avatar_url,
+      gm.player2_id,
+      p2.username as player2_username,
+      p2.avatar_url as player2_avatar_url,
+      gm.player1_score,
+      gm.player2_score,
+      gm.winner_id,
+      gm.match_date,
+      gm.player1_touched_ball,
+      gm.player1_missed_ball,
+      gm.player1_touched_ball_in_row,
+      gm.player1_missed_ball_in_row,
+      gm.player2_touched_ball,
+      gm.player2_missed_ball,
+      gm.player2_touched_ball_in_row,
+      gm.player2_missed_ball_in_row
+    FROM game_matches gm
+    JOIN users p1 ON gm.player1_id = p1.user_id
+    JOIN users p2 ON gm.player2_id = p2.user_id
+    WHERE gm.player1_id = ? OR gm.player2_id = ?
+    ORDER BY gm.match_date DESC
+    LIMIT 50
+  `);
         const matches = matchesStmt.all(
           userIdToQuery,
           userIdToQuery

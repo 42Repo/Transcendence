@@ -11,6 +11,14 @@ interface RecordMatchBody {
   player1_score: number;
   player2_score: number;
   winner_id?: number;
+  player1_touched_ball?: number;
+  player1_missed_ball?: number;
+  player1_touched_ball_in_row?: number;
+  player1_missed_ball_in_row?: number;
+  player2_touched_ball?: number;
+  player2_missed_ball?: number;
+  player2_touched_ball_in_row?: number;
+  player2_missed_ball_in_row?: number;
 }
 
 export default function matchesRoutes(
@@ -25,8 +33,20 @@ export default function matchesRoutes(
       request: FastifyRequest<{ Body: RecordMatchBody }>,
       reply: FastifyReply
     ) => {
-      const { player1_id, player2_id, player1_score, player2_score } =
-        request.body;
+      const {
+        player1_id,
+        player2_id,
+        player1_score,
+        player2_score,
+        player1_touched_ball = 0,
+        player1_missed_ball = 0,
+        player1_touched_ball_in_row = 0,
+        player1_missed_ball_in_row = 0,
+        player2_touched_ball = 0,
+        player2_missed_ball = 0,
+        player2_touched_ball_in_row = 0,
+        player2_missed_ball_in_row = 0,
+      } = request.body;
 
       let { winner_id } = request.body;
 
@@ -49,7 +69,7 @@ export default function matchesRoutes(
         } else if (player2_score > player1_score) {
           winner_id = player2_id;
         } else {
-          winner_id = undefined;
+          winner_id = undefined; // Explicitly set to undefined for draw, DB will store NULL
         }
       }
 
@@ -73,14 +93,26 @@ export default function matchesRoutes(
         }
 
         const insertStmt = fastify.db.prepare(
-          'INSERT INTO game_matches (player1_id, player2_id, player1_score, player2_score, winner_id) VALUES (?, ?, ?, ?, ?)'
+          `INSERT INTO game_matches (
+            player1_id, player2_id, player1_score, player2_score, winner_id,
+            player1_touched_ball, player1_missed_ball, player1_touched_ball_in_row, player1_missed_ball_in_row,
+            player2_touched_ball, player2_missed_ball, player2_touched_ball_in_row, player2_missed_ball_in_row
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         );
         const info = insertStmt.run(
           player1_id,
           player2_id,
           player1_score,
           player2_score,
-          winner_id
+          winner_id,
+          player1_touched_ball,
+          player1_missed_ball,
+          player1_touched_ball_in_row,
+          player1_missed_ball_in_row,
+          player2_touched_ball,
+          player2_missed_ball,
+          player2_touched_ball_in_row,
+          player2_missed_ball_in_row
         );
 
         fastify.log.info(`Match recorded with ID: ${info.lastInsertRowid}`);
