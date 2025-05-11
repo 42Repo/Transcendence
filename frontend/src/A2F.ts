@@ -108,13 +108,11 @@ export async function confirmA2F() {
         } catch (error) {
                 console.log('error : ' + error);
         }
+
+        window.location.reload();
         hideA2FModal();
 }
 
-/**
- * Fonction pour désactiver le 2FA
- * (à implémenter pour fonctionner avec la future route /2fa/delete)
- */
 export function disableA2F() {
         // Cette fonction pourra être utilisée pour désactiver le 2FA
         // via la future route /2fa/delete

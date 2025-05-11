@@ -175,7 +175,6 @@ export async function editProfile() {
         'Profile updated successfully!',
         false
       );
-
       usernameInput.defaultValue = updatedUser.username;
       emailInput.defaultValue = updatedUser.email || '';
       bioTextarea.defaultValue = updatedUser.bio || '';

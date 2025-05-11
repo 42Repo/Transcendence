@@ -155,12 +155,16 @@ async function loadAndPopulateEditProfileData() {
         );
         const passwordSectionTitle = document.getElementById('passwordSectionTitle');
 
+        const enableA2FButton = document.getElementById(
+                'enableA2F'
+        ) as HTMLButtonElement | null;
         if (
                 !loadingIndicator ||
                 !errorDisplay ||
                 !profileContentArea ||
                 !usernameElem ||
                 !joinDateElem ||
+                !enableA2FButton ||
                 !emailElem ||
                 !profilePicElem ||
                 !bioElem ||
@@ -185,6 +189,8 @@ async function loadAndPopulateEditProfileData() {
                 usernameElem.value = userData.username;
                 usernameElem.defaultValue = userData.username;
 
+                if (!userData.is_two_factor_enabled)
+                        enableA2FButton.classList.remove('hidden');
                 joinDateElem.textContent = new Date(
                         userData.created_at
                 ).toLocaleDateString();
