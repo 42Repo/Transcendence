@@ -150,7 +150,7 @@ export default function userRoutes(
     routeOpts,
     async (request, reply) => {
       const userId = request.user.id;
-      const { username, email, bio, current_password, new_password } =
+      const { username, email, bio, current_password, new_password, avatar_url} =
         request.body;
 
       const updates: { [key: string]: any } = {};
