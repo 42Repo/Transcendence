@@ -26,6 +26,7 @@ interface UserPrivateDataWithStats extends UserPublicData {
   total_wins: number;
   total_losses: number;
   has_password?: boolean;
+  is_two_factor_enabled?: boolean;
 }
 
 interface GameMatchData {
@@ -48,7 +49,7 @@ interface UpdateUserBody {
   bio?: string;
   current_password?: string;
   new_password?: string;
-  // avatar_url?: string; // For future avatar updates
+  avatar_url?: string;
 }
 
 function isValidEmail(email: string): boolean {
@@ -72,7 +73,7 @@ export default function userRoutes(
       try {
         const userStmt = fastify.db.prepare(
           `SELECT
-             user_id, username, email, avatar_url, status, created_at, updated_at, bio, password_hash
+             user_id, username, email, avatar_url, status, created_at, updated_at, bio, password_hash, is_two_factor_enabled
            FROM users
            WHERE user_id = ?`
         );
@@ -88,7 +89,7 @@ export default function userRoutes(
         if (!userBase) {
           return reply.notFound('User data not found for authenticated user.');
         }
-
+        const is_two_factor_enabled = !!userBase.is_two_factor_enabled;
         const has_password = !!userBase.password_hash;
         const { password_hash, ...userBaseWithoutPasswordHash } = userBase;
         const winsStmt = fastify.db.prepare(
@@ -111,6 +112,7 @@ export default function userRoutes(
           total_wins,
           total_losses,
           has_password,
+          is_two_factor_enabled,
         };
 
         return reply.send({ success: true, user });
@@ -120,13 +122,12 @@ export default function userRoutes(
       }
     }
   );
-
   fastify.put<{ Body: UpdateUserBody }>(
     '/users/me',
     routeOpts,
     async (request, reply) => {
       const userId = request.user.id;
-      const { username, email, bio, current_password, new_password } =
+      const { username, email, bio, current_password, new_password, avatar_url } =
         request.body;
 
       const updates: { [key: string]: any } = {};
@@ -139,10 +140,10 @@ export default function userRoutes(
         );
         const currentUserData = currentUserStmt.get(userId) as
           | {
-              username: string;
-              email: string | null;
-              password_hash: string | null;
-            }
+            username: string;
+            email: string | null;
+            password_hash: string | null;
+          }
           | undefined;
 
         if (!currentUserData) {
@@ -224,6 +225,9 @@ export default function userRoutes(
               'New password is required when current password is provided for a password change.'
             );
           }
+        }
+        if (avatar_url !== undefined) {
+          updates.avatar_url = avatar_url.trim();
         }
 
         if (Object.keys(updates).length === 0) {
