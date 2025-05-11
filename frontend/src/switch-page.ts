@@ -155,24 +155,28 @@ async function loadAndPopulateEditProfileData() {
   );
   const passwordSectionTitle = document.getElementById('passwordSectionTitle');
 
-  if (
-    !loadingIndicator ||
-    !errorDisplay ||
-    !profileContentArea ||
-    !usernameElem ||
-    !joinDateElem ||
-    !emailElem ||
-    !profilePicElem ||
-    !bioElem ||
-    !currentPasswordContainer ||
-    !passwordSectionTitle
-  ) {
-    console.error(
-      'Edit Profile page structure is missing required elements. Check IDs in edit-profile.html and this function.'
-    );
-    content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
-    return;
-  }
+        const enableA2FButton = document.getElementById(
+                'enableA2F'
+        ) as HTMLButtonElement | null;
+        if (
+                !loadingIndicator ||
+                !errorDisplay ||
+                !profileContentArea ||
+                !usernameElem ||
+                !joinDateElem ||
+                !enableA2FButton ||
+                !emailElem ||
+                !profilePicElem ||
+                !bioElem ||
+                !currentPasswordContainer ||
+                !passwordSectionTitle
+        ) {
+                console.error(
+                        'Edit Profile page structure is missing required elements. Check IDs in edit-profile.html and this function.'
+                );
+                content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
+                return;
+        }
 
   loadingIndicator.style.display = 'block';
   errorDisplay.style.display = 'none';
@@ -185,8 +189,10 @@ async function loadAndPopulateEditProfileData() {
     usernameElem.value = userData.username;
     usernameElem.defaultValue = userData.username;
 
+    if (!userData.is_two_factor_enabled)
+            enableA2FButton.classList.remove('hidden');
     joinDateElem.textContent = new Date(
-      userData.created_at
+            userData.created_at
     ).toLocaleDateString();
 
     emailElem.value = userData.email || '';

@@ -59,7 +59,7 @@ interface UpdateUserBody {
   bio?: string;
   current_password?: string;
   new_password?: string;
-  // avatar_url?: string; // For future avatar updates
+  avatar_url?: string;
 }
 
 function isValidEmail(email: string): boolean {
@@ -249,6 +249,9 @@ export default function userRoutes(
             );
           }
         }
+        if (avatar_url !== undefined) {
+          updates.avatar_url = avatar_url.trim();
+        }
 
         if (Object.keys(updates).length === 0) {
           return reply.send({ success: true, message: 'No changes detected.' });
@@ -301,6 +304,7 @@ export default function userRoutes(
           has_password: has_password_after_update,
         };
 
+
         return reply.send({
           success: true,
           message: 'Profile updated successfully.',
@@ -334,6 +338,7 @@ export default function userRoutes(
       try {
         const stmt = fastify.db.prepare('DELETE FROM users WHERE user_id = ?');
         const info = stmt.run(userId);
+
 
         if (info.changes > 0) {
           request.log.info(`User ${userId} deleted successfully.`);
@@ -414,6 +419,7 @@ export default function userRoutes(
           userIdToQuery
         ) as GameMatchData[];
 
+
         return reply.send({
           success: true,
           matches,
@@ -458,6 +464,7 @@ export default function userRoutes(
             `User with identifier '${identifier}' not found.`
           );
         }
+
 
         return reply.send({ success: true, user });
       } catch (err) {
