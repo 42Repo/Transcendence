@@ -109,7 +109,8 @@ export async function confirmA2F() {
                 console.log('error : ' + error);
         }
 
-        window.location.reload();
+        //window.location.reload();
+        switchPage('profile');
         hideA2FModal();
 }
 
