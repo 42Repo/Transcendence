@@ -23,12 +23,14 @@ export interface UserPrivateData extends UserPublicData {
 
 export interface GameMatch {
   match_id: number;
-  player1_id: number;
-  player2_id: number;
-  player1_username: string;
-  player1_avatar_url?: string;
-  player2_username: string;
-  player2_avatar_url?: string;
+  player1_id: number | null;
+  player1_username: string | null;
+  player1_guest_name: string | null;
+  player1_avatar_url?: string | null;
+  player2_id: number | null;
+  player2_username: string | null;
+  player2_guest_name: string | null;
+  player2_avatar_url?: string | null;
   player1_score: number;
   player2_score: number;
   winner_id: number | null;
@@ -47,7 +49,20 @@ export function getMatchResultForUser(
   match: GameMatch,
   currentUserId: number
 ): 'win' | 'loss' | 'draw' {
-  if (match.winner_id === null) return 'draw';
+  if (match.winner_id === null) {
+    if (
+      match.player1_id === currentUserId &&
+      match.player1_score < match.player2_score
+    )
+      return 'loss';
+    if (
+      match.player2_id === currentUserId &&
+      match.player2_score < match.player1_score
+    )
+      return 'loss';
+    if (match.player1_score === match.player2_score) return 'draw';
+    return 'draw';
+  }
   if (match.winner_id === currentUserId) return 'win';
   return 'loss';
 }
@@ -113,19 +128,10 @@ export async function fetchMyProfileData(): Promise<UserPrivateData> {
     const data: ApiResponse<UserPrivateData> = await response.json();
 
     if (data.success && data.user) {
-      // Correctly use backend values, provide defaults only if properties might be missing
-      // and are optional in the UserPrivateData interface but expected by parts of the frontend.
-      // total_wins and total_losses are not optional in UserPrivateData and should always come from backend.
       const userWithDefaults: UserPrivateData = {
         ...data.user,
-        bio: data.user.bio || null, // Ensure bio is null not undefined if backend omits it
-        // has_password should be sent by backend. If it could be missing:
-        // has_password: data.user.has_password === undefined ? false : data.user.has_password,
-        // is_two_factor_enabled should be sent by backend. If it could be missing:
-        // is_two_factor_enabled: data.user.is_two_factor_enabled === undefined ? false : data.user.is_two_factor_enabled,
+        bio: data.user.bio || null,
       };
-      // The backend should already be sending total_wins and total_losses directly.
-      // So, data.user already contains them. No need to override or default them here.
       return userWithDefaults;
     } else {
       throw new Error(

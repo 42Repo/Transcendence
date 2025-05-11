@@ -6,11 +6,13 @@ import {
 } from 'fastify';
 
 interface RecordMatchBody {
-  player1_id: number;
-  player2_id: number;
+  player1_id?: number | null;
+  player2_id?: number | null;
+  player1_guest_name?: string | null;
+  player2_guest_name?: string | null;
   player1_score: number;
   player2_score: number;
-  winner_id?: number;
+  winner_id?: number | null;
   player1_touched_ball?: number;
   player1_missed_ball?: number;
   player1_touched_ball_in_row?: number;
@@ -27,8 +29,6 @@ export default function matchesRoutes(
 ) {
   fastify.post(
     '/matches',
-    // TODO: Add schema validation for the body
-    // TODO: Consider adding authentication/authorization for this endpoint if it's not purely internal
     async (
       request: FastifyRequest<{ Body: RecordMatchBody }>,
       reply: FastifyReply
@@ -36,8 +36,11 @@ export default function matchesRoutes(
       const {
         player1_id,
         player2_id,
+        player1_guest_name,
+        player2_guest_name,
         player1_score,
         player2_score,
+        winner_id,
         player1_touched_ball = 0,
         player1_missed_ball = 0,
         player1_touched_ball_in_row = 0,
@@ -48,63 +51,89 @@ export default function matchesRoutes(
         player2_missed_ball_in_row = 0,
       } = request.body;
 
-      let { winner_id } = request.body;
-
       if (
-        !player1_id ||
-        !player2_id ||
+        (player1_id === undefined && player1_guest_name === undefined) ||
+        (player2_id === undefined && player2_guest_name === undefined) ||
         player1_score === undefined ||
         player2_score === undefined
       ) {
         return reply.status(400).send({
           success: false,
           message:
-            'Missing required fields: player1_id, player2_id, player1_score, player2_score.',
+            'Missing required fields: player1_id or player1_guest_name, player2_id or player2_guest_name, player1_score, player2_score.',
         });
       }
 
-      if (winner_id === undefined) {
-        if (player1_score > player2_score) {
-          winner_id = player1_id;
-        } else if (player2_score > player1_score) {
-          winner_id = player2_id;
-        } else {
-          winner_id = undefined; // Explicitly set to undefined for draw, DB will store NULL
-        }
+      if (
+        player1_id &&
+        !player1_guest_name !== true &&
+        player1_id === null &&
+        !player1_guest_name
+      ) {
+        return reply.status(400).send({
+          success: false,
+          message:
+            'Player 1 guest name is required if player1_id is null or not provided.',
+        });
+      }
+      if (
+        player2_id &&
+        !player2_guest_name !== true &&
+        player2_id === null &&
+        !player2_guest_name
+      ) {
+        return reply.status(400).send({
+          success: false,
+          message:
+            'Player 2 guest name is required if player2_id is null or not provided.',
+        });
       }
 
       try {
         const checkUserStmt = fastify.db.prepare(
           'SELECT user_id FROM users WHERE user_id = ?'
         );
-        const player1Exists = checkUserStmt.get(player1_id);
-        const player2Exists = checkUserStmt.get(player2_id);
 
-        if (!player1Exists || !player2Exists) {
+        if (player1_id && !checkUserStmt.get(player1_id)) {
           return reply.status(404).send({
             success: false,
-            message: 'One or both player IDs not found.',
+            message: `Player 1 ID ${player1_id} not found.`,
+          });
+        }
+        if (player2_id && !checkUserStmt.get(player2_id)) {
+          return reply.status(404).send({
+            success: false,
+            message: `Player 2 ID ${player2_id} not found.`,
           });
         }
         if (winner_id && !checkUserStmt.get(winner_id)) {
-          return reply
-            .status(404)
-            .send({ success: false, message: 'Winner ID not found.' });
+          return reply.status(404).send({
+            success: false,
+            message: `Winner ID ${winner_id} not found.`,
+          });
         }
+
+        const finalP1Id = player1_id || null;
+        const finalP2Id = player2_id || null;
+        const finalP1GuestName = finalP1Id ? null : player1_guest_name;
+        const finalP2GuestName = finalP2Id ? null : player2_guest_name;
 
         const insertStmt = fastify.db.prepare(
           `INSERT INTO game_matches (
-            player1_id, player2_id, player1_score, player2_score, winner_id,
+            player1_id, player2_id, player1_guest_name, player2_guest_name,
+            player1_score, player2_score, winner_id,
             player1_touched_ball, player1_missed_ball, player1_touched_ball_in_row, player1_missed_ball_in_row,
             player2_touched_ball, player2_missed_ball, player2_touched_ball_in_row, player2_missed_ball_in_row
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         );
         const info = insertStmt.run(
-          player1_id,
-          player2_id,
+          finalP1Id,
+          finalP2Id,
+          finalP1GuestName,
+          finalP2GuestName,
           player1_score,
           player2_score,
-          winner_id,
+          winner_id === undefined ? null : winner_id,
           player1_touched_ball,
           player1_missed_ball,
           player1_touched_ball_in_row,
@@ -123,14 +152,14 @@ export default function matchesRoutes(
         });
       } catch (err) {
         request.log.error(err, 'Error recording match');
-
         if (
           err instanceof Error &&
           err.message.includes('FOREIGN KEY constraint failed')
         ) {
           return reply.status(400).send({
             success: false,
-            message: 'Invalid player ID(s) provided.',
+            message:
+              'Invalid registered player ID(s) provided (FOREIGN KEY constraint failed).',
           });
         }
         return reply.status(500).send({

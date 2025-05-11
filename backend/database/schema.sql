@@ -35,8 +35,10 @@ END;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS game_matches (
     match_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    player1_id INTEGER NOT NULL,
-    player2_id INTEGER NOT NULL,
+    player1_id INTEGER,
+    player2_id INTEGER,
+    player1_guest_name TEXT,
+    player2_guest_name TEXT,
     player1_score INTEGER NOT NULL,
     player2_score INTEGER NOT NULL,
     winner_id INTEGER,
@@ -50,8 +52,8 @@ CREATE TABLE IF NOT EXISTS game_matches (
     player2_touched_ball_in_row INTEGER DEFAULT 0,
     player2_missed_ball_in_row INTEGER DEFAULT 0,
     FOREIGN KEY (player1_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (player2_id) REFERENCES users(user_id) ON DELETE CASCADE, -- Or handle AI/guest players differently
-    FOREIGN KEY (winner_id) REFERENCES users(user_id) ON DELETE SET NULL -- If winner user is deleted, set winner_id to NULL
+    FOREIGN KEY (player2_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (winner_id) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
 -- -----------------------------------------------------
