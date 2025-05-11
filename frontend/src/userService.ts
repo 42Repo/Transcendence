@@ -74,6 +74,7 @@ interface ApiResponse<T> {
   message?: string;
   requested_for_user_id?: number;
   token?: string;
+  avatar_url?: string;
 }
 
 export interface UpdateProfilePayload {
@@ -82,6 +83,7 @@ export interface UpdateProfilePayload {
   bio?: string;
   current_password?: string;
   new_password?: string;
+  avatar_url?: string;
 }
 
 export async function fetchMyProfileData(): Promise<UserPrivateData> {
@@ -225,6 +227,7 @@ export async function fetchFriendsList(): Promise<any[]> {
   console.warn(
     'fetchFriendsList function needs implementation (requires backend API).'
   );
+
   await new Promise((resolve) => setTimeout(resolve, 500));
   return [];
 }
@@ -314,7 +317,47 @@ export async function deleteAccount() {
   }
 }
 
-export function enable2FA() {
-  const tmp = prompt('2FA Enabled !');
-  alert(tmp);
+export async function uploadAvatarToCloudinary(file: File): Promise<string> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('Unauthorized: No token for avatar upload.');
+  }
+
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const response = await fetch('/api/avatar', {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data: ApiResponse<null> = await response.json();
+
+  if (!response.ok || !data.success || !data.avatar_url) {
+    throw new Error(data.message || 'Failed to upload avatar.');
+  }
+  return data.avatar_url;
+}
+
+export async function deleteAvatarFromCloudinary(): Promise<void> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('Unauthorized: No token for avatar deletion.');
+  }
+
+  const response = await fetch('/api/avatar', {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<null> = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to delete avatar from Cloudinary.');
+  }
 }

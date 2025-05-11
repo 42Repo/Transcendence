@@ -94,7 +94,7 @@ const setHeaderProfilePic = async () => {
       throw new Error(errorMsg);
     }
     const data: ApiResponse<UserPublicData> = await response.json();
-    let profilePic = data.user?.avatar_url ?? '/DefaultProfilePicture.png';
+    const profilePic = data.user?.avatar_url ?? '/DefaultProfilePicture.png';
 
     if (profilePicElem) {
       profilePicElem.innerHTML =

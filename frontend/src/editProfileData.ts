@@ -3,10 +3,16 @@ import {
   updateMyProfileData,
   UpdateProfilePayload,
   UserPrivateData,
+  uploadAvatarToCloudinary,
+  deleteAvatarFromCloudinary,
 } from './userService';
 import { showFeedback, clearFeedback } from './utils/modalUtils';
 
 const EDIT_PROFILE_FEEDBACK_ID = 'editProfileFeedback';
+const AVATAR_UPLOAD_FEEDBACK_ID = 'avatarUploadFeedback';
+
+let newUploadedAvatarUrl: string | null = null;
+let avatarResetToDefault: boolean = false;
 
 function updatePasswordUI(hasPassword: boolean) {
   const currentPasswordContainer = document.getElementById(
@@ -27,7 +33,92 @@ function updatePasswordUI(hasPassword: boolean) {
   }
 }
 
-export async function editProfile() {
+export function initializeEditProfileAvatarHandling() {
+  const avatarUploadInput = document.getElementById(
+    'avatarUploadInput'
+  ) as HTMLInputElement | null;
+  const profilePicturePreview = document.getElementById(
+    'profilePicturePreview'
+  ) as HTMLImageElement | null;
+  const avatarUploadFeedback = document.getElementById(
+    AVATAR_UPLOAD_FEEDBACK_ID
+  );
+  const resetAvatarButton = document.getElementById('resetAvatarButton');
+
+  avatarUploadInput?.addEventListener('change', async (event) => {
+    const files = (event.target as HTMLInputElement).files;
+    if (
+      files &&
+      files.length > 0 &&
+      profilePicturePreview &&
+      avatarUploadFeedback
+    ) {
+      const file = files[0];
+
+      if (!file.type.startsWith('image/')) {
+        avatarUploadFeedback.textContent = 'Please select an image file.';
+        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        avatarUploadFeedback.textContent = 'File is too large (max 5MB).';
+        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
+        return;
+      }
+
+      avatarUploadFeedback.textContent = 'Uploading...';
+      avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-blue-600';
+      newUploadedAvatarUrl = null;
+      avatarResetToDefault = false;
+
+      try {
+        const secureUrl = await uploadAvatarToCloudinary(file);
+        profilePicturePreview.src = secureUrl;
+        newUploadedAvatarUrl = secureUrl;
+        avatarUploadFeedback.textContent = 'Avatar uploaded!';
+        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-green-600';
+      } catch (error) {
+        console.error('Avatar upload failed:', error);
+        avatarUploadFeedback.textContent =
+          error instanceof Error ? error.message : 'Upload failed.';
+        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
+      }
+    }
+  });
+
+  resetAvatarButton?.addEventListener('click', async () => {
+    if (profilePicturePreview && avatarUploadFeedback) {
+      const confirmReset = window.confirm(
+        'Are you sure you want to reset your avatar to the default image?'
+      );
+      if (!confirmReset) return;
+
+      avatarUploadFeedback.textContent = 'Resetting avatar...';
+      avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-blue-600';
+      newUploadedAvatarUrl = null;
+
+      try {
+        await deleteAvatarFromCloudinary();
+        profilePicturePreview.src = '/DefaultProfilePic.png';
+        newUploadedAvatarUrl = '/DefaultProfilePic.png';
+        avatarResetToDefault = true;
+        avatarUploadFeedback.textContent =
+          'Avatar reset. Save changes to confirm.';
+        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-green-600';
+      } catch (error) {
+        console.error('Avatar reset failed:', error);
+        avatarUploadFeedback.textContent =
+          error instanceof Error ? error.message : 'Reset failed.';
+        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
+
+        newUploadedAvatarUrl = null;
+        avatarResetToDefault = false;
+      }
+    }
+  });
+}
+
+export async function handleSaveChanges() {
   const usernameInput = document.getElementById(
     'username'
   ) as HTMLInputElement | null;
@@ -103,22 +194,34 @@ export async function editProfile() {
   }
 
   const payload: UpdateProfilePayload = {};
-  if (usernameInput.defaultValue !== username && username !== '')
+  let changesMade = false;
+
+  if (usernameInput.defaultValue !== username && username !== '') {
     payload.username = username;
-  else if (usernameInput.defaultValue !== username && username === '') {
+    changesMade = true;
+  } else if (usernameInput.defaultValue !== username && username === '') {
     showFeedback(EDIT_PROFILE_FEEDBACK_ID, 'Username cannot be empty.', true);
     return;
   }
 
   if (emailInput.defaultValue !== email) {
     if (email === '' && emailInput.defaultValue !== '') {
-      payload.email = '';
+      payload.email = null;
     } else if (email !== '') {
       payload.email = email;
     }
+    changesMade = true;
   }
 
-  if (bioTextarea.defaultValue !== bio) payload.bio = bio;
+  if (bioTextarea.defaultValue !== bio) {
+    payload.bio = bio;
+    changesMade = true;
+  }
+
+  if (newUploadedAvatarUrl) {
+    payload.avatar_url = newUploadedAvatarUrl;
+    changesMade = true;
+  }
 
   if (newPassword) {
     if (newPassword !== confirmPassword) {
@@ -149,6 +252,7 @@ export async function editProfile() {
       }
       payload.current_password = oldPassword;
     }
+    changesMade = true;
   } else if (oldPassword && hasPasswordInitially) {
     showFeedback(
       EDIT_PROFILE_FEEDBACK_ID,
@@ -158,7 +262,7 @@ export async function editProfile() {
     return;
   }
 
-  if (Object.keys(payload).length === 0) {
+  if (!changesMade) {
     showFeedback(EDIT_PROFILE_FEEDBACK_ID, 'No changes detected.', false);
     return;
   }
@@ -179,6 +283,14 @@ export async function editProfile() {
       emailInput.defaultValue = updatedUser.email || '';
       bioTextarea.defaultValue = updatedUser.bio || '';
 
+      const profileContentArea = document.getElementById('profileContentArea');
+      if (profileContentArea && updatedUser.avatar_url) {
+        profileContentArea.setAttribute(
+          'data-current-avatar-url',
+          updatedUser.avatar_url
+        );
+      }
+
       oldPasswordInput.value = '';
       newPasswordInput.value = '';
       confirmPasswordInput.value = '';
@@ -192,6 +304,16 @@ export async function editProfile() {
       if (response.token) {
         console.log('New JWT received, updating localStorage.');
         localStorage.setItem('authToken', response.token);
+      }
+
+      newUploadedAvatarUrl = null;
+      avatarResetToDefault = false;
+
+      const avatarUploadFeedback = document.getElementById(
+        AVATAR_UPLOAD_FEEDBACK_ID
+      );
+      if (avatarUploadFeedback) {
+        avatarUploadFeedback.textContent = '';
       }
 
       setTimeout(() => {

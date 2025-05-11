@@ -7,6 +7,7 @@ import {
   GameMatch,
   getMatchResultForUser,
 } from './userService';
+import { initializeEditProfileAvatarHandling } from './editProfileData';
 
 const content = document.getElementById('content');
 const cache: Map<string, string> = new Map();
@@ -54,8 +55,10 @@ const getPageName = (): string => {
 };
 
 const fetchLoadingError = async () => {
-  content.innerHTML =
-    '<h1>Error 404 - Cannot load page content</h1><p>Please try again later.</p>';
+  if (content) {
+    content.innerHTML =
+      '<h1>Error 404 - Cannot load page content</h1><p>Please try again later.</p>';
+  }
 };
 
 const pageRequiresAuth = (page: string): boolean => {
@@ -64,6 +67,11 @@ const pageRequiresAuth = (page: string): boolean => {
 };
 
 export const fetchPage = async (page: string): Promise<void> => {
+  if (!content) {
+    console.error('Content container not found in DOM.');
+    return;
+  }
+
   const isAuth = await isAuthenticated();
   if (pageRequiresAuth(page) && !isAuth) {
     console.log(
@@ -118,9 +126,11 @@ export const fetchPage = async (page: string): Promise<void> => {
       await loadAndPopulateProfileData();
     } else if (page === 'edit-profile') {
       await loadAndPopulateEditProfileData();
+      initializeEditProfileAvatarHandling();
     }
 
     // else if (page === 'publicProfile') {
+    //   // TODO: Add logic for public profile if needed
     // }
     else if (page === 'logged') {
       console.log("Landed on 'logged' page. Implement data loading if needed.");
@@ -143,8 +153,8 @@ async function loadAndPopulateEditProfileData() {
   const usernameElem = document.getElementById('username') as HTMLInputElement;
   const joinDateElem = document.getElementById('joinDate');
   const emailElem = document.getElementById('userEmail') as HTMLInputElement;
-  const profilePicElem = document.getElementById(
-    'profilePicture'
+  const profilePicPreviewElem = document.getElementById(
+    'profilePicturePreview'
   ) as HTMLImageElement | null;
   const bioElem = document.getElementById(
     'bioText'
@@ -155,28 +165,30 @@ async function loadAndPopulateEditProfileData() {
   );
   const passwordSectionTitle = document.getElementById('passwordSectionTitle');
 
-        const enableA2FButton = document.getElementById(
-                'enableA2F'
-        ) as HTMLButtonElement | null;
-        if (
-                !loadingIndicator ||
-                !errorDisplay ||
-                !profileContentArea ||
-                !usernameElem ||
-                !joinDateElem ||
-                !enableA2FButton ||
-                !emailElem ||
-                !profilePicElem ||
-                !bioElem ||
-                !currentPasswordContainer ||
-                !passwordSectionTitle
-        ) {
-                console.error(
-                        'Edit Profile page structure is missing required elements. Check IDs in edit-profile.html and this function.'
-                );
-                content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
-                return;
-        }
+  const enableA2FButton = document.getElementById(
+    'enableA2F'
+  ) as HTMLButtonElement | null;
+
+  if (
+    !loadingIndicator ||
+    !errorDisplay ||
+    !profileContentArea ||
+    !usernameElem ||
+    !joinDateElem ||
+    !enableA2FButton ||
+    !emailElem ||
+    !profilePicPreviewElem ||
+    !bioElem ||
+    !currentPasswordContainer ||
+    !passwordSectionTitle
+  ) {
+    console.error(
+      'Edit Profile page structure is missing required elements. Check IDs in edit-profile.html and this function.'
+    );
+    if (content)
+      content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
+    return;
+  }
 
   loadingIndicator.style.display = 'block';
   errorDisplay.style.display = 'none';
@@ -190,19 +202,23 @@ async function loadAndPopulateEditProfileData() {
     usernameElem.defaultValue = userData.username;
 
     if (!userData.is_two_factor_enabled)
-            enableA2FButton.classList.remove('hidden');
+      enableA2FButton.classList.remove('hidden');
+    else enableA2FButton.classList.add('hidden');
+
     joinDateElem.textContent = new Date(
-            userData.created_at
+      userData.created_at
     ).toLocaleDateString();
 
     emailElem.value = userData.email || '';
     emailElem.defaultValue = userData.email || '';
 
-    if (userData.avatar_url && userData.avatar_url !== '/default-avatar.png') {
-      profilePicElem.src = userData.avatar_url;
-    } else {
-      profilePicElem.src = '/DefaultProfilePic.png';
-    }
+    const currentAvatarUrl = userData.avatar_url || '/DefaultProfilePic.png';
+    profilePicPreviewElem.src = currentAvatarUrl;
+    profileContentArea.setAttribute(
+      'data-current-avatar-url',
+      currentAvatarUrl
+    );
+
     bioElem.value = userData.bio || '';
     bioElem.defaultValue = userData.bio || '';
 
@@ -248,7 +264,11 @@ function calculateBestWinStreak(
 ): number {
   let bestStreak = 0;
   let currentStreak = 0;
-  const chronologicalMatches = [...matches].reverse();
+
+  const chronologicalMatches = [...matches].sort(
+    (a, b) =>
+      new Date(a.match_date).getTime() - new Date(b.match_date).getTime()
+  );
 
   for (const match of chronologicalMatches) {
     const result = getMatchResultForUser(match, currentUserId);
@@ -261,6 +281,7 @@ function calculateBestWinStreak(
       currentStreak = 0;
     }
   }
+
   if (currentStreak > bestStreak) {
     bestStreak = currentStreak;
   }
@@ -311,12 +332,19 @@ async function loadAndPopulateProfileData() {
     !statsWinsElem ||
     !statsLossesElem ||
     !statsWinLossRateElem ||
-    !statsBestWinStreakElem
+    !statsBestWinStreakElem ||
+    !friendsLoading ||
+    !friendsError ||
+    !friendsContainer ||
+    !historyLoading ||
+    !historyError ||
+    !historyContainer
   ) {
     console.error(
       'Profile page structure is missing required elements. Check IDs in profile.html and this function.'
     );
-    content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
+    if (content)
+      content.innerHTML = '<h2>Error: Page structure is incomplete.</h2>';
     return;
   }
 
@@ -334,7 +362,11 @@ async function loadAndPopulateProfileData() {
     ).toLocaleDateString();
     statusElem.textContent = userData.status;
     emailElem.textContent = userData.email || 'Not provided';
-    if (userData.avatar_url && userData.avatar_url !== '/default-avatar.png') {
+    if (
+      userData.avatar_url &&
+      userData.avatar_url !== '/default-avatar.png' &&
+      userData.avatar_url !== '/DefaultProfilePic.png'
+    ) {
       profilePicElem.src = userData.avatar_url;
     } else {
       profilePicElem.src = '/DefaultProfilePic.png';
@@ -408,10 +440,13 @@ async function loadFriends(
     const friends = await fetchFriendsList();
     if (friends.length === 0) {
       container.innerHTML =
-        '<li class="p-3 text-gray-500">Friend list functionality needs API.</li>';
+        '<li class="p-3 text-gray-500">Friend list functionality needs API or no friends yet.</li>';
     } else {
       container.innerHTML = friends
-        .map((friend) => `<li class="p-3">Friend: ${friend.name}</li>`)
+        .map(
+          (friend: any) =>
+            `<li class="p-3">Friend: ${friend.name} (Status: ${friend.status})</li>`
+        )
         .join('');
     }
   } catch (e) {
@@ -497,7 +532,9 @@ async function loadHistory(
                 ? 'text-red-500'
                 : 'text-gray-500';
           const avatarSrc =
-            opponentAvatar && opponentAvatar !== '/default-avatar.png'
+            opponentAvatar &&
+            opponentAvatar !== '/default-avatar.png' &&
+            opponentAvatar !== '/DefaultProfilePic.png'
               ? opponentAvatar
               : '/DefaultProfilePic.png';
 
@@ -512,8 +549,8 @@ async function loadHistory(
               <span>${new Date(item.match_date).toLocaleDateString()}</span>
             </div>
             <div class="text-xs text-gray-400 mt-1 pl-12">
-              <p>Your Performance: Touched: ${userTouchedBall}, Missed: ${userMissedBall}</p>
-              <p>Opponent's Performance: Touched: ${opponentTouchedBall}, Missed: ${opponentMissedBall}</p>
+              <p>Your Performance: Touched: ${userTouchedBall || 0}, Missed: ${userMissedBall || 0}</p>
+              <p>Opponent's Performance: Touched: ${opponentTouchedBall || 0}, Missed: ${opponentMissedBall || 0}</p>
             </div>
           </li>
         `;
@@ -556,6 +593,7 @@ export const switchPage = async (page: string) => {
   if (targetPage === currentLogicalPage && targetPage === 'edit-profile') {
     console.log(`Already on page '${targetPage}', re-fetching data.`);
     await loadAndPopulateEditProfileData();
+    initializeEditProfileAvatarHandling();
     return;
   }
   const newPath =
@@ -584,6 +622,7 @@ export const loadCurrentPage = async () => {
       "User authenticated on home/root, switching effective page to 'logged'"
     );
     page = 'logged';
+
     history.replaceState({ page: 'logged' }, '', '/');
   }
 
@@ -592,7 +631,7 @@ export const loadCurrentPage = async () => {
 
 const initializeApp = async () => {
   console.log('Initializing app...');
-  loadCurrentPage();
+  await loadCurrentPage();
 };
 
 void initializeApp();
@@ -617,6 +656,7 @@ window.addEventListener('popstate', async (event) => {
 
 document.body.addEventListener('click', (e) => {
   const target = e.target as HTMLElement;
+
   const link = target.closest('[data-page]');
 
   if (link instanceof HTMLElement && link.dataset.page) {

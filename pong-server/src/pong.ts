@@ -1,10 +1,10 @@
-import { type WebSocket } from '@fastify/websocket';
-import { v4 as uuidv4 } from 'uuid';
-import { defaultConfig } from './DefaultConf';
-import { createInitialState } from './createInitialState';
-import { PhysicsEngine } from './PhysicsEngine';
-import { StateGame, PlayerBase } from './StateGame';
-import { StateEngine } from './StateEngine';
+import { type WebSocket } from "@fastify/websocket";
+import { v4 as uuidv4 } from "uuid";
+import { defaultConfig } from "./DefaultConf";
+import { createInitialState } from "./createInitialState";
+import { PhysicsEngine } from "./PhysicsEngine";
+import { StateGame, PlayerBase, Player } from "./StateGame";
+import { StateEngine } from "./StateEngine";
 
 type MadeMatch = {
   player: PlayerBase;
@@ -22,31 +22,29 @@ export class MatchMaking {
 
   addPlayer(
     socket: WebSocket,
-    infoPlayer: { name: string, id: number | null, avatar: string },
+    infoPlayer: { name: string; id: number | null; avatar: string },
     playerKeys: Map<string, boolean> | null
   ): MadeMatch {
-    const idPlayer = infoPlayer.id !== null
-      ? infoPlayer.id.toString()
-      : uuidv4();
+    const idPlayer =
+      infoPlayer.id !== null ? infoPlayer.id.toString() : uuidv4();
     const existPlayer = this.waitingPlayers.get(idPlayer);
-    if (existPlayer)
-      return { player: existPlayer, game: null };
+    if (existPlayer) return { player: existPlayer, game: null };
     const player: PlayerBase = {
       id: idPlayer,
       socket,
       name: infoPlayer.name,
       avatar: infoPlayer.avatar,
-      playerKeys
+      playerKeys,
     };
-    if (Array.from(this.waitingPlayers.values()).some((p) => {
-      return p.socket === socket;
-    }))
+    if (
+      Array.from(this.waitingPlayers.values()).some((p) => {
+        return p.socket === socket;
+      })
+    )
       return { player, game: null };
     this.waitingPlayers.set(idPlayer, player);
     if (this.waitingPlayers.size >= 2) {
-      const [p1, p2] = Array.from(
-        this.waitingPlayers.values()
-      ).slice(0, 2);
+      const [p1, p2] = Array.from(this.waitingPlayers.values()).slice(0, 2);
       const newGame = new GameManager(p1, p2);
       this.gameManagers.push(newGame);
       this.waitingPlayers.delete(p1.id);
@@ -93,51 +91,89 @@ export class GameManager {
     this.startGameLoop();
   }
 
-
   removePlayer(player: PlayerBase) {
-    if (this.finished)
-      return;
-    this.gameOver();
-    const remaining = this.game.players.find((p) => {
-      return p.id !== player.id && p.socket;
-    });
-    if (remaining && remaining.socket) {
-      remaining.socket.send(JSON.stringify({
-        type: 'win',
-        data: { message: `${player.name} left the game !` }
-      }));
+    if (this.finished) return;
+
+    const forfeitingPlayerIndex = this.game.players.findIndex(
+      (p) => p.id === player.id
+    );
+    if (forfeitingPlayerIndex === -1) return;
+
+    const forfeitingPlayer = this.game.players[forfeitingPlayerIndex];
+    forfeitingPlayer.socket = null;
+
+    const remainingPlayer = this.game.players.find(
+      (p) => p.id !== player.id && p.socket !== null
+    );
+
+    if (remainingPlayer) {
+      const winnerPlayerObj = this.game.players.find(
+        (p) => p.id === remainingPlayer.id
+      )!;
+      const loserPlayerObj = this.game.players.find(
+        (p) => p.id === forfeitingPlayer.id
+      )!;
+
+      this.statesEngine.handleGameConclusion(
+        winnerPlayerObj,
+        loserPlayerObj,
+        true
+      );
+
+      remainingPlayer.socket?.send(
+        JSON.stringify({
+          type: "win",
+          data: {
+            message: `${player.name} left the game! You win by forfeit.`,
+          },
+        })
+      );
+    } else {
+      console.log(
+        `[PongServer] Player ${player.name} disconnected. No remaining active players. Game ending.`
+      );
+      this.gameOver();
     }
-    player.socket = null;
   }
 
-  public handlePlayerInput(player: PlayerBase, data: { key: string, type: boolean }) {
-    this.physicsEngine.handlePlayerInput(player, data)
+  public handlePlayerInput(
+    player: PlayerBase,
+    data: { key: string; type: boolean }
+  ) {
+    if (this.finished) return;
+    this.physicsEngine.handlePlayerInput(player, data);
   }
 
-  public getPlayers(): StateGame['players'] {
+  public getPlayers(): StateGame["players"] {
     return this.game.players;
   }
 
-  public getPaddles(): StateGame['paddles'] {
+  public getPaddles(): StateGame["paddles"] {
     return this.game.paddles;
   }
 
   public startGame(): void {
-    this.broadcast('start', {
+    if (this.finished) return;
+    this.broadcast("start", {
       players: {
         player1: this.createDataPlayer(this.game.players[0]),
         player2: this.createDataPlayer(this.game.players[1]),
-      }
+      },
     });
   }
 
   public gameOver(): void {
-    clearInterval(this.gameInterval!);
-    this.gameInterval = null;
+    if (this.finished) return;
+    console.log("[PongServer] GameManager: gameOver called.");
+    if (this.gameInterval) {
+      clearInterval(this.gameInterval);
+      this.gameInterval = null;
+    }
     this.finished = true;
   }
 
   public addPlayerReady = (id: string) => {
+    if (this.finished) return;
     this.playersReady.set(id, true);
     if (this.playersReady.size === 2) {
       this.physicsEngine.startPhysics();
@@ -145,25 +181,29 @@ export class GameManager {
   };
 
   private createDataPlayer(player: PlayerBase): {
-    name: string,
-    id: string,
-    avatar: string
+    name: string;
+    id: string;
+    avatar: string;
   } {
     return {
       name: player.name,
       id: player.id,
-      avatar: player.avatar
+      avatar: player.avatar,
     };
   }
 
   private startGameLoop() {
     this.gameInterval = setInterval(() => {
+      if (this.finished) {
+        if (this.gameInterval) clearInterval(this.gameInterval);
+        return;
+      }
       this.physicsEngine.update(this.game);
       this.statesEngine.updateTime(false);
       const state = {
         paddles: this.game.paddles,
         ball: this.game.ball,
-        players: this.game.players.map(p => ({ score: p.score })),
+        players: this.game.players.map((p) => ({ score: p.score })),
         time: this.statesEngine.getElapsedTime(),
       };
       this.broadcast("update", state);
@@ -171,10 +211,18 @@ export class GameManager {
   }
 
   private broadcast(type: string, data: any) {
-    const players: StateGame['players'] = this.getPlayers();
+    if (this.finished) return;
+    const players: StateGame["players"] = this.getPlayers();
     for (const player of players) {
-      if (player.socket) {
-        player.socket.send(JSON.stringify({ type: `${type}`, data }))
+      if (player.socket && player.socket.readyState === player.socket.OPEN) {
+        try {
+          player.socket.send(JSON.stringify({ type: `${type}`, data }));
+        } catch (error) {
+          console.error(
+            `[PongServer] Error broadcasting to player ${player.id}:`,
+            error
+          );
+        }
       }
     }
   }

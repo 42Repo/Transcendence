@@ -116,7 +116,6 @@ export default function userRoutes(
                   (player2_id = ? AND winner_id IS NULL AND player2_score < player1_score))
           `
         );
-        
         const lossesResult = lossesStmt.get(
           userId,
           userId,
@@ -150,8 +149,14 @@ export default function userRoutes(
     routeOpts,
     async (request, reply) => {
       const userId = request.user.id;
-      const { username, email, bio, current_password, new_password, avatar_url} =
-        request.body;
+      const {
+        username,
+        email,
+        bio,
+        current_password,
+        new_password,
+        avatar_url,
+      } = request.body;
 
       const updates: { [key: string]: any } = {};
       const params: any[] = [];
@@ -304,7 +309,6 @@ export default function userRoutes(
           has_password: has_password_after_update,
         };
 
-
         return reply.send({
           success: true,
           message: 'Profile updated successfully.',
@@ -338,7 +342,6 @@ export default function userRoutes(
       try {
         const stmt = fastify.db.prepare('DELETE FROM users WHERE user_id = ?');
         const info = stmt.run(userId);
-
 
         if (info.changes > 0) {
           request.log.info(`User ${userId} deleted successfully.`);
@@ -419,7 +422,6 @@ export default function userRoutes(
           userIdToQuery
         ) as GameMatchData[];
 
-
         return reply.send({
           success: true,
           matches,
@@ -464,7 +466,6 @@ export default function userRoutes(
             `User with identifier '${identifier}' not found.`
           );
         }
-
 
         return reply.send({ success: true, user });
       } catch (err) {

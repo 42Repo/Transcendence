@@ -9,6 +9,7 @@
     class="w-full max-w-screen-lg"
     style="display: none"
     data-has-password="false"
+    data-current-avatar-url="/DefaultProfilePic.png" 
   >
     <!-- A2F MODAL -->
     <div
@@ -59,12 +60,13 @@
       <div
         class="flex flex-col md:flex-row w-full items-center md:items-start gap-4"
       >
-        <img
-          id="profilePicture"
-          src="/DefaultProfilePic.png"
-          alt="ProfilePicture"
-          class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover"
-        />
+        <!-- Avatar Upload and Preview -->
+        <div class="flex flex-col items-center md:items-start">
+            <img id="profilePicturePreview" src="/DefaultProfilePic.png" alt="Avatar Preview" class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover mb-2"/>
+            <input type="file" id="avatarUploadInput" accept="image/*" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-mediumlight file:text-darkdark hover:file:bg-mediumdark hover:file:text-lightlight cursor-pointer"/>
+            <p id="avatarUploadFeedback" class="text-xs mt-1 h-4"></p>
+        </div>
+
         <!-- Info -->
         <div
           class="flex flex-col w-full gap-2 items-center md:items-start text-center md:text-left"
@@ -160,6 +162,12 @@
             Enable 2FA
           </button>
           <button
+            id="resetAvatarButton"
+            class="btn bg-yellow-600 hover:bg-yellow-700 text-light border border-yellow-800 p-2 rounded-xl"
+          >
+            Reset Avatar to Default
+          </button>
+          <button
             id="downloadData"
             class="btn bg-mediumlight hover:bg-mediumdark text-light border border-light p-2 rounded-xl"
           >
@@ -180,7 +188,7 @@
       <!-- Footer Buttons -->
       <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
         <button
-          id="editProfileButton"
+          id="saveChangesButton" 
           class="bg-mediumdark hover:bg-dark text-lightlight rounded-xl px-6 py-3 text-xl w-full sm:w-60"
         >
           Confirm Changes
