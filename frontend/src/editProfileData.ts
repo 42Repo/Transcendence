@@ -7,12 +7,13 @@ import {
   deleteAvatarFromCloudinary,
 } from './userService';
 import { showFeedback, clearFeedback } from './utils/modalUtils';
+import { setHeaderMenu } from './header';
 
 const EDIT_PROFILE_FEEDBACK_ID = 'editProfileFeedback';
 const AVATAR_UPLOAD_FEEDBACK_ID = 'avatarUploadFeedback';
 
-let newUploadedAvatarUrl: string | null = null;
-let avatarResetToDefault: boolean = false;
+let pendingAvatarFile: File | null = null;
+let pendingAvatarAction: 'UPLOAD' | 'RESET_TO_DEFAULT' | null = null;
 
 function updatePasswordUI(hasPassword: boolean) {
   const currentPasswordContainer = document.getElementById(
@@ -34,16 +35,27 @@ function updatePasswordUI(hasPassword: boolean) {
 }
 
 export function initializeEditProfileAvatarHandling() {
+  pendingAvatarFile = null;
+  pendingAvatarAction = null;
+
   const avatarUploadInput = document.getElementById(
     'avatarUploadInput'
   ) as HTMLInputElement | null;
   const profilePicturePreview = document.getElementById(
     'profilePicturePreview'
   ) as HTMLImageElement | null;
-  const avatarUploadFeedback = document.getElementById(
+  const avatarUploadFeedbackEl = document.getElementById(
     AVATAR_UPLOAD_FEEDBACK_ID
   );
   const resetAvatarButton = document.getElementById('resetAvatarButton');
+  const profileContentArea = document.getElementById('profileContentArea');
+
+  if (profilePicturePreview && profileContentArea) {
+    profilePicturePreview.src =
+      profileContentArea.getAttribute('data-current-avatar-url') ||
+      '/DefaultProfilePic.png';
+  }
+  if (avatarUploadFeedbackEl) avatarUploadFeedbackEl.textContent = '';
 
   avatarUploadInput?.addEventListener('change', async (event) => {
     const files = (event.target as HTMLInputElement).files;
@@ -51,69 +63,53 @@ export function initializeEditProfileAvatarHandling() {
       files &&
       files.length > 0 &&
       profilePicturePreview &&
-      avatarUploadFeedback
+      avatarUploadFeedbackEl
     ) {
       const file = files[0];
 
       if (!file.type.startsWith('image/')) {
-        avatarUploadFeedback.textContent = 'Please select an image file.';
-        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
+        avatarUploadFeedbackEl.textContent = 'Please select an image file.';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-red-600';
+        if (avatarUploadInput) avatarUploadInput.value = '';
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        avatarUploadFeedback.textContent = 'File is too large (max 5MB).';
-        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
+        avatarUploadFeedbackEl.textContent = 'File is too large (max 5MB).';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-red-600';
+        if (avatarUploadInput) avatarUploadInput.value = '';
         return;
       }
 
-      avatarUploadFeedback.textContent = 'Uploading...';
-      avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-blue-600';
-      newUploadedAvatarUrl = null;
-      avatarResetToDefault = false;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          profilePicturePreview.src = e.target.result as string;
+        }
+      };
+      reader.readAsDataURL(file);
 
-      try {
-        const secureUrl = await uploadAvatarToCloudinary(file);
-        profilePicturePreview.src = secureUrl;
-        newUploadedAvatarUrl = secureUrl;
-        avatarUploadFeedback.textContent = 'Avatar uploaded!';
-        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-green-600';
-      } catch (error) {
-        console.error('Avatar upload failed:', error);
-        avatarUploadFeedback.textContent =
-          error instanceof Error ? error.message : 'Upload failed.';
-        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
-      }
+      pendingAvatarFile = file;
+      pendingAvatarAction = 'UPLOAD';
+      avatarUploadFeedbackEl.textContent =
+        'Preview updated. Save changes to apply.';
+      avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-blue-600';
     }
   });
 
   resetAvatarButton?.addEventListener('click', async () => {
-    if (profilePicturePreview && avatarUploadFeedback) {
+    if (profilePicturePreview && avatarUploadFeedbackEl) {
       const confirmReset = window.confirm(
-        'Are you sure you want to reset your avatar to the default image?'
+        'Are you sure you want to reset your avatar to the default image? This will take effect when you save changes.'
       );
       if (!confirmReset) return;
 
-      avatarUploadFeedback.textContent = 'Resetting avatar...';
-      avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-blue-600';
-      newUploadedAvatarUrl = null;
-
-      try {
-        await deleteAvatarFromCloudinary();
-        profilePicturePreview.src = '/DefaultProfilePic.png';
-        newUploadedAvatarUrl = '/DefaultProfilePic.png';
-        avatarResetToDefault = true;
-        avatarUploadFeedback.textContent =
-          'Avatar reset. Save changes to confirm.';
-        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-green-600';
-      } catch (error) {
-        console.error('Avatar reset failed:', error);
-        avatarUploadFeedback.textContent =
-          error instanceof Error ? error.message : 'Reset failed.';
-        avatarUploadFeedback.className = 'text-xs mt-1 h-4 text-red-600';
-
-        newUploadedAvatarUrl = null;
-        avatarResetToDefault = false;
-      }
+      profilePicturePreview.src = '/DefaultProfilePic.png';
+      pendingAvatarFile = null;
+      pendingAvatarAction = 'RESET_TO_DEFAULT';
+      avatarUploadFeedbackEl.textContent =
+        'Avatar will be reset. Save changes to apply.';
+      avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-blue-600';
+      if (avatarUploadInput) avatarUploadInput.value = '';
     }
   });
 }
@@ -138,6 +134,9 @@ export async function handleSaveChanges() {
     'userNewPswdVerif'
   ) as HTMLInputElement | null;
   const profileContentArea = document.getElementById('profileContentArea');
+  const avatarUploadFeedbackEl = document.getElementById(
+    AVATAR_UPLOAD_FEEDBACK_ID
+  );
 
   const feedbackElement = document.getElementById(EDIT_PROFILE_FEEDBACK_ID);
   if (!feedbackElement && profileContentArea) {
@@ -172,6 +171,9 @@ export async function handleSaveChanges() {
 
   const hasPasswordInitially =
     profileContentArea.getAttribute('data-has-password') === 'true';
+  const initialAvatarUrl = profileContentArea.getAttribute(
+    'data-current-avatar-url'
+  );
 
   const username = usernameInput.value.trim();
   const email = emailInput.value.trim();
@@ -218,9 +220,66 @@ export async function handleSaveChanges() {
     changesMade = true;
   }
 
-  if (newUploadedAvatarUrl) {
-    payload.avatar_url = newUploadedAvatarUrl;
-    changesMade = true;
+  let processedAvatarUrl: string | undefined = undefined;
+
+  if (pendingAvatarAction === 'UPLOAD' && pendingAvatarFile) {
+    if (avatarUploadFeedbackEl) {
+      avatarUploadFeedbackEl.textContent = 'Uploading avatar...';
+      avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-blue-600';
+    }
+    try {
+      processedAvatarUrl = await uploadAvatarToCloudinary(pendingAvatarFile);
+      payload.avatar_url = processedAvatarUrl;
+      changesMade = true;
+      if (avatarUploadFeedbackEl) {
+        avatarUploadFeedbackEl.textContent = 'Avatar ready to be saved.';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-green-600';
+      }
+    } catch (error) {
+      console.error('Cloudinary upload failed during save:', error);
+      if (avatarUploadFeedbackEl) {
+        avatarUploadFeedbackEl.textContent =
+          error instanceof Error ? error.message : 'Avatar upload failed.';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-red-600';
+      }
+      showFeedback(
+        EDIT_PROFILE_FEEDBACK_ID,
+        'Avatar upload failed. Please try again or remove the image.',
+        true
+      );
+      return;
+    }
+  } else if (pendingAvatarAction === 'RESET_TO_DEFAULT') {
+    if (avatarUploadFeedbackEl) {
+      avatarUploadFeedbackEl.textContent = 'Resetting avatar on server...';
+      avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-blue-600';
+    }
+    try {
+      if (initialAvatarUrl && initialAvatarUrl !== '/DefaultProfilePic.png') {
+        await deleteAvatarFromCloudinary();
+      }
+      processedAvatarUrl = '/DefaultProfilePic.png';
+      payload.avatar_url = processedAvatarUrl;
+      changesMade = true;
+      if (avatarUploadFeedbackEl) {
+        avatarUploadFeedbackEl.textContent = 'Avatar reset ready to be saved.';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-green-600';
+      }
+    } catch (error) {
+      console.error('Cloudinary delete failed during save:', error);
+      if (avatarUploadFeedbackEl) {
+        avatarUploadFeedbackEl.textContent =
+          error instanceof Error ? error.message : 'Avatar reset failed.';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-red-600';
+      }
+      showFeedback(
+        EDIT_PROFILE_FEEDBACK_ID,
+        'Failed to clear old avatar from storage, but will attempt to set to default.',
+        true
+      );
+      payload.avatar_url = '/DefaultProfilePic.png';
+      changesMade = true;
+    }
   }
 
   if (newPassword) {
@@ -254,16 +313,24 @@ export async function handleSaveChanges() {
     }
     changesMade = true;
   } else if (oldPassword && hasPasswordInitially) {
-    showFeedback(
-      EDIT_PROFILE_FEEDBACK_ID,
-      'Please enter the new password and confirm it if you wish to change your password.',
-      true
-    );
-    return;
+    if (
+      !payload.avatar_url &&
+      !payload.username &&
+      !payload.email &&
+      !payload.bio
+    ) {
+      showFeedback(
+        EDIT_PROFILE_FEEDBACK_ID,
+        'Please enter the new password if you wish to change it.',
+        true
+      );
+      return;
+    }
   }
 
   if (!changesMade) {
     showFeedback(EDIT_PROFILE_FEEDBACK_ID, 'No changes detected.', false);
+    if (avatarUploadFeedbackEl) avatarUploadFeedbackEl.textContent = '';
     return;
   }
 
@@ -283,12 +350,16 @@ export async function handleSaveChanges() {
       emailInput.defaultValue = updatedUser.email || '';
       bioTextarea.defaultValue = updatedUser.bio || '';
 
-      const profileContentArea = document.getElementById('profileContentArea');
       if (profileContentArea && updatedUser.avatar_url) {
         profileContentArea.setAttribute(
           'data-current-avatar-url',
           updatedUser.avatar_url
         );
+        const profilePicturePreview = document.getElementById(
+          'profilePicturePreview'
+        ) as HTMLImageElement | null;
+        if (profilePicturePreview)
+          profilePicturePreview.src = updatedUser.avatar_url;
       }
 
       oldPasswordInput.value = '';
@@ -306,15 +377,16 @@ export async function handleSaveChanges() {
         localStorage.setItem('authToken', response.token);
       }
 
-      newUploadedAvatarUrl = null;
-      avatarResetToDefault = false;
+      pendingAvatarFile = null;
+      pendingAvatarAction = null;
+      if (avatarUploadFeedbackEl)
+        avatarUploadFeedbackEl.textContent = 'Profile saved!';
+      const avatarUploadInput = document.getElementById(
+        'avatarUploadInput'
+      ) as HTMLInputElement | null;
+      if (avatarUploadInput) avatarUploadInput.value = '';
 
-      const avatarUploadFeedback = document.getElementById(
-        AVATAR_UPLOAD_FEEDBACK_ID
-      );
-      if (avatarUploadFeedback) {
-        avatarUploadFeedback.textContent = '';
-      }
+      setHeaderMenu();
 
       setTimeout(() => {
         switchPage('profile');
@@ -325,6 +397,17 @@ export async function handleSaveChanges() {
         response.message || 'Failed to update profile.',
         true
       );
+      if (
+        payload.avatar_url &&
+        payload.avatar_url !== '/DefaultProfilePic.png' &&
+        pendingAvatarAction === 'UPLOAD'
+      ) {
+        if (avatarUploadFeedbackEl) {
+          avatarUploadFeedbackEl.textContent =
+            'Profile save failed. Avatar was uploaded but not linked.';
+          avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-red-600';
+        }
+      }
     }
   } catch (error) {
     console.error('Error updating profile:', error);
@@ -333,5 +416,16 @@ export async function handleSaveChanges() {
       error instanceof Error ? error.message : 'An unexpected error occurred.',
       true
     );
+    if (
+      payload.avatar_url &&
+      payload.avatar_url !== '/DefaultProfilePic.png' &&
+      pendingAvatarAction === 'UPLOAD'
+    ) {
+      if (avatarUploadFeedbackEl) {
+        avatarUploadFeedbackEl.textContent =
+          'Profile save error. Avatar was uploaded but not linked.';
+        avatarUploadFeedbackEl.className = 'text-xs mt-1 h-4 text-red-600';
+      }
+    }
   }
 }
