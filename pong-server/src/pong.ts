@@ -173,23 +173,6 @@ export class GameManager {
   }
 
   removePlayer(player: PlayerBase) {
-<<<<<<< HEAD
-    if (this.finished)
-      return;
-    const gamePlayer = this.game.players.find(p => p.id === player.id);
-    if (gamePlayer) {
-      gamePlayer.score = -1;
-    }
-    this.gameOver();
-    const remaining = this.game.players.find((p) => {
-      return p.id !== player.id && p.socket;
-    });
-    if (remaining && remaining.socket) {
-      remaining.socket.send(JSON.stringify({
-        type: 'win',
-        data: { message: `${player.name} left the game !` }
-      }));
-=======
     if (this.finished) return;
 
     const forfeitingPlayerIndex = this.game.players.findIndex(
@@ -199,6 +182,7 @@ export class GameManager {
 
     const forfeitingPlayer = this.game.players[forfeitingPlayerIndex];
     forfeitingPlayer.socket = null;
+    forfeitingPlayer.score = -1;
 
     const remainingPlayer = this.game.players.find(
       (p) => p.id !== player.id && p.socket !== null
@@ -231,7 +215,6 @@ export class GameManager {
         `[PongServer] Player ${player.name} disconnected. No remaining active players. Game ending.`
       );
       this.gameOver();
->>>>>>> main
     }
   }
 
