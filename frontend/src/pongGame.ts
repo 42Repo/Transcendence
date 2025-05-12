@@ -53,7 +53,6 @@ const onSubmit = async (event: Event, container: HTMLElement, player: InfoPlayer
 }
 
 export const mainGame = async (tournament ?: boolean) => {
-  console.log("80 SECONDES");
   if (currentWSManager) {
     return;
   }
@@ -87,10 +86,8 @@ const cleanupGame = () => {
 };
 
 const handleStandardGame = (e: Event) => mainGame(false);
-const handleTournamentGame = (e: Event) => {
-  console.log("gnnnnnnn");
-  mainGame(true);
-}
+const handleTournamentGame = (e: Event) => mainGame(true);
+
 
 
 const removeAllEventListeners = () => {

@@ -90,19 +90,15 @@ export const fetchPage = async (page: string): Promise<void> => {
   if (page === 'pongTournament')
     page = 'pongGame';
 
-  console.log("kill me please", realPage);
   console.log('Fetching page structure for:', page);
   if (page !== 'pongGame') {
-    console.log ("????? no");
     document.dispatchEvent(new Event('pong:leaving'));
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   if (cache.has(page) ) {
-    console.log("kill me", realPage);
     content.innerHTML = cache.get(page)!;
     if (realPage === 'pongTournament') {
-      console.log("stupid fucking event");
       setTimeout(() => {
         document.dispatchEvent(new Event('pongTournamentLoaded'));
       }, 100);
@@ -122,10 +118,8 @@ export const fetchPage = async (page: string): Promise<void> => {
       }
       const html = await response.text();
       content.innerHTML = html;
-      console.log("AAAAAAAAAAAAAAAAAAA", realPage);
       if (realPage === 'pongTournament') {
         setTimeout(() => {
-          console.log("stupid fucking event 2");
           document.dispatchEvent(new Event('pongTournamentLoaded'));
         }, 100);
       }

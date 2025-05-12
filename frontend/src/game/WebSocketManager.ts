@@ -25,7 +25,6 @@ export class WebSocketManager {
   private onOpen = async () => {
     console.log('✅ Connected to Pong Server');
     const joinType = this.tournament ? 'joinTournament' : 'join';
-    console.log("joinType", joinType);
     this.socket?.send(JSON.stringify({
       type: joinType, data: {
         infoPlayer: { ...this.player }
