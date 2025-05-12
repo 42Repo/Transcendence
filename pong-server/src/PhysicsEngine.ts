@@ -25,26 +25,26 @@ export class PhysicsEngine {
         return player.id === pad.id
       });
       if (!paddle) return;
-      //debug
-      if (player.playerKeys?.get('ShiftLeft')) {
-        if (player.id == game.players[1].id)
-          this.movePaddle(player, game.paddles[0]);
-        else
-          this.movePaddle(player, game.paddles[1]);
-        return;
-      }
-      //
+      // //debug
+      // if (player.playerKeys?.get('ShiftLeft')) {
+      //   if (player.id == game.players[1].id)
+      //     this.movePaddle(player, game.paddles[0]);
+      //   else
+      //     this.movePaddle(player, game.paddles[1]);
+      //   return;
+      // }
+      // //
       this.movePaddle(player, paddle);
       this.checkPaddleCollision(game, paddle);
-      //debug
-      if (player.playerKeys?.get('KeyR')) {
-        game.ball.posX = 0;
-        game.ball.posZ = 0;
-        game.ball.dirX = 1.;
-        game.ball.dirZ = 0;
-        game.ball.speed = .1;
-      }
-      //
+      // //debug
+      // if (player.playerKeys?.get('KeyR')) {
+      //   game.ball.posX = 0;
+      //   game.ball.posZ = 0;
+      //   game.ball.dirX = 1.;
+      //   game.ball.dirZ = 0;
+      //   game.ball.speed = .1;
+      // }
+      // //
     });
     if (this.ballCooldownUntil != 0 && Date.now() >= this.ballCooldownUntil)
       this.ballMoving = true;

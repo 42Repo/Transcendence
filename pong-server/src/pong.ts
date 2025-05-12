@@ -64,8 +64,8 @@ export class MatchMaking {
       const newTournament = new TournamentManager(pArr, this.gameManagers);
       this.tournamentManagers.push(newTournament);
       pArr.forEach(player => this.waitingPlayersTournament.delete(player.id));
-      newTournament.createFirstGame();
-      newTournament.createSecondGame();
+      //newTournament.createFirstGame();
+      //newTournament.createSecondGame();
       return { player, game: null, tournament: newTournament };
     }
     return { player, game: null, tournament: null };
