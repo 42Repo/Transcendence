@@ -69,22 +69,32 @@ const start = async () => {
         const { type, data } = message;
         switch (type) {
           case 'joinTournament':
-            console.log("amog us !!");
-            break;
-          case 'join':
-            const result = (matchMaker.addPlayer(
+            let result = (matchMaker.addPlayer(
               socket,
               data.infoPlayer,
-              new Map()
+              new Map(),
+              true
+            ));
+            player = result.player;
+            if (result.tournament){
+              tournamentManagers.push(result.tournament);
+            } else {
+              socket.send(JSON.stringify({ type: 'wait' }));
+            }
+            break;
+          case 'join':
+            result = (matchMaker.addPlayer(
+              socket,
+              data.infoPlayer,
+              new Map(),
+              false
             ));
             player = result.player;
             if (result.game) {
               gameManagers.push(result.game);
               result.game.startGame();
             } 
-            else if (result.tournament){
-              tournamentManagers.push(result.tournament);
-            } else {
+            else {
               socket.send(JSON.stringify({ type: 'wait' }));
             }
             break;
@@ -111,7 +121,6 @@ const start = async () => {
 
       socket.on('close', () => {
         if (player) {
-          //TODO tournaments
           matchMaker.removePlayer(player.id);
           const gameManager = getGameManager(player, gameManagers);
           if (gameManager) {

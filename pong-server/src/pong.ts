@@ -28,7 +28,8 @@ export class MatchMaking {
   addPlayer(
     socket: WebSocket,
     infoPlayer: { name: string; id: number | null; avatar: string },
-    playerKeys: Map<string, boolean> | null
+    playerKeys: Map<string, boolean> | null,
+    tournament: boolean
   ): MadeMatch {
     const idPlayer =
       infoPlayer.id !== null ? infoPlayer.id.toString() : uuidv4();
@@ -46,7 +47,7 @@ export class MatchMaking {
       return p.socket === socket;
     }))
       return { player, game: null, tournament: null};
-    if (false)//TODO mettre la vraie condition
+    if (tournament)
       this.waitingPlayersTournament.set(idPlayer, player);
     else
       this.waitingPlayers.set(idPlayer, player);
