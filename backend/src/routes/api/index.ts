@@ -7,7 +7,7 @@ import userRoutes from './users';
 import verifyRoute from './verify-jwt';
 import matchesRoutes from './matches';
 import twoFARoutes from './2fa';
-import { cloudinaryRoutes } from './cloudinary';
+import cloudinaryUserAvatarRoutes from './cloudinary';
 import fastifyMultipart from '@fastify/multipart';
 import dotenv from 'dotenv';
 
@@ -15,10 +15,13 @@ dotenv.config();
 
 export default function apiIndex(
   fastify: FastifyInstance,
-  opts: FastifyPluginOptions
+  _opts: FastifyPluginOptions
 ) {
-
-  fastify.register(fastifyMultipart);
+  fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+    },
+  });
   fastify.register(pingRoutes);
   fastify.register(loginRoutes);
   fastify.register(registerRoutes);
@@ -26,10 +29,10 @@ export default function apiIndex(
   fastify.register(verifyRoute);
   fastify.register(matchesRoutes);
   fastify.register(googleLoginRoutes);
-  fastify.register(cloudinaryRoutes);
+  fastify.register(cloudinaryUserAvatarRoutes);
   fastify.register(twoFARoutes);
 
   fastify.log.info(
-    'Registered API routes: ping, login, register, users, verify-jwt, matches, 2fa, cloudinary'
+    'Registered API routes: ping, login, register, users, verify-jwt, matches, 2fa, cloudinary-avatar'
   );
 }

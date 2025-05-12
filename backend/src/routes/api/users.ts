@@ -31,16 +31,26 @@ interface UserPrivateDataWithStats extends UserPublicData {
 
 interface GameMatchData {
   match_id: number;
-  player1_id: number;
-  player1_username: string;
-  player1_avatar_url?: string;
-  player2_id: number;
-  player2_username: string;
-  player2_avatar_url?: string;
+  player1_id: number | null;
+  player1_username: string | null;
+  player1_guest_name: string | null;
+  player1_avatar_url?: string | null;
+  player2_id: number | null;
+  player2_username: string | null;
+  player2_guest_name: string | null;
+  player2_avatar_url?: string | null;
   player1_score: number;
   player2_score: number;
   winner_id: number | null;
   match_date: string;
+  player1_touched_ball: number;
+  player1_missed_ball: number;
+  player1_touched_ball_in_row: number;
+  player1_missed_ball_in_row: number;
+  player2_touched_ball: number;
+  player2_missed_ball: number;
+  player2_touched_ball_in_row: number;
+  player2_missed_ball_in_row: number;
 }
 
 interface UpdateUserBody {
@@ -100,9 +110,20 @@ export default function userRoutes(
 
         const lossesStmt = fastify.db.prepare(
           `SELECT COUNT(*) as count FROM game_matches
-           WHERE ((player1_id = ? AND winner_id != ?) OR (player2_id = ? AND winner_id != ?)) AND winner_id IS NOT NULL`
+           WHERE ((player1_id = ? AND winner_id != ? AND winner_id IS NOT NULL) OR 
+                  (player2_id = ? AND winner_id != ? AND winner_id IS NOT NULL) OR
+                  (player1_id = ? AND winner_id IS NULL AND player1_score < player2_score) OR
+                  (player2_id = ? AND winner_id IS NULL AND player2_score < player1_score))
+          `
         );
-        const lossesResult = lossesStmt.get(userId, userId, userId, userId) as {
+        const lossesResult = lossesStmt.get(
+          userId,
+          userId,
+          userId,
+          userId,
+          userId,
+          userId
+        ) as {
           count: number;
         };
         const total_losses = lossesResult.count;
@@ -122,13 +143,20 @@ export default function userRoutes(
       }
     }
   );
+
   fastify.put<{ Body: UpdateUserBody }>(
     '/users/me',
     routeOpts,
     async (request, reply) => {
       const userId = request.user.id;
-      const { username, email, bio, current_password, new_password, avatar_url } =
-        request.body;
+      const {
+        username,
+        email,
+        bio,
+        current_password,
+        new_password,
+        avatar_url,
+      } = request.body;
 
       const updates: { [key: string]: any } = {};
       const params: any[] = [];
@@ -140,10 +168,10 @@ export default function userRoutes(
         );
         const currentUserData = currentUserStmt.get(userId) as
           | {
-            username: string;
-            email: string | null;
-            password_hash: string | null;
-          }
+              username: string;
+              email: string | null;
+              password_hash: string | null;
+            }
           | undefined;
 
         if (!currentUserData) {
@@ -365,16 +393,26 @@ export default function userRoutes(
             gm.player1_id,
             p1.username as player1_username,
             p1.avatar_url as player1_avatar_url,
+            gm.player1_guest_name,
             gm.player2_id,
             p2.username as player2_username,
             p2.avatar_url as player2_avatar_url,
+            gm.player2_guest_name,
             gm.player1_score,
             gm.player2_score,
             gm.winner_id,
-            gm.match_date
+            gm.match_date,
+            gm.player1_touched_ball,
+            gm.player1_missed_ball,
+            gm.player1_touched_ball_in_row,
+            gm.player1_missed_ball_in_row,
+            gm.player2_touched_ball,
+            gm.player2_missed_ball,
+            gm.player2_touched_ball_in_row,
+            gm.player2_missed_ball_in_row
           FROM game_matches gm
-          JOIN users p1 ON gm.player1_id = p1.user_id
-          JOIN users p2 ON gm.player2_id = p2.user_id
+          LEFT JOIN users p1 ON gm.player1_id = p1.user_id
+          LEFT JOIN users p2 ON gm.player2_id = p2.user_id
           WHERE gm.player1_id = ? OR gm.player2_id = ?
           ORDER BY gm.match_date DESC
           LIMIT 50
