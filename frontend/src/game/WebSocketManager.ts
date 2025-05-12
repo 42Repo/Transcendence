@@ -7,11 +7,13 @@ export class WebSocketManager {
   private socket: WebSocket | null = null;
   private stateManager: StateManager;
   private player: InfoPlayer;
+  private tournament: boolean;
 
-  constructor(container: HTMLElement, player: InfoPlayer) {
+  constructor(container: HTMLElement, player: InfoPlayer, tournament: boolean) {
     this.container = container;
     this.keyMap = new Map();
     this.player = player;
+    this.tournament = tournament; 
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
@@ -22,8 +24,10 @@ export class WebSocketManager {
 
   private onOpen = async () => {
     console.log('✅ Connected to Pong Server');
+    const joinType = this.tournament ? 'joinTournament' : 'join';
+    console.log("joinType", joinType);
     this.socket?.send(JSON.stringify({
-      type: 'join', data: {
+      type: joinType, data: {
         infoPlayer: { ...this.player }
       }
     }));

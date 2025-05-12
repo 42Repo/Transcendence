@@ -46,7 +46,7 @@ export class MatchMaking {
       return p.socket === socket;
     }))
       return { player, game: null, tournament: null};
-    if (true)//TODO mettre la vraie condition
+    if (false)//TODO mettre la vraie condition
       this.waitingPlayersTournament.set(idPlayer, player);
     else
       this.waitingPlayers.set(idPlayer, player);

@@ -31,28 +31,28 @@ const fetchUser = async (): Promise<InfoPlayer> => {
   return player;
 }
 
-const onSubmit = async (event: Event, container: HTMLElement, player: InfoPlayer, form: HTMLFormElement) => {
+const onSubmit = async (event: Event, container: HTMLElement, player: InfoPlayer, form: HTMLFormElement, tournament: boolean) => {
   event.preventDefault();
   const modal = document.getElementById("modal-pong");
   if (!modal) {
-    form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
+    form.removeEventListener("submit", (event) => onSubmit(event, container, player, form, tournament));
     return;
   }
   const alias: string = (document.getElementById("alias") as HTMLInputElement).value;
   if (!alias || !alias.trim()) {
-    form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
+    form.removeEventListener("submit", (event) => onSubmit(event, container, player, form, tournament));
     return;
   }
   player.name = alias.trim();
   modal.classList.add("hidden");
 
-  form.removeEventListener("submit", (event) => onSubmit(event, container, player, form));
+  form.removeEventListener("submit", (event) => onSubmit(event, container, player, form, tournament));
   if (!currentWSManager) {
-    currentWSManager = new WebSocketManager(container, player);
+    currentWSManager = new WebSocketManager(container, player, tournament);
   }
 }
 
-export const mainGame = async () => {
+export const mainGame = async (tournament ?: boolean) => {
   if (currentWSManager) {
     return;
   }
@@ -67,12 +67,12 @@ export const mainGame = async () => {
         modal.classList.remove("hidden");
         const form = document.getElementById("alias-form") as HTMLFormElement;
         if (form)
-          form.addEventListener('submit', (e) => onSubmit(e, container, player, form));
+          form.addEventListener('submit', (e) => onSubmit(e, container, player, form, tournament));
       } else {
-        currentWSManager = new WebSocketManager(container, player);
+        currentWSManager = new WebSocketManager(container, player, tournament);
       }
     } else {
-      currentWSManager = new WebSocketManager(container, player);
+      currentWSManager = new WebSocketManager(container, player, tournament);
     }
   } catch (error) {
     console.log(error);
@@ -85,15 +85,21 @@ const cleanupGame = () => {
   }
 };
 
+const handleStandardGame = (e: Event) => mainGame(false);
+const handleTournamentGame = (e: Event) => mainGame(true);
+
+
 const removeAllEventListeners = () => {
-  document.removeEventListener('pongGameLoaded', mainGame);
+  document.removeEventListener('pongGameLoaded', handleStandardGame);
+  document.removeEventListener('pongTournamentLoaded', handleTournamentGame);
   document.removeEventListener('pong:leaving', cleanupGame);
 };
 
 const setupEventListeners = () => {
   removeAllEventListeners();
 
-  document.addEventListener('pongGameLoaded', mainGame);
+  document.addEventListener('pongGameLoaded', handleStandardGame);
+  document.removeEventListener('pongTournamentLoaded', handleTournamentGame);
   document.addEventListener('pong:leaving', cleanupGame);
 };
 

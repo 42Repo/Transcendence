@@ -18,6 +18,7 @@ const existingPages: string[] = [
   'error',
   'logged',
   'pongGame',
+  'pongTournament',
   'privacy-policy',
   'profile',
   'publicProfile',
@@ -85,15 +86,26 @@ export const fetchPage = async (page: string): Promise<void> => {
     return;
   }
 
+  const realPage : string = page;
+  if (page === 'pongTournament')
+    page = 'pongGame';
+
+  console.log("kill me please", realPage);
   console.log('Fetching page structure for:', page);
   if (page !== 'pongGame') {
     document.dispatchEvent(new Event('pong:leaving'));
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  if (cache.has(page)) {
+  if (cache.has(page) ) {
+    console.log("kill me", realPage);
     content.innerHTML = cache.get(page)!;
-    if (page === 'pongGame') {
+    if (realPage === 'pongTournament') {
+      setTimeout(() => {
+        document.dispatchEvent(new Event('pongTournamentLoaded'));
+      }, 100);
+    }
+    else if (page === 'pongGame') {
       setTimeout(() => {
         document.dispatchEvent(new Event('pongGameLoaded'));
       }, 100);
@@ -108,7 +120,13 @@ export const fetchPage = async (page: string): Promise<void> => {
       }
       const html = await response.text();
       content.innerHTML = html;
-      if (page === 'pongGame') {
+      console.log("AAAAAAAAAAAAAAAAAAA", realPage);
+      if (realPage === 'pongTournament') {
+        setTimeout(() => {
+          document.dispatchEvent(new Event('pongTournamentLoaded'));
+        }, 100);
+      }
+      else if (page === 'pongGame') {
         setTimeout(() => {
           document.dispatchEvent(new Event('pongGameLoaded'));
         }, 100);

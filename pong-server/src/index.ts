@@ -68,6 +68,9 @@ const start = async () => {
         const message = JSON.parse(msgStr);
         const { type, data } = message;
         switch (type) {
+          case 'joinTournament':
+            console.log("amog us !!");
+            break;
           case 'join':
             const result = (matchMaker.addPlayer(
               socket,
@@ -108,6 +111,7 @@ const start = async () => {
 
       socket.on('close', () => {
         if (player) {
+          //TODO tournaments
           matchMaker.removePlayer(player.id);
           const gameManager = getGameManager(player, gameManagers);
           if (gameManager) {
