@@ -37,7 +37,7 @@ export class WebSocketManager {
     const { type, data} = msg;
     switch (type) {
       case 'names':
-        this.stateManager.updateWaitingPlayers(data);
+        this.stateManager.updateWaitingPlayers(data.waitingPlayers);
         break;
       case 'wait':
         this.stateManager.changeState(State.WAIT);
