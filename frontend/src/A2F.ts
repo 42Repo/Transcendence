@@ -1,6 +1,5 @@
 import { closeModal, openModal } from './utils/modalUtils';
 import { switchPage } from './switch-page';
-import { UserPublicData } from './header';
 
 // Interface adaptée à la réponse de votre API
 interface TwoFAResponse {

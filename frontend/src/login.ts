@@ -6,8 +6,6 @@ import {
 } from './utils/modalUtils';
 import { switchPage } from './switch-page';
 import { setHeaderMenu } from './header';
-import { UserPrivateData } from './userService';
-import { GetDOMTextContent } from '@babylonjs/core';
 
 interface LoginResponse {
         success: boolean;
