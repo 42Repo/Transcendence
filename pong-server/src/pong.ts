@@ -70,9 +70,13 @@ export class MatchMaking {
   }
 
   public removePlayer(id: string) {
-    const player = this.waitingPlayers.get(id);
+    let player = this.waitingPlayers.get(id);
     if (player) {
       this.waitingPlayers.delete(id);
+    }
+    player = this.waitingPlayersTournament.get(id);
+    if (player) {
+      this.waitingPlayersTournament.delete(id);
     }
   }
 }
@@ -89,11 +93,16 @@ export class TournamentManager {
     this.gameManagers = gameManagers;
   }
 
-  startTournament(): void {
-    // Format player data for client display
-    const waitingPlayers = this.players.map(p => p.name);
+  public getPlayers(): PlayerBase[] {
+    return this.players;
+  }
 
-    // Send to all tournament participants
+  removePlayer(player: PlayerBase) {
+    //yeah
+  }
+
+  startTournament(): void {
+    const waitingPlayers = this.players.map(p => p.name);
     this.players.forEach(player => {
       if (player.socket && player.socket?.readyState === player.socket.OPEN) {
         player.socket.send(JSON.stringify({
@@ -102,9 +111,18 @@ export class TournamentManager {
         }));
       }
     });
+    setTimeout(() => {
+      this.createFirstGame();
+      this.createSecondGame();
+  }, 7000);
   }
 
   createFirstGame(): MadeMatch {
+    //check if player disconnected
+    // if (gameManager.getPlayers().every((p) => {
+    //   return p.socket === null;
+    // }))
+    //pour check si tous les joueurs sont decos
     const newGame = new GameManager(
       this.players[0],
       this.players[1],
@@ -117,6 +135,7 @@ export class TournamentManager {
   }
 
   createSecondGame(): MadeMatch {
+        //check if player disconnected
     const newGame = new GameManager(
       this.players[2],
       this.players[3],
@@ -136,6 +155,7 @@ export class TournamentManager {
   }
 
   createLastGame(): MadeMatch {
+        //check if player disconnected
     const p1 = this.games[0].getWinner();
     const p2 = this.games[1].getWinner();
     if (!p1 || !p2) {

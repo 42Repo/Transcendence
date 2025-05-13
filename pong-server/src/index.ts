@@ -23,6 +23,17 @@ const getGameManager = (player: PlayerBase, games: GameManager[]): GameManager |
   return result ?? null;
 }
 
+const getTournamentManager = (player: PlayerBase, tournaments: TournamentManager[]): TournamentManager | null => {
+  let result = null;
+
+  result = tournaments.find((tournament: TournamentManager) => {
+    return tournament.getPlayers().some((p: PlayerBase) => {
+      return player.id === p.id;
+    });
+  });
+  return result ?? null;
+}
+
 const start = async () => {
   const server = Fastify({ logger: true });
   await server.register(fastifyWebsocket);
@@ -133,6 +144,16 @@ const start = async () => {
             })) {
               const index = gameManagers.indexOf(gameManager);
               gameManagers.splice(index, 1);
+            }
+          }
+          const tournamentManager = getTournamentManager(player, tournamentManagers);
+          if (tournamentManager) {
+            tournamentManager.removePlayer(player);
+            if (tournamentManager.getPlayers().every((p) => {
+              return p.socket === null;
+            })) {
+              const index = tournamentManagers.indexOf(tournamentManager);
+              tournamentManagers.splice(index, 1);
             }
           }
         }
