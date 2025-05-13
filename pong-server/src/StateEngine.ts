@@ -115,6 +115,7 @@ export class StateEngine {
     winner: Player | null,
     loser: Player | null,
     isForfeit: boolean,
+    tournament:boolean,
     draw: boolean = false
   ) {
     if (this._matchRecorded) return;
@@ -153,16 +154,28 @@ export class StateEngine {
           data: { message: `${winner.name} made you bite the dust` },
         })
       );
-      winner.socket?.send(
-        JSON.stringify({
-          type: "win",
-          data: { message: `You beat ${loser.name}` },
-        })
-      );
+      if (tournament)
+      {
+        winner.socket?.send(
+          JSON.stringify({
+            type: "wait",
+            data: { message: `You beat ${loser.name}` },
+          })
+        );
+      }
+      else
+        {
+          winner.socket?.send(
+            JSON.stringify({
+              type: "win",
+              data: { message: `You beat ${loser.name}` },
+            })
+          );
+        }
     }
   }
 
-  updateScore(scoringPlayer: Player) {
+  updateScore(scoringPlayer: Player, tournament: boolean) {
     if (this._matchRecorded) return;
 
     scoringPlayer.score += 1;
@@ -182,7 +195,7 @@ export class StateEngine {
     this._maxTouch.set(otherPlayer.id, 0);
 
     if (scoringPlayer.score >= 10) {
-      this.handleGameConclusion(scoringPlayer, otherPlayer, false);
+      this.handleGameConclusion(scoringPlayer, otherPlayer, false, tournament);
     }
   }
 

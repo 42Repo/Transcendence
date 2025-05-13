@@ -19,7 +19,7 @@ export class PhysicsEngine {
     this.ballCooldownUntil = Date.now() + 1000;
   }
 
-  public update(game: StateGame): void {
+  public update(game: StateGame, tournament: boolean): void {
     game.players.forEach((player) => {
       const paddle: Paddle | undefined = game.paddles.find((pad: Paddle) => {
         return player.id === pad.id
@@ -49,7 +49,7 @@ export class PhysicsEngine {
     if (this.ballCooldownUntil != 0 && Date.now() >= this.ballCooldownUntil)
       this.ballMoving = true;
     if (this.ballMoving)
-      this.moveBall(game);
+      this.moveBall(game, tournament);
   }
 
   private launchBall(ball: Ball) {
@@ -77,7 +77,7 @@ export class PhysicsEngine {
       paddle.posZ += paddle.speed;
   }
 
-  private moveBall(game: StateGame): void {
+  private moveBall(game: StateGame, tournament: boolean): void {
     this.moveBallZ(game);
 
     const ball = game.ball;
@@ -115,7 +115,7 @@ export class PhysicsEngine {
       }
       else if (Math.abs(ball.posX) - radius * 2. >= maxX) {
         const scorer = (ball.dirX > 0) ? game.players[1] : game.players[0];
-        this.states.updateScore(scorer);
+        this.states.updateScore(scorer, tournament);
         //paddle lost
         this.launchBall(ball);
       }

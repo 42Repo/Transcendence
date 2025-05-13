@@ -53,7 +53,7 @@ export class MatchMaking {
       this.waitingPlayers.set(idPlayer, player);
     if (this.waitingPlayers.size >= 2) {
       const [p1, p2] = Array.from(this.waitingPlayers.values()).slice(0, 2);
-      const newGame = new GameManager(p1, p2);
+      const newGame = new GameManager(p1, p2, false);
       this.gameManagers.push(newGame);
       this.waitingPlayers.delete(p1.id);
       this.waitingPlayers.delete(p2.id);
@@ -126,6 +126,7 @@ export class TournamentManager {
     const newGame = new GameManager(
       this.players[0],
       this.players[1],
+      true,
       () => this.handleSemiFinalCompletion()
     );
     this.gameManagers.push(newGame);
@@ -139,6 +140,7 @@ export class TournamentManager {
     const newGame = new GameManager(
       this.players[2],
       this.players[3],
+      true,
       () => this.handleSemiFinalCompletion()
     );
     this.gameManagers.push(newGame);
@@ -150,9 +152,11 @@ export class TournamentManager {
   private handleSemiFinalCompletion() {
     this.completedSemiFinals++;
     if (this.completedSemiFinals === 2) {
-      this.createLastGame();
+      setTimeout(() => {
+        this.createLastGame();
+      }, 5000); // 5000 milliseconds = 5 seconds
     }
-  }
+}
 
   createLastGame(): MadeMatch {
         //check if player disconnected
@@ -161,7 +165,7 @@ export class TournamentManager {
     if (!p1 || !p2) {
       return { player: this.players[0], game: null, tournament: null };
     }
-    const newGame = new GameManager(p1, p2, () => this.handleFinalCompletion());
+    const newGame = new GameManager(p1, p2, false, () => this.handleFinalCompletion());
     this.gameManagers.push(newGame);
     this.games.push(newGame);
     newGame.startGame();
@@ -182,9 +186,10 @@ export class GameManager {
   private statesEngine: StateEngine;
   private finished: boolean = false;
   private playersReady: Map<string, boolean> = new Map();
+  private isTournament: boolean;
   private onGameOver?: () => void;
 
-  constructor(player1: PlayerBase, player2: PlayerBase, onGameOver?: () => void) {
+  constructor(player1: PlayerBase, player2: PlayerBase, tournament: boolean, onGameOver?: () => void) {
     this.game.players[0].id = player1.id;
     this.game.players[0].socket = player1.socket;
     this.game.players[0].name = player1.name;
@@ -204,6 +209,7 @@ export class GameManager {
     this.physicsEngine = new PhysicsEngine(defaultConfig, this.statesEngine);
     this.startGameLoop();
     this.onGameOver = onGameOver;
+    this.isTournament = tournament;
   }
 
   removePlayer(player: PlayerBase) {
@@ -233,7 +239,8 @@ export class GameManager {
       this.statesEngine.handleGameConclusion(
         winnerPlayerObj,
         loserPlayerObj,
-        true
+        true,
+        this.isTournament
       );
 
       remainingPlayer.socket?.send(
@@ -325,7 +332,7 @@ export class GameManager {
         if (this.gameInterval) clearInterval(this.gameInterval);
         return;
       }
-      this.physicsEngine.update(this.game);
+      this.physicsEngine.update(this.game, this.isTournament);
       this.statesEngine.updateTime(false);
       const state = {
         paddles: this.game.paddles,
