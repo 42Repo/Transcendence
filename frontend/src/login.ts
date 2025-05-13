@@ -96,7 +96,7 @@ loginConfirmButton?.addEventListener('click', (event: Event) => {
                                 // Update UI
                                 if (contentContainer) {
                                         try {
-                                                const loggedHtmlResponse = await fetch('src/views/logged.html');
+                                                const loggedHtmlResponse = await fetch('views/logged.html');
                                                 setHeaderMenu();
                                                 if (loggedHtmlResponse.ok) {
                                                         contentContainer.innerHTML = await loggedHtmlResponse.text();

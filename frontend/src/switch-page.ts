@@ -110,7 +110,7 @@ export const fetchPage = async (page: string): Promise<void> => {
     }
   } else {
     try {
-      const response = await fetch(`src/views/${page}.html`);
+      const response = await fetch(`views/${page}.html`);
       if (!response.ok) {
         throw new Error(
           `Page not found: ${page}.html (Status: ${response.status})`

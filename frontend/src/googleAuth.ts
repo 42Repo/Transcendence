@@ -86,7 +86,7 @@ export class GoogleAuth {
 
                                 if (contentContainer) {
                                         try {
-                                                const loggedHtmlResponse = await fetch('src/views/logged.html');
+                                                const loggedHtmlResponse = await fetch('views/logged.html');
                                                 setHeaderMenu();
 
                                                 if (loggedHtmlResponse.ok) {
