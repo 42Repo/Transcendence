@@ -67,9 +67,10 @@ const start = async () => {
         const msgStr = isBinary ? msg.toString() : msg as string;
         const message = JSON.parse(msgStr);
         const { type, data } = message;
+        let result;
         switch (type) {
           case 'joinTournament':
-            let result = (matchMaker.addPlayer(
+            result = (matchMaker.addPlayer(
               socket,
               data.infoPlayer,
               new Map(),
