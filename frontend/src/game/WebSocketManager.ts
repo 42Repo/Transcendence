@@ -18,7 +18,7 @@ export class WebSocketManager {
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
     document.addEventListener('pong:leaving', this.cleanup);
-    document.addEventListener('playerReady', this.gamereadyToStart, { once: true });
+    document.addEventListener('playerReady', this.gamereadyToStart);
     this.connectToServer();
   }
 

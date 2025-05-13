@@ -154,7 +154,7 @@ export class TournamentManager {
     if (this.completedSemiFinals === 2) {
       setTimeout(() => {
         this.createLastGame();
-      }, 5000); // 5000 milliseconds = 5 seconds
+      }, 5000);
     }
 }
 
@@ -169,6 +169,10 @@ export class TournamentManager {
     this.gameManagers.push(newGame);
     this.games.push(newGame);
     newGame.startGame();
+    setTimeout(() => {
+      newGame.addPlayerReady(p1.id);
+      newGame.addPlayerReady(p2.id);
+    }, 5000);
     return { player: p1, game: newGame, tournament: this };
   }
 
