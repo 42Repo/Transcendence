@@ -1,0 +1,64 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NGINX_HTTP_PORT: ${{ secrets.NGINX_HTTP_PORT }}
+          CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_SECRET_API_KEY: ${{ secrets.CLOUDINARY_SECRET_API_KEY }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+
+            echo "Navigating to project directory..."
+            cd /opt/Transcendence || { echo "Failed to cd into /opt/Transcendence"; exit 1; }
+
+            echo "Pulling latest changes from Git..."
+            git checkout main
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Creating .env file from secrets..."
+            echo "JWT_SECRET=${JWT_SECRET}" > .env
+            echo "CLOUDINARY_NAME=${CLOUDINARY_NAME}" >> .env
+            echo "CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}" >> .env
+            echo "CLOUDINARY_SECRET_API_KEY=${CLOUDINARY_SECRET_API_KEY}" >> .env
+            echo "NGINX_HTTP_PORT=${NGINX_HTTP_PORT}" >> .env
+
+            echo "Stopping existing services..."
+            make prod-down
+            
+            echo "Pruning unused Docker images and containers..."
+            docker system prune -af --volumes
+
+            echo "Building and starting new services..."
+            make prod-up
+
+            echo "Deployment finished successfully!"
+          EOF
