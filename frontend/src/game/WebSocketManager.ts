@@ -34,8 +34,11 @@ export class WebSocketManager {
 
   private onMessage = async (event: any) => {
     const msg = JSON.parse(event.data);
-    const { type } = msg;
+    const { type, data} = msg;
     switch (type) {
+      case 'names':
+        this.stateManager.updateWaitingPlayers(data);
+        break;
       case 'wait':
         this.stateManager.changeState(State.WAIT);
         break;

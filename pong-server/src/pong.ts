@@ -64,8 +64,6 @@ export class MatchMaking {
       const newTournament = new TournamentManager(pArr, this.gameManagers);
       this.tournamentManagers.push(newTournament);
       pArr.forEach(player => this.waitingPlayersTournament.delete(player.id));
-      //newTournament.createFirstGame();
-      //newTournament.createSecondGame();
       return { player, game: null, tournament: newTournament };
     }
     return { player, game: null, tournament: null };
@@ -89,6 +87,21 @@ export class TournamentManager {
     this.players = pArr;
     this.games = [];
     this.gameManagers = gameManagers;
+  }
+
+  startTournament(): void {
+    // Format player data for client display
+    const waitingPlayers = this.players.map(p => p.name);
+
+    // Send to all tournament participants
+    this.players.forEach(player => {
+      if (player.socket && player.socket?.readyState === player.socket.OPEN) {
+        player.socket.send(JSON.stringify({
+          type: 'names',
+          data: { waitingPlayers }
+        }));
+      }
+    });
   }
 
   createFirstGame(): MadeMatch {

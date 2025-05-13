@@ -78,7 +78,9 @@ const start = async () => {
             ));
             player = result.player;
             if (result.tournament){
+              socket.send(JSON.stringify({ type: 'wait' }));
               tournamentManagers.push(result.tournament);
+              result.tournament.startTournament();
             } else {
               socket.send(JSON.stringify({ type: 'wait' }));
             }

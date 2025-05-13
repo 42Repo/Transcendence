@@ -7,9 +7,39 @@ import { MyMeshWriter, WriterDef } from './MyMeshWriter.ts';
 
 export class WaitGame {
   private _stateManager: StateManager;
+  private _playerNames: MyMeshWriter | null = null;
+  
 
   constructor(game: StateManager) {
     this._stateManager = game;
+  }
+
+  public updatePlayerNames(players: string[]) {
+    // Clear existing names if they exist
+    //this._playerNames?.dispose();
+
+    // Create new names display
+    const namesText = players.map(p => p).join('\n');
+    
+    const namesDef: WriterDef = {
+      scale: 0.5,
+      writer: {
+        text: `Waiting players:\n${namesText}`,
+        anchor: "center",
+        'letter-height': 4,
+        'letter-thickness': 1,
+        color: "#FFFFFF",
+        alpha: 0.8,
+        position: {
+          x: 0,
+          y: -10,  // Adjust position as needed
+          z: 0
+        },
+      }
+    };
+    
+    this._playerNames = new MyMeshWriter(this._stateManager, namesDef);
+    this._playerNames.rotate("x", -Math.PI / 2);
   }
 
   public async init(): Promise<void> {

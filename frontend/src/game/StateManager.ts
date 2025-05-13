@@ -31,6 +31,12 @@ export class StateManager {
     });;
   }
 
+  public updateWaitingPlayers(players: string[]) {
+    if (this.state === State.WAIT && this._waitRoom) {
+      this._waitRoom.updatePlayerNames(players);
+    }
+  }
+
   public changeState = async (state: State, data?: any) => {
     if (this._currentScene) {
       this._currentScene.dispose();
