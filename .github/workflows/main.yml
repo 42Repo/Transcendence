@@ -29,6 +29,7 @@ jobs:
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NGINX_HTTP_PORT: ${{ secrets.NGINX_HTTP_PORT }}
+          NGINX_HTTPS_PORT: ${{ secrets.NGINX_HTTPS_PORT }}
           CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_SECRET_API_KEY: ${{ secrets.CLOUDINARY_SECRET_API_KEY }}
@@ -49,7 +50,8 @@ jobs:
             echo "CLOUDINARY_NAME=${CLOUDINARY_NAME}" >> .env
             echo "CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}" >> .env
             echo "CLOUDINARY_SECRET_API_KEY=${CLOUDINARY_SECRET_API_KEY}" >> .env
-            echo "NGINX_HTTP_PORT=${NGINX_HTTP_PORT}" >> .env
+            echo "NGINX_HTTP_PORT=${NGINX_HTTP_PORT:-80}" >> .env
+            echo "NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT_PROD:-443}" >> .env
 
             echo "Stopping existing services..."
             make prod-down
