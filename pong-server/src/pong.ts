@@ -98,7 +98,9 @@ export class TournamentManager {
   }
 
   removePlayer(player: PlayerBase) {
-    //yeah
+    const tournamentPlayer = this.players.find(p => p.id === player.id);
+    if (tournamentPlayer)
+      tournamentPlayer.socket = null;
   }
 
   startTournament(): void {
@@ -118,11 +120,6 @@ export class TournamentManager {
   }
 
   createFirstGame(): MadeMatch {
-    //check if player disconnected
-    // if (gameManager.getPlayers().every((p) => {
-    //   return p.socket === null;
-    // }))
-    //pour check si tous les joueurs sont decos
     const newGame = new GameManager(
       this.players[0],
       this.players[1],
@@ -132,11 +129,14 @@ export class TournamentManager {
     this.gameManagers.push(newGame);
     this.games.push(newGame);
     newGame.startGame();
+    if (this.players[0].socket === null)
+      newGame.removePlayer(this.players[0]);
+    if (this.players[1].socket === null)
+      newGame.removePlayer(this.players[1]);
     return { player: this.players[0], game: newGame, tournament: this };
   }
 
   createSecondGame(): MadeMatch {
-        //check if player disconnected
     const newGame = new GameManager(
       this.players[2],
       this.players[3],
@@ -146,6 +146,10 @@ export class TournamentManager {
     this.gameManagers.push(newGame);
     this.games.push(newGame);
     newGame.startGame();
+    if (this.players[2].socket === null)
+      newGame.removePlayer(this.players[2]);
+    if (this.players[3].socket === null)
+      newGame.removePlayer(this.players[3]);
     return { player: this.players[2], game: newGame, tournament: this };
   }
 
@@ -159,7 +163,6 @@ export class TournamentManager {
 }
 
   createLastGame(): MadeMatch {
-        //check if player disconnected
     const p1 = this.games[0].getWinner();
     const p2 = this.games[1].getWinner();
     if (!p1 || !p2) {
@@ -172,13 +175,16 @@ export class TournamentManager {
     setTimeout(() => {
       newGame.addPlayerReady(p1.id);
       newGame.addPlayerReady(p2.id);
+      if (p1.socket === null)
+        newGame.removePlayer(p1);
+      if (p2.socket === null)
+        newGame.removePlayer(p2);
     }, 5000);
     return { player: p1, game: newGame, tournament: this };
   }
 
   private handleFinalCompletion() {
-    // Handle tournament completion logic here
-    console.log('Tournament completed!');
+    console.log('super');
   }
 }
 
@@ -247,6 +253,17 @@ export class GameManager {
         this.isTournament
       );
 
+      if (this.isTournament)
+      {remainingPlayer.socket?.send(
+        JSON.stringify({
+          type: "wait",
+          data: {
+            message: `${player.name} left the game! You win by forfeit.`,
+          },
+        })
+      );
+    }
+      else {
       remainingPlayer.socket?.send(
         JSON.stringify({
           type: "win",
@@ -255,6 +272,7 @@ export class GameManager {
           },
         })
       );
+    }
     } else {
       console.log(
         `[PongServer] Player ${player.name} disconnected. No remaining active players. Game ending.`
