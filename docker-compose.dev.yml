@@ -1,6 +1,7 @@
 services:
   nginx:
      volumes:
+       - ./nginx/ssl:/etc/nginx/ssl:ro
        - ./nginx/conf.d/dev.default.conf:/etc/nginx/templates/default.conf.template:ro
 
   backend:
