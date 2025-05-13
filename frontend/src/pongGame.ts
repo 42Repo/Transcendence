@@ -85,8 +85,8 @@ const cleanupGame = () => {
   }
 };
 
-const handleStandardGame = (e: Event) => mainGame(false);
-const handleTournamentGame = (e: Event) => mainGame(true);
+const handleStandardGame = () => mainGame(false);
+const handleTournamentGame = () => mainGame(true);
 
 
 
