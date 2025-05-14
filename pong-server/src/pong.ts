@@ -305,6 +305,14 @@ export class GameManager {
         player2: this.createDataPlayer(this.game.players[1]),
       },
     });
+    setTimeout(() => {
+      this.forceStart();
+    }, 15000);
+  }
+
+  private forceStart() : void {
+    this.addPlayerReady(this.game.players[0].id);
+    this.addPlayerReady(this.game.players[1].id);
   }
 
   public gameOver(): void {
@@ -329,7 +337,7 @@ export class GameManager {
   }
 
   public addPlayerReady = (id: string) => {
-    if (this.finished) return;
+    if (this.finished || this.playersReady.size === 2) return;
     this.playersReady.set(id, true);
     if (this.playersReady.size === 2) {
       this.physicsEngine.startPhysics();
