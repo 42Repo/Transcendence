@@ -21,6 +21,19 @@
 	font-style: normal;
 }
 
+#game-container {
+	width: 100%;
+	height: 100vh;
+	position: relative;
+	overflow: hidden;
+  }
+  
+  canvas {
+	width: 100% !important;
+	height: 100% !important;
+	touch-action: none;
+  }
+
 html {
 	font-family: 'Goofont';
 }

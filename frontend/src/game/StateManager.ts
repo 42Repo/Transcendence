@@ -24,6 +24,9 @@ export class StateManager {
     this._canvas = this.createCanvas(container, defaultConfig['canvas']);
     this._engine = new Engine(this._canvas, true);
     this.conf = defaultConfig;
+
+    window.addEventListener("resize", this.handleResize);
+
     this._engine.runRenderLoop(() => {
       if (this._currentScene) {
         this._currentScene.render();
@@ -76,15 +79,34 @@ export class StateManager {
 
   private createCanvas(container: HTMLElement, conf: PongConfig["canvas"]): HTMLCanvasElement {
     const canvas = document.createElement("canvas");
-    canvas.width = conf.width;
-    canvas.height = conf.height;
-    canvas.style.border = conf.border;
-    canvas.style.borderRadius = conf.borderRadius;
+    //canvas.classList.add("w-full", "h-full", "block", "touch-none");
+    const updateCanvasSize = () => {
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    };
+    
+    updateCanvasSize();
+    
+    const resizeObserver = new ResizeObserver(updateCanvasSize);
+    resizeObserver.observe(container);
+    
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.display = "block";
+    
     container.appendChild(canvas);
     return canvas;
   }
 
+  private handleResize = () => {
+    if (this._engine) {
+      this._engine.resize();
+    }
+  };
+
   public cleanup(): void {
+    window.removeEventListener("resize", this.handleResize);
     this._currentScene?.dispose();
     this._engine.dispose();
     this._canvas.remove();
