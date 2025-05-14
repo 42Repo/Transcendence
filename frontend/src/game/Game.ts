@@ -60,6 +60,7 @@ export class Game {
   private _scorePlayer2: GUI.TextBlock;
   private _elapseMin: GUI.TextBlock;
   private _elapseSec: GUI.TextBlock;
+  private _isMobile : boolean;
 
   constructor(stateManager: StateManager, conf: PongConfig, data: Players) {
     this._conf = conf;
@@ -68,6 +69,8 @@ export class Game {
 
     this.canvas = stateManager.canvas;
     this.scene = stateManager.currentScene!;
+    this._isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     this._scorePlayer1 = this.createTextBlock(
       "0",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
@@ -187,7 +190,64 @@ export class Game {
     this.scene.onReadyObservable.add(() => {
       document.dispatchEvent(new Event('playerReady'));
     });
+
+    if (this._isMobile) {
+      this.createMobileControls();
+    }
+
     return;
+  }
+
+  private createMobileControls(): void {
+    const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("MobileControls", true, this.scene);
+    const container = new GUI.StackPanel();
+    container.width = "300px";
+    container.height = "120px";
+    container.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    container.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    container.isVertical = false;
+    container.spacing = 40;
+    container.top = "-100px";
+  
+    const upButton = this.createControlButton("haut", "KeyW");
+    const downButton = this.createControlButton("bas", "KeyS");
+  
+    container.addControl(upButton);
+    container.addControl(downButton);
+    gui.addControl(container);
+  }
+  
+  private createControlButton(text: string, keyCode: string): GUI.Button {
+    const button = new GUI.Button();
+    button.width = "120px";
+    button.height = "120px";
+    button.color = "#e0c4f8";
+    button.background = "rgba(116, 44, 116, 0.5)";
+    button.cornerRadius = 60;
+    button.thickness = 0;
+    button.fontSize = 48;
+    button.fontFamily = "Comic Sans MS, Chalkboard SE, Comic Neue, sans-serif";
+    button.text = text;
+  
+    // Touch start handler
+    button.onPointerDownObservable.add(() => {
+      const event = new KeyboardEvent('keydown', { code: keyCode });
+      document.dispatchEvent(event);
+    });
+  
+    // Touch end/release handler
+    button.onPointerUpObservable.add(() => {
+      const event = new KeyboardEvent('keyup', { code: keyCode });
+      document.dispatchEvent(event);
+    });
+  
+    // Handle touch moving out of button
+    button.onPointerOutObservable.add(() => {
+      const event = new KeyboardEvent('keyup', { code: keyCode });
+      document.dispatchEvent(event);
+    });
+  
+    return button;
   }
 
   private createContainer(): GUI.Rectangle {
