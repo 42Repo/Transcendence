@@ -199,12 +199,12 @@ export default async function (fastify: FastifyInstance) {
         });
 
         fastify.post('/2fa/isenabled', async (request, reply) => {
-                const { username } = request.body as { username: string };
+                const { identifier } = request.body as { identifier: string };
 
                 const stmt = fastify.db.prepare(
                         `SELECT is_two_factor_enabled FROM users WHERE username = ? OR email = ?`
                 );
-                const row = stmt.get(username, username) as
+                const row = stmt.get(identifier, identifier) as
                         | { is_two_factor_enabled: number }
                         | undefined;
 

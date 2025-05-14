@@ -77,22 +77,33 @@ loginConfirmButton?.addEventListener('click', (event: Event) => {
                         const data: LoginResponse = (await response.json()) as LoginResponse;
 
                         if (response.ok && data.success) {
-                                const verif2fa = await check2FA(identifier);
-                                if (!verif2fa) {
-                                        console.log('bah mon reuf');
+                                if (!data.token) {
                                         return;
                                 }
-                                console.log('glaglaglagla');
+
+                                closeModal(loginModal);
+                                const token = data.token;
+                                try {
+                                        const response = await fetch('/api/2fa/isenabled', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ identifier }),
+                                        });
+
+                                        if (!response.ok) return false;
+
+                                        const data = await response.json();
+
+                                        if (data.is_two_factor_enabled) return check2FA(identifier, token);
+                                } catch (error) {
+                                        return alert(error.message);
+                                }
                                 showFeedback(LOGIN_FEEDBACK_ID, 'Login successful!', false);
 
                                 // --- Post-Login Actions ---
                                 // TODO: Store the JWT token (e.g., data.token) securely
-                                if (data.token) {
-                                        localStorage.setItem('authToken', data.token);
-                                } else {
-                                        console.error('Token is undefined');
-                                }
 
+                                localStorage.setItem('authToken', data.token);
                                 // Update UI
                                 if (contentContainer) {
                                         try {
@@ -102,7 +113,7 @@ loginConfirmButton?.addEventListener('click', (event: Event) => {
                                                         contentContainer.innerHTML = await loggedHtmlResponse.text();
                                                         // TODO: Attach any event listeners needed for the new content
                                                 } else {
-                                                        console.error('Failed to load logged.html');
+                                                        alert('Failed to load logged.html');
                                                         showFeedback(
                                                                 LOGIN_FEEDBACK_ID,
                                                                 'Login successful, but failed to load page content.',
@@ -110,7 +121,7 @@ loginConfirmButton?.addEventListener('click', (event: Event) => {
                                                         );
                                                 }
                                         } catch (fetchError) {
-                                                console.error('Error fetching logged.html:', fetchError);
+                                                alert('Error fetching logged.html:' + fetchError.message);
                                                 showFeedback(
                                                         LOGIN_FEEDBACK_ID,
                                                         'Login successful, but failed to load page content.',
@@ -132,7 +143,7 @@ loginConfirmButton?.addEventListener('click', (event: Event) => {
                                 );
                         }
                 } catch (error) {
-                        console.error('Login error:', error);
+                        alert('Login error: ' + error.message);
                         showFeedback(
                                 LOGIN_FEEDBACK_ID,
                                 'Network error or unexpected issue. Please try again.',
@@ -177,24 +188,52 @@ document.addEventListener('openLoginModalRequest', () => {
         showLoginModal();
 });
 
-export async function check2FA(username: string): Promise<boolean> {
+const onSubmit = async (
+        username: string,
+        login2FAModal: HTMLElement,
+        token: string
+) => {
+        const input2FAField = document.getElementById(
+                'A2FRegInput'
+        ) as HTMLInputElement | null;
+        const code = input2FAField?.value.trim();
+        if (input2FAField) input2FAField.value = '';
+
+        if (!code) {
+                alert('Veuillez entrer un code 2FA.');
+                return;
+        }
+
         try {
-                const response = await fetch('/api/2fa/isenabled', {
+                const verifyResponse = await fetch('/api/2fa/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username }),
+                        body: JSON.stringify({ username, code }),
                 });
 
-                if (!response.ok) return false;
+                const verifyResult = await verifyResponse.json(); // <- TOUJOURS appeler .json()
 
-                const data = await response.json();
+                if (!verifyResponse.ok || !verifyResult.success) {
+                        alert(
+                                verifyResult.message || 'Erreur lors de la vérification du code 2FA.'
+                        );
+                        return;
+                }
 
-                if (!data.is_two_factor_enabled) return true; // pas de 2FA, donc on peut continuer
-
+                localStorage.setItem('authToken', token);
+                closeModal(login2FAModal);
+                location.reload();
+        } catch (err) {
+                console.error('Erreur réseau ou parsing JSON', err);
+                alert('Une erreur est survenue lors de la connexion 2FA.');
+        }
+};
+export async function check2FA(username: string, token: string) {
+        try {
                 const login2FAModal = document.getElementById('A2FRefModal') as HTMLElement;
                 if (!login2FAModal) {
-                        console.error('Modal 2FA non trouvé');
-                        return false;
+                        alert('Modal 2FA non trouvé');
+                        return;
                 }
 
                 openModal(login2FAModal);
@@ -202,54 +241,22 @@ export async function check2FA(username: string): Promise<boolean> {
                 const confirm2FAButton = document.getElementById(
                         'A2FRegConfirm'
                 ) as HTMLButtonElement | null;
-                const input2FAField = document.getElementById(
-                        'A2FRegInput'
-                ) as HTMLInputElement | null;
 
-                if (!confirm2FAButton || !input2FAField) {
-                        console.error('Bouton ou champ 2FA manquant');
-                        return false;
+                if (!confirm2FAButton) {
+                        alert('Bouton ou champ 2FA manquant');
+                        return;
                 }
-
-                // ⚠️ On retourne une Promise ici
-                return new Promise<boolean>((resolve) => {
-                        confirm2FAButton.onclick = async () => {
-                                const code = input2FAField.value.trim();
-                                if (!code) {
-                                        alert('Veuillez entrer un code 2FA.');
-                                        return;
-                                }
-
-                                try {
-                                        const verifyResponse = await fetch('/api/2fa/login', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ username, code }),
-                                        });
-
-                                        if (!verifyResponse.ok) {
-                                                alert('Échec de la vérification 2FA.');
-                                                resolve(false);
-                                                return;
-                                        }
-
-                                        const verifyResult = await verifyResponse.json();
-                                        if (verifyResult.success) {
-                                                closeModal(login2FAModal);
-                                                resolve(true);
-                                        } else {
-                                                alert('Code 2FA invalide.');
-                                                resolve(false);
-                                        }
-                                } catch (err) {
-                                        console.error('Erreur lors de la vérification du code 2FA :', err);
-                                        resolve(false);
-                                }
-                        };
+                confirm2FAButton.addEventListener('click', async () => {
+                        try {
+                                await onSubmit(username, login2FAModal, token);
+                        } catch (err) {
+                                alert('Erreur capturée dans onSubmit:' + err);
+                        }
                 });
         } catch (error) {
-                console.error('Erreur dans check2FA :', error);
-                return false;
+                console.log('HEHEHEHA');
+                alert('Erreur dans check2FA :' + error.message);
+                return;
         }
 }
 

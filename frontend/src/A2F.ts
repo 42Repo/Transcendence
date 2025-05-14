@@ -53,8 +53,6 @@ async function setupTwoFactorAuth(token: string) {
 
                 if (twoFAResponse.status === 400) {
                         const errorData = await twoFAResponse.json();
-                        console.warn('2FA Error:', errorData.message);
-                        // Si 2FA est déjà activé, vous pouvez rediriger vers une autre page ou informer l'utilisateur
                         alert(errorData.message || '2FA is already activated');
                         return;
                 }
@@ -71,7 +69,7 @@ async function setupTwoFactorAuth(token: string) {
 
                 openModal(modalA2F);
         } catch (error) {
-                console.error('Error setting up 2FA: ', error);
+                alert('Error setting up 2FA: ' + error.message);
         }
 }
 
@@ -103,9 +101,9 @@ export async function confirmA2F() {
                         return;
                 }
                 const result = await response.json();
-                console.log(result);
+                alert(result);
         } catch (error) {
-                console.log('error : ' + error);
+                alert('error : ' + error);
         }
 
         //window.location.reload();

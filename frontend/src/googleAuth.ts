@@ -76,10 +76,28 @@ export class GoogleAuth {
                         const data: LoginResponse = await res.json();
 
                         if (res.ok) {
-                                const verif2fa = await check2FA(user.email);
-                                if (!verif2fa) {
-                                        console.log('error during 2FA');
-                                        return;
+                                if (!data.token) {
+                                        return console.error('Token is undefined');
+                                }
+
+                                closeModal(loginModal);
+                                const token = data.token;
+                                console.log('token =', data.token);
+                                try {
+                                        const response = await fetch('/api/2fa/isenabled', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ identifier: user.email }),
+                                        });
+
+                                        if (!response.ok) return false;
+
+                                        const data = await response.json();
+
+                                        console.log(data.is_two_factor_enabled);
+                                        if (data.is_two_factor_enabled) return check2FA(user.email, token);
+                                } catch (error) {
+                                        return alert(error.message);
                                 }
                                 console.log('Login successful:', data);
                                 localStorage.setItem('authToken', data.token || '');
