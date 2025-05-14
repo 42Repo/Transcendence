@@ -209,15 +209,15 @@ export class Game {
     container.spacing = 40;
     container.top = "-100px";
   
-    const upButton = this.createControlButton("haut", "KeyW");
-    const downButton = this.createControlButton("bas", "KeyS");
+    const upButton = this.createControlButton("KeyW");
+    const downButton = this.createControlButton("KeyS");
   
     container.addControl(upButton);
     container.addControl(downButton);
     gui.addControl(container);
   }
   
-  private createControlButton(text: string, keyCode: string): GUI.Button {
+  private createControlButton(keyCode: string): GUI.Button {
     const button = new GUI.Button();
     button.width = "120px";
     button.height = "120px";
@@ -227,7 +227,6 @@ export class Game {
     button.thickness = 0;
     button.fontSize = 48;
     button.fontFamily = "Comic Sans MS, Chalkboard SE, Comic Neue, sans-serif";
-    button.text = text;
   
     // Touch start handler
     button.onPointerDownObservable.add(() => {
