@@ -21,7 +21,7 @@ export class StateManager {
   private _floorY!: number;
 
   constructor(container: HTMLElement) {
-    this._canvas = this.createCanvas(container, defaultConfig['canvas']);
+    this._canvas = this.createCanvas(container);
     this._engine = new Engine(this._canvas, true);
     this.conf = defaultConfig;
 
@@ -77,7 +77,7 @@ export class StateManager {
     }
   }
 
-  private createCanvas(container: HTMLElement, conf: PongConfig["canvas"]): HTMLCanvasElement {
+  private createCanvas(container: HTMLElement): HTMLCanvasElement {
     const canvas = document.createElement("canvas");
     //canvas.classList.add("w-full", "h-full", "block", "touch-none");
     const updateCanvasSize = () => {
