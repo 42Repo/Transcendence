@@ -101,6 +101,10 @@ export class Game {
       light,
     } = this._conf;
 
+    const isMobile = navigator.userAgentData?.mobile
+      || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+      || window.matchMedia("(max-width: 768px) and (pointer: coarse)").matches;
+
     new Skybox(this._stateManager, skybox.path, skybox.meshName);
 
     const tableColor = table.color
@@ -184,6 +188,11 @@ export class Game {
     container.addControl(scoreGrid);
     gui.addControl(container);
 
+    if (isMobile) {
+      console.log("Mobile detected");
+      this.createTouchControls(gui);
+    }
+
     this.scene.onReadyObservable.add(() => {
       document.dispatchEvent(new Event('playerReady'));
     });
@@ -256,6 +265,46 @@ export class Game {
     scoreGrid.addControl(this._elapseSec, 1, 4);
     scoreGrid.addControl(dotTime, 1, 3);
     return scoreGrid;
+  }
+
+  private createTouchControls(gui: GUI.AdvancedDynamicTexture): void {
+    const upBtn = GUI.Button.CreateSimpleButton("up", "⬆");
+    const downBtn = GUI.Button.CreateSimpleButton("down", "⬇");
+
+    [upBtn, downBtn].forEach(btn => {
+      btn.width = "7%";
+      btn.height = "7%";
+      btn.fontSize = 20;
+      btn.cornerRadius = 10;
+      btn.background = "rgba(74,28,74,0.5)";
+      btn.color = "#c6a6e8";
+      btn.thickness = 1;
+      btn.zIndex = 10000;            // passe au-dessus de tout
+    });
+
+    upBtn.left = "-10%";
+    upBtn.top = "46%";
+    downBtn.left = "10%";
+    downBtn.top = "46%";
+
+    upBtn.onPointerDownObservable.add(() => {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "w", code: "KeyW" })
+      );
+    });
+    upBtn.onPointerUpObservable.add(() => {
+      document.dispatchEvent(new KeyboardEvent("keyup", { key: "w", code: "KeyW" }));
+    });
+    downBtn.onPointerDownObservable.add(() => {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "s", code: "KeyS" })
+      );
+    });
+    downBtn.onPointerUpObservable.add(() => {
+      document.dispatchEvent(new KeyboardEvent("keyup", { key: "s", code: "KeyS" }));
+    });
+    gui.addControl(upBtn);
+    gui.addControl(downBtn);
   }
 
   public createAvatar(id: string, path: string): GUI.Image {

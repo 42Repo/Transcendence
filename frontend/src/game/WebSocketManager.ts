@@ -13,7 +13,7 @@ export class WebSocketManager {
     this.container = container;
     this.keyMap = new Map();
     this.player = player;
-    this.tournament = tournament; 
+    this.tournament = tournament;
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
@@ -34,10 +34,13 @@ export class WebSocketManager {
 
   private onMessage = async (event: any) => {
     const msg = JSON.parse(event.data);
-    const { type, data} = msg;
+    const { type, data } = msg;
     switch (type) {
       case 'names':
         this.stateManager.updateWaitingPlayers(data.waitingPlayers);
+        break;
+      case 'final':
+        this.stateManager.updateWaitingFinal(data.players);
         break;
       case 'wait':
         this.stateManager.changeState(State.WAIT);

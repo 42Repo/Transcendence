@@ -3,13 +3,13 @@ import { v4 as uuidv4 } from "uuid";
 import { defaultConfig } from "./DefaultConf";
 import { createInitialState } from "./createInitialState";
 import { PhysicsEngine } from "./PhysicsEngine";
-import { StateGame, PlayerBase, Player } from "./StateGame";
+import { StateGame, PlayerBase } from "./StateGame";
 import { StateEngine } from "./StateEngine";
 
 type MadeMatch = {
   player: PlayerBase;
   game: GameManager | null;
-  tournament : TournamentManager | null;
+  tournament: TournamentManager | null;
 };
 
 export class MatchMaking {
@@ -35,7 +35,7 @@ export class MatchMaking {
       infoPlayer.id !== null ? infoPlayer.id.toString() : uuidv4();
     const existPlayer = this.waitingPlayers.get(idPlayer);
     if (existPlayer)
-      return { player: existPlayer, game: null, tournament: null};
+      return { player: existPlayer, game: null, tournament: null };
     const player: PlayerBase = {
       id: idPlayer,
       socket,
@@ -46,7 +46,7 @@ export class MatchMaking {
     if (Array.from(this.waitingPlayers.values()).some((p) => {
       return p.socket === socket;
     }))
-      return { player, game: null, tournament: null};
+      return { player, game: null, tournament: null };
     if (tournament)
       this.waitingPlayersTournament.set(idPlayer, player);
     else
@@ -57,7 +57,7 @@ export class MatchMaking {
       this.gameManagers.push(newGame);
       this.waitingPlayers.delete(p1.id);
       this.waitingPlayers.delete(p2.id);
-      return { player, game: newGame, tournament: null};
+      return { player, game: newGame, tournament: null };
     }
     if (this.waitingPlayersTournament.size >= 4) {
       const pArr = Array.from(this.waitingPlayersTournament.values()).slice(0, 4);
@@ -116,7 +116,7 @@ export class TournamentManager {
     setTimeout(() => {
       this.createFirstGame();
       this.createSecondGame();
-  }, 7000);
+    }, 7000);
   }
 
   createFirstGame(): MadeMatch {
@@ -156,11 +156,24 @@ export class TournamentManager {
   private handleSemiFinalCompletion() {
     this.completedSemiFinals++;
     if (this.completedSemiFinals === 2) {
+      const p1: PlayerBase | null = this.games[0].getWinner();
+      const p2: PlayerBase | null = this.games[1].getWinner();
+      if (!p1 || !p2) {
+        return { player: this.players[0], game: null, tournament: null };
+      }
+      [p1, p2].forEach((p: PlayerBase) => {
+        if (p.socket && p.socket?.readyState === p.socket.OPEN) {
+          p.socket.send(JSON.stringify({
+            type: 'final',
+            data: { palyers: [p1.name, p2.name] }
+          }));
+        };
+      })
       setTimeout(() => {
         this.createLastGame();
       }, 5000);
     }
-}
+  }
 
   createLastGame(): MadeMatch {
     const p1 = this.games[0].getWinner();
@@ -253,26 +266,26 @@ export class GameManager {
         this.isTournament
       );
 
-      if (this.isTournament)
-      {remainingPlayer.socket?.send(
-        JSON.stringify({
-          type: "wait",
-          data: {
-            message: `${player.name} left the game! You win by forfeit.`,
-          },
-        })
-      );
-    }
+      if (this.isTournament) {
+        remainingPlayer.socket?.send(
+          JSON.stringify({
+            type: "wait",
+            data: {
+              message: `${player.name} left the game! You win by forfeit.`,
+            },
+          })
+        );
+      }
       else {
-      remainingPlayer.socket?.send(
-        JSON.stringify({
-          type: "win",
-          data: {
-            message: `${player.name} left the game! You win by forfeit.`,
-          },
-        })
-      );
-    }
+        remainingPlayer.socket?.send(
+          JSON.stringify({
+            type: "win",
+            data: {
+              message: `${player.name} left the game! You win by forfeit.`,
+            },
+          })
+        );
+      }
     } else {
       console.log(
         `[PongServer] Player ${player.name} disconnected. No remaining active players. Game ending.`

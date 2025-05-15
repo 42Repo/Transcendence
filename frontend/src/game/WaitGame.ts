@@ -7,15 +7,15 @@ import { MyMeshWriter, WriterDef } from './MyMeshWriter.ts';
 
 export class WaitGame {
   private _stateManager: StateManager;
-  
+
   constructor(game: StateManager) {
     this._stateManager = game;
   }
 
   public updatePlayerNames(players: string[]) {
-    const firstMatch : string = players[0] + ' vs ' + players[1];
-    const secondMatch : string = players[2] + ' vs ' + players[3];
-    
+    const firstMatch: string = players[0] + ' vs ' + players[1];
+    const secondMatch: string = players[2] + ' vs ' + players[3];
+
     const namesDef1: WriterDef = {
       scale: 0.5,
       writer: {
@@ -48,11 +48,33 @@ export class WaitGame {
         },
       }
     };
-    
+
     let text = new MyMeshWriter(this._stateManager, namesDef1);
     text.rotate("x", -Math.PI / 2);
     text = new MyMeshWriter(this._stateManager, namesDef2);
     text.rotate("x", -Math.PI / 2);
+  }
+
+  public updateFinalMatch(players: string[]) {
+    const writer: WriterDef = {
+      scale: 0.5,
+      writer: {
+        text: `Final: ${players[0]} VS ${players[1]}`,
+        anchor: "center",
+        'letter-height': 6,
+        'letter-thickness': 2,
+        color: "#FFAC00",
+        alpha: 0.8,
+        position: {
+          x: 0,
+          y: -12,
+          z: 0
+        },
+      }
+    };
+
+    const newWriter = new MyMeshWriter(this._stateManager, writer);
+    newWriter.rotate('x', -Math.PI / 2);
   }
 
   public async init(): Promise<void> {

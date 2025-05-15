@@ -31,12 +31,6 @@ export class StateManager {
     });;
   }
 
-  public updateWaitingPlayers(players: string[]) {
-    if (this.state === State.WAIT && this._waitRoom) {
-      this._waitRoom.updatePlayerNames(players);
-    }
-  }
-
   public changeState = async (state: State, data?: any) => {
     if (this._currentScene) {
       this._currentScene.dispose();
@@ -76,8 +70,8 @@ export class StateManager {
 
   private createCanvas(container: HTMLElement, conf: PongConfig["canvas"]): HTMLCanvasElement {
     const canvas = document.createElement("canvas");
-    canvas.width = conf.width;
-    canvas.height = conf.height;
+    canvas.style.setProperty("width", "min(100vw, 1000px)");
+    canvas.style.setProperty("aspect-ratio", "16 / 9");
     canvas.style.border = conf.border;
     canvas.style.borderRadius = conf.borderRadius;
     container.appendChild(canvas);
@@ -93,6 +87,18 @@ export class StateManager {
   public updateStateGame(state: GameState) {
     if (this._game && this.state && this.state === State.START) {
       this._game.updateState(state);
+    }
+  }
+
+  public updateWaitingPlayers(players: string[]) {
+    if (this.state === State.WAIT && this._waitRoom) {
+      this._waitRoom.updatePlayerNames(players);
+    }
+  }
+
+  public updateWaitingFinal(players: string[]) {
+    if (this.state === State.WAIT && this._waitRoom) {
+      this._waitRoom.updateFinalMatch(players);
     }
   }
 

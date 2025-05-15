@@ -15,7 +15,10 @@
     "strict": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+      "user-agent-data-types"
+    ]
   },
   "types": [],
   "include": ["src"],
