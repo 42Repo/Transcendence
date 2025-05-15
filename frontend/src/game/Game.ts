@@ -74,22 +74,22 @@ export class Game {
     this._scorePlayer1 = this.createTextBlock(
       "0",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      32,
+      "60%"
     );
     this._scorePlayer2 = this.createTextBlock(
       "0",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      32,
+      "60%"
     );
     this._elapseMin = this.createTextBlock(
       "00",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      14,
+      "100%"
     );
     this._elapseSec = this.createTextBlock(
       "00",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      14,
+      "100%"
     );
   }
 
@@ -284,12 +284,12 @@ private createControlButton(
     const namePlayer1 = this.createTextBlock(
       this._players.player1.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      28,
+      "50%",
     );
     const namePlayer2 = this.createTextBlock(
       this._players.player2.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      28,
+      "50%",
     );
     scoreGrid.addControl(namePlayer1, 0, 1);
     scoreGrid.addControl(namePlayer2, 0, 5);
@@ -298,13 +298,13 @@ private createControlButton(
     const dotScore = this.createTextBlock(
       ":",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      32,
+      "60%",
     );
     scoreGrid.addControl(dotScore, 0, 3);
     const dotTime = this.createTextBlock(
       ":",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      14,
+      "100%",
     );
     scoreGrid.addControl(this._elapseMin, 1, 2);
     scoreGrid.addControl(this._elapseSec, 1, 4);
@@ -323,7 +323,7 @@ private createControlButton(
   public createTextBlock(
     name: string,
     font: string,
-    size: number,
+    size: number | string,
   ): GUI.TextBlock {
     const textBlock = new GUI.TextBlock();
     textBlock.text = name;
