@@ -1,13 +1,27 @@
 import { showLoginModal, logout } from './login';
 import {
   fetchMyProfileData,
-  fetchFriendsList,
   fetchGameHistory,
   UserPrivateData,
+  UserPublicData,
   GameMatch,
   getMatchResultForUser,
+  fetchAcceptedFriends,
+  FriendData,
+  FriendRequestData,
+  fetchIncomingFriendRequests,
+  fetchSentFriendRequests,
+  sendFriendRequest,
+  acceptFriendRequest,
+  declineFriendRequest,
+  cancelFriendRequest,
+  removeFriend,
 } from './userService';
 import { initializeEditProfileAvatarHandling } from './editProfileData';
+import {
+  showFeedback as showSnackbar,
+  clearFeedback as clearSnackbar,
+} from './utils/modalUtils';
 
 const content = document.getElementById('content');
 const cache: Map<string, string> = new Map();
@@ -86,9 +100,8 @@ export const fetchPage = async (page: string): Promise<void> => {
     return;
   }
 
-  const realPage : string = page;
-  if (page === 'pongTournament')
-    page = 'pongGame';
+  const realPage: string = page;
+  if (page === 'pongTournament') page = 'pongGame';
 
   console.log('Fetching page structure for:', page);
   if (page !== 'pongGame') {
@@ -96,14 +109,13 @@ export const fetchPage = async (page: string): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  if (cache.has(page) ) {
+  if (cache.has(page)) {
     content.innerHTML = cache.get(page)!;
     if (realPage === 'pongTournament') {
       setTimeout(() => {
         document.dispatchEvent(new Event('pongTournamentLoaded'));
       }, 100);
-    }
-    else if (page === 'pongGame') {
+    } else if (page === 'pongGame') {
       setTimeout(() => {
         document.dispatchEvent(new Event('pongGameLoaded'));
       }, 100);
@@ -122,8 +134,7 @@ export const fetchPage = async (page: string): Promise<void> => {
         setTimeout(() => {
           document.dispatchEvent(new Event('pongTournamentLoaded'));
         }, 100);
-      }
-      else if (page === 'pongGame') {
+      } else if (page === 'pongGame') {
         setTimeout(() => {
           document.dispatchEvent(new Event('pongGameLoaded'));
         }, 100);
@@ -142,13 +153,9 @@ export const fetchPage = async (page: string): Promise<void> => {
     } else if (page === 'edit-profile') {
       await loadAndPopulateEditProfileData();
       initializeEditProfileAvatarHandling();
-    }
-
-    // else if (page === 'publicProfile') {
-    //   // TODO: Add logic for public profile if needed
-    // }
-    else if (page === 'logged') {
-      console.log("Landed on 'logged' page. Implement data loading if needed.");
+    } else if (page === 'logged') {
+      await loadAndPopulateLoggedDashboardData();
+      setupLoggedDashboardEventListeners();
     }
   } catch (dataLoadError) {
     console.error(
@@ -157,6 +164,314 @@ export const fetchPage = async (page: string): Promise<void> => {
     );
   }
 };
+
+async function loadAndPopulateLoggedDashboardData() {
+  console.log('Loading data for logged dashboard...');
+  const avatarElem = document.getElementById(
+    'loggedUserAvatar'
+  ) as HTMLImageElement | null;
+  const usernameElem = document.getElementById('loggedUserUsername');
+
+  try {
+    const userData = await fetchMyProfileData();
+    if (avatarElem)
+      avatarElem.src = userData.avatar_url || '/DefaultProfilePic.png';
+    if (usernameElem)
+      usernameElem.textContent = `Welcome, ${userData.username}!`;
+  } catch (error) {
+    console.error(
+      "Failed to load user's own data for dashboard header:",
+      error
+    );
+    if (usernameElem) usernameElem.textContent = 'Welcome!';
+  }
+
+  initializeTabs();
+
+  void loadMyFriendsList();
+  void loadIncomingRequestsList();
+  void loadSentRequestsList();
+}
+
+function initializeTabs() {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      tabButtons.forEach((btn) => btn.classList.remove('active-tab'));
+      button.classList.add('active-tab');
+
+      const targetTabContentId = `tabContent${button.id.substring(3)}`;
+      tabContents.forEach((content) => {
+        if (content.id === targetTabContentId) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+        }
+      });
+    });
+  });
+  const firstTabButton = document.getElementById('tabMyFriends');
+  if (firstTabButton) {
+    firstTabButton.click();
+  }
+}
+
+async function loadMyFriendsList() {
+  const listElem = document.getElementById('myFriendsList');
+  const loadingElem = document.getElementById('myFriendsLoading');
+  const errorElem = document.getElementById('myFriendsError');
+
+  if (!listElem || !loadingElem || !errorElem) return;
+
+  loadingElem.style.display = 'block';
+  errorElem.style.display = 'none';
+  listElem.innerHTML = '';
+
+  try {
+    const friends = await fetchAcceptedFriends();
+    if (friends.length === 0) {
+      listElem.innerHTML =
+        '<li class="text-mediumlight text-center">You have no friends yet.</li>';
+    } else {
+      friends.forEach((friend) => {
+        const item = document.createElement('li');
+        item.className =
+          'flex items-center justify-between bg-mediumlightdark p-3 rounded-lg text-lightlight';
+        item.innerHTML = `
+          <div class="flex items-center">
+            <img src="${friend.avatar_url || '/DefaultProfilePic.png'}" alt="${friend.username}" class="w-10 h-10 rounded-full mr-3 object-cover">
+            <span>${friend.username} (${friend.online_status})</span>
+          </div>
+          <div>
+            <button data-user-id="${friend.friend_user_id}" class="view-profile-btn text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded mr-1">Profile</button>
+            <button data-user-id="${friend.friend_user_id}" data-username="${friend.username}" class="remove-friend-btn text-xs bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded">Remove</button>
+          </div>
+        `;
+        listElem.appendChild(item);
+      });
+    }
+  } catch (error) {
+    errorElem.textContent = `Error loading friends: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    errorElem.style.display = 'block';
+  } finally {
+    loadingElem.style.display = 'none';
+  }
+}
+
+async function loadIncomingRequestsList() {
+  const listElem = document.getElementById('incomingRequestsList');
+  const loadingElem = document.getElementById('incomingRequestsLoading');
+  const errorElem = document.getElementById('incomingRequestsError');
+
+  if (!listElem || !loadingElem || !errorElem) return;
+
+  loadingElem.style.display = 'block';
+  errorElem.style.display = 'none';
+  listElem.innerHTML = '';
+
+  try {
+    const requests = await fetchIncomingFriendRequests();
+    if (requests.length === 0) {
+      listElem.innerHTML =
+        '<li class="text-mediumlight text-center">No incoming friend requests.</li>';
+    } else {
+      requests.forEach((req) => {
+        const item = document.createElement('li');
+        item.className =
+          'flex items-center justify-between bg-mediumlightdark p-3 rounded-lg text-lightlight';
+        item.innerHTML = `
+          <div class="flex items-center">
+            <img src="${req.avatar_url || '/DefaultProfilePic.png'}" alt="${req.username}" class="w-10 h-10 rounded-full mr-3 object-cover">
+            <span title="Requested on: ${new Date(req.request_date).toLocaleDateString()}">${req.username}</span>
+          </div>
+          <div>
+            <button data-user-id="${req.requester_user_id}" class="accept-request-btn text-xs bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded mr-1">Accept</button>
+            <button data-user-id="${req.requester_user_id}" class="decline-request-btn text-xs bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded">Decline</button>
+          </div>
+        `;
+        listElem.appendChild(item);
+      });
+    }
+  } catch (error) {
+    errorElem.textContent = `Error loading incoming requests: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    errorElem.style.display = 'block';
+  } finally {
+    loadingElem.style.display = 'none';
+  }
+}
+
+async function loadSentRequestsList() {
+  const listElem = document.getElementById('sentRequestsList');
+  const loadingElem = document.getElementById('sentRequestsLoading');
+  const errorElem = document.getElementById('sentRequestsError');
+
+  if (!listElem || !loadingElem || !errorElem) return;
+
+  loadingElem.style.display = 'block';
+  errorElem.style.display = 'none';
+  listElem.innerHTML = '';
+
+  try {
+    const requests = await fetchSentFriendRequests();
+    if (requests.length === 0) {
+      listElem.innerHTML =
+        '<li class="text-mediumlight text-center">No pending sent requests.</li>';
+    } else {
+      requests.forEach((req) => {
+        const item = document.createElement('li');
+        item.className =
+          'flex items-center justify-between bg-mediumlightdark p-3 rounded-lg text-lightlight';
+        item.innerHTML = `
+          <div class="flex items-center">
+            <img src="${req.avatar_url || '/DefaultProfilePic.png'}" alt="${req.username}" class="w-10 h-10 rounded-full mr-3 object-cover">
+            <span title="Sent on: ${new Date(req.request_date).toLocaleDateString()}">${req.username}</span>
+          </div>
+          <button data-user-id="${req.addressee_user_id}" class="cancel-request-btn text-xs bg-yellow-600 hover:bg-yellow-700 text-white py-1 px-2 rounded">Cancel</button>
+        `;
+        listElem.appendChild(item);
+      });
+    }
+  } catch (error) {
+    errorElem.textContent = `Error loading sent requests: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    errorElem.style.display = 'block';
+  } finally {
+    loadingElem.style.display = 'none';
+  }
+}
+
+function setupLoggedDashboardEventListeners() {
+  const findFriendInput = document.getElementById(
+    'findFriendInput'
+  ) as HTMLInputElement | null;
+  const sendFriendRequestButton = document.getElementById(
+    'sendFriendRequestButton'
+  );
+  const findFriendFeedback = document.getElementById('findFriendFeedback');
+
+  sendFriendRequestButton?.addEventListener('click', async () => {
+    if (!findFriendInput || !findFriendFeedback) return;
+    const username = findFriendInput.value.trim();
+    if (!username) {
+      showSnackbar('findFriendFeedback', 'Please enter a username.', true);
+      return;
+    }
+    clearSnackbar('findFriendFeedback');
+    showSnackbar(
+      'findFriendFeedback',
+      `Sending request to ${username}...`,
+      false
+    );
+    try {
+      await sendFriendRequest(username);
+      showSnackbar(
+        'findFriendFeedback',
+        `Friend request sent to ${username}.`,
+        false
+      );
+      findFriendInput.value = '';
+      void loadSentRequestsList();
+    } catch (error) {
+      showSnackbar(
+        'findFriendFeedback',
+        `Error: ${error instanceof Error ? error.message : 'Could not send request.'}`,
+        true
+      );
+    }
+  });
+
+  content?.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement;
+
+    if (target.classList.contains('accept-request-btn')) {
+      const userId = target.dataset.userId;
+      if (userId) {
+        showSnackbar('findFriendFeedback', `Accepting request...`, false);
+        try {
+          await acceptFriendRequest(parseInt(userId, 10));
+          showSnackbar('findFriendFeedback', `Friend request accepted.`, false);
+          void loadMyFriendsList();
+          void loadIncomingRequestsList();
+        } catch (error) {
+          showSnackbar(
+            'findFriendFeedback',
+            `Error: ${error instanceof Error ? error.message : 'Could not accept request.'}`,
+            true
+          );
+        }
+      }
+    }
+
+    if (target.classList.contains('decline-request-btn')) {
+      const userId = target.dataset.userId;
+      if (userId) {
+        showSnackbar('findFriendFeedback', `Declining request...`, false);
+        try {
+          await declineFriendRequest(parseInt(userId, 10));
+          showSnackbar('findFriendFeedback', `Friend request declined.`, false);
+          void loadIncomingRequestsList();
+        } catch (error) {
+          showSnackbar(
+            'findFriendFeedback',
+            `Error: ${error instanceof Error ? error.message : 'Could not decline request.'}`,
+            true
+          );
+        }
+      }
+    }
+
+    if (target.classList.contains('cancel-request-btn')) {
+      const userId = target.dataset.userId;
+      if (userId) {
+        showSnackbar('findFriendFeedback', `Cancelling request...`, false);
+        try {
+          await cancelFriendRequest(parseInt(userId, 10));
+          showSnackbar(
+            'findFriendFeedback',
+            `Friend request cancelled.`,
+            false
+          );
+          void loadSentRequestsList();
+        } catch (error) {
+          showSnackbar(
+            'findFriendFeedback',
+            `Error: ${error instanceof Error ? error.message : 'Could not cancel request.'}`,
+            true
+          );
+        }
+      }
+    }
+
+    if (target.classList.contains('remove-friend-btn')) {
+      const userId = target.dataset.userId;
+      const username = target.dataset.username;
+      if (
+        userId &&
+        window.confirm(
+          `Are you sure you want to remove ${username || 'this user'} as a friend?`
+        )
+      ) {
+        showSnackbar('findFriendFeedback', `Removing friend...`, false);
+        try {
+          await removeFriend(parseInt(userId, 10));
+          showSnackbar(
+            'findFriendFeedback',
+            `Successfully removed ${username || 'user'} from friends.`,
+            false
+          );
+          void loadMyFriendsList();
+        } catch (error) {
+          showSnackbar(
+            'findFriendFeedback',
+            `Error: ${error instanceof Error ? error.message : 'Could not remove friend.'}`,
+            true
+          );
+        }
+      }
+    }
+  });
+}
 
 async function loadAndPopulateEditProfileData() {
   console.log('Attempting to load and populate edit profile data...');
@@ -296,10 +611,7 @@ function calculateBestWinStreak(
       currentStreak = 0;
     }
   }
-
-  if (currentStreak > bestStreak) {
-    bestStreak = currentStreak;
-  }
+  if (currentStreak > bestStreak) bestStreak = currentStreak;
   return bestStreak;
 }
 
@@ -326,9 +638,11 @@ async function loadAndPopulateProfileData() {
   const statsWinLossRateElem = document.getElementById('statsWinLossRate');
   const statsBestWinStreakElem = document.getElementById('statsBestWinStreak');
 
-  const friendsLoading = document.getElementById('friendsLoading');
-  const friendsError = document.getElementById('friendsError');
-  const friendsContainer = document.getElementById('friendsListContainer');
+  const friendsLoadingProfile = document.getElementById('friendsLoading');
+  const friendsErrorProfile = document.getElementById('friendsError');
+  const friendsContainerProfile = document.getElementById(
+    'friendsListContainer'
+  );
 
   const historyLoading = document.getElementById('historyLoading');
   const historyError = document.getElementById('historyError');
@@ -348,9 +662,9 @@ async function loadAndPopulateProfileData() {
     !statsLossesElem ||
     !statsWinLossRateElem ||
     !statsBestWinStreakElem ||
-    !friendsLoading ||
-    !friendsError ||
-    !friendsContainer ||
+    !friendsLoadingProfile ||
+    !friendsErrorProfile ||
+    !friendsContainerProfile ||
     !historyLoading ||
     !historyError ||
     !historyContainer
@@ -403,14 +717,18 @@ async function loadAndPopulateProfileData() {
     const rankElem = document.getElementById('statsRank');
     if (rankElem) rankElem.textContent = `Rank: (Needs API)`;
 
+    profileContentArea.style.display = 'block';
+    errorDisplay.style.display = 'none';
+
     const historyItems: GameMatch[] = await fetchGameHistory(userData.user_id);
     const bestStreak = calculateBestWinStreak(historyItems, userData.user_id);
     statsBestWinStreakElem.textContent = `Best Win Streak: ${bestStreak}`;
 
-    profileContentArea.style.display = 'block';
-    errorDisplay.style.display = 'none';
-
-    void loadFriends(friendsContainer, friendsLoading, friendsError);
+    void loadFriendsForProfilePage(
+      friendsContainerProfile,
+      friendsLoadingProfile,
+      friendsErrorProfile
+    );
     void loadHistory(
       userData.user_id,
       historyContainer,
@@ -439,35 +757,42 @@ async function loadAndPopulateProfileData() {
   }
 }
 
-async function loadFriends(
+async function loadFriendsForProfilePage(
   container: HTMLElement | null,
   loading: HTMLElement | null,
   errorDisplay: HTMLElement | null
 ) {
   if (!container || !loading || !errorDisplay) {
-    console.error('Friends list elements missing');
+    console.error('Friends list elements missing on profile page');
     return;
   }
   loading.style.display = 'block';
   errorDisplay.style.display = 'none';
   container.innerHTML = '';
   try {
-    const friends = await fetchFriendsList();
+    const friends = await fetchAcceptedFriends();
     if (friends.length === 0) {
       container.innerHTML =
-        '<li class="p-3 text-gray-500">Friend list functionality needs API or no friends yet.</li>';
+        '<li class="p-3 text-gray-500">No friends yet.</li>';
     } else {
       container.innerHTML = friends
         .map(
-          (friend: any) =>
-            `<li class="p-3">Friend: ${friend.name} (Status: ${friend.status})</li>`
+          (friend: FriendData) => `
+        <li class="flex items-center justify-between bg-mediumlightdark p-3 rounded-lg text-lightlight">
+          <div class="flex items-center">
+            <img src="${friend.avatar_url || '/DefaultProfilePic.png'}" alt="${friend.username}" class="w-10 h-10 rounded-full mr-3 object-cover">
+            <span>${friend.username} (${friend.online_status})</span>
+          </div>
+           <button data-user-id="${friend.friend_user_id}" class="view-profile-btn text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded">Profile</button>
+           
+        </li>`
         )
         .join('');
     }
   } catch (e) {
-    console.error('Error loading friends:', e);
+    console.error('Error loading friends on profile page:', e);
     errorDisplay.style.display = 'block';
-    errorDisplay.textContent = `Could not load friends list.${e instanceof Error ? ` (${e.message})` : ''}`;
+    errorDisplay.textContent = `Could not load friends list. ${e instanceof Error ? `(${e.message})` : ''}`;
     container.innerHTML = '';
   } finally {
     loading.style.display = 'none';
@@ -592,34 +917,19 @@ export const switchPage = async (page: string) => {
   if (
     targetPage === currentLogicalPage &&
     targetPage !== 'profile' &&
-    targetPage !== 'edit-profile'
+    targetPage !== 'edit-profile' &&
+    targetPage !== 'logged'
   ) {
     console.log(`Already on page '${targetPage}', no full switch.`);
     return;
   }
-  if (targetPage === currentLogicalPage && targetPage === 'profile') {
-    console.log(
-      `Already on page '${targetPage}', re-fetching data if applicable.`
-    );
-    await loadAndPopulateProfileData();
-    return;
-  }
 
-  if (targetPage === currentLogicalPage && targetPage === 'edit-profile') {
-    console.log(`Already on page '${targetPage}', re-fetching data.`);
-    await loadAndPopulateEditProfileData();
-    initializeEditProfileAvatarHandling();
-    return;
-  }
   const newPath =
     targetPage === 'home' || targetPage === 'logged' ? '/' : `/${targetPage}`;
-
   console.log(
     `Switching page. Current: '${currentLogicalPage}', Target: '${targetPage}', New path: '${newPath}'`
   );
-
   history.pushState({ page: targetPage }, '', newPath);
-
   void fetchPage(targetPage);
 };
 
@@ -637,7 +947,6 @@ export const loadCurrentPage = async () => {
       "User authenticated on home/root, switching effective page to 'logged'"
     );
     page = 'logged';
-
     history.replaceState({ page: 'logged' }, '', '/');
   }
 
@@ -671,7 +980,6 @@ window.addEventListener('popstate', async (event) => {
 
 document.body.addEventListener('click', (e) => {
   const target = e.target as HTMLElement;
-
   const link = target.closest('[data-page]');
 
   if (link instanceof HTMLElement && link.dataset.page) {

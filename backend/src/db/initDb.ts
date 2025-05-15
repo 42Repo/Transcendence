@@ -60,14 +60,23 @@ function isSchemaApplied(db: Database.Database): boolean {
         "SELECT name FROM sqlite_master WHERE type='table' AND name='game_matches'"
       )
       .get();
+    const friendshipsTableCheck = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='friendships'"
+      )
+      .get();
 
-    if (usersTableCheck && gameMatchesTableCheck) {
-      console.log("Schema check: 'users' and 'game_matches' tables exist.");
+    if (usersTableCheck && gameMatchesTableCheck && friendshipsTableCheck) {
+      console.log(
+        "Schema check: 'users', 'game_matches', and 'friendships' tables exist."
+      );
       return true;
     } else {
       if (!usersTableCheck) console.log("Schema check: 'users' table missing.");
       if (!gameMatchesTableCheck)
         console.log("Schema check: 'game_matches' table missing.");
+      if (!friendshipsTableCheck)
+        console.log("Schema check: 'friendships' table missing.");
       return false;
     }
   } catch (error) {

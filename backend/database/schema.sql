@@ -57,6 +57,35 @@ CREATE TABLE IF NOT EXISTS game_matches (
 );
 
 -- -----------------------------------------------------
+-- Table `friendships`
+-- Stores relationships between users (friends, pending requests, blocks).
+-- user_id_one is always the user with the lower ID.
+-- user_id_two is always the user with the higher ID.
+-- action_user_id indicates which of the two users performed the last action defining the current status.
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS friendships (
+    friendship_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id_one INTEGER NOT NULL,
+    user_id_two INTEGER NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'accepted', 'declined', 'blocked')) NOT NULL,
+    action_user_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id_one) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id_two) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (action_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CHECK (user_id_one < user_id_two),
+    UNIQUE (user_id_one, user_id_two)
+);
+
+CREATE TRIGGER IF NOT EXISTS friendships_updated_at
+AFTER UPDATE ON friendships
+FOR EACH ROW
+BEGIN
+    UPDATE friendships SET updated_at = CURRENT_TIMESTAMP WHERE friendship_id = OLD.friendship_id;
+END;
+
+-- -----------------------------------------------------
 -- Indexes for performance
 -- -----------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -65,3 +94,7 @@ CREATE INDEX IF NOT EXISTS idx_game_matches_player1 ON game_matches(player1_id);
 CREATE INDEX IF NOT EXISTS idx_game_matches_player2 ON game_matches(player2_id);
 CREATE INDEX IF NOT EXISTS idx_game_matches_winner ON game_matches(winner_id);
 CREATE INDEX IF NOT EXISTS idx_game_matches_date ON game_matches(match_date);
+CREATE INDEX IF NOT EXISTS idx_friendships_user_one ON friendships(user_id_one);
+CREATE INDEX IF NOT EXISTS idx_friendships_user_two ON friendships(user_id_two);
+CREATE INDEX IF NOT EXISTS idx_friendships_status ON friendships(status);
+CREATE INDEX IF NOT EXISTS idx_friendships_action_user ON friendships(action_user_id);

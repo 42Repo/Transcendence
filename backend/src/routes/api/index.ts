@@ -8,6 +8,7 @@ import verifyRoute from './verify-jwt';
 import matchesRoutes from './matches';
 import twoFARoutes from './2fa';
 import cloudinaryUserAvatarRoutes from './cloudinary';
+import friendsRoutes from './friends';
 import fastifyMultipart from '@fastify/multipart';
 import dotenv from 'dotenv';
 
@@ -31,8 +32,9 @@ export default function apiIndex(
   fastify.register(googleLoginRoutes);
   fastify.register(cloudinaryUserAvatarRoutes);
   fastify.register(twoFARoutes);
+  fastify.register(friendsRoutes);
 
   fastify.log.info(
-    'Registered API routes: ping, login, register, users, verify-jwt, matches, 2fa, cloudinary-avatar'
+    'Registered API routes: ping, login, register, users, verify-jwt, matches, 2fa, cloudinary-avatar, friends'
   );
 }

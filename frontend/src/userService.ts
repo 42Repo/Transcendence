@@ -45,6 +45,25 @@ export interface GameMatch {
   player2_missed_ball_in_row: number;
 }
 
+// TODO: Add more fields to FriendData
+export interface FriendData {
+  friend_user_id: number;
+  username: string;
+  avatar_url: string | null;
+  online_status: string;
+  // status: 'pending' | 'accepted' | 'declined' | 'blocked'; // from friendships table if needed directly
+  // action_user_id: number; // from friendships table if needed directly
+}
+
+export interface FriendRequestData {
+  requester_user_id?: number;
+  addressee_user_id?: number;
+  username: string;
+  avatar_url: string | null;
+  online_status: string;
+  request_date: string;
+}
+
 export function getMatchResultForUser(
   match: GameMatch,
   currentUserId: number
@@ -71,6 +90,8 @@ interface ApiResponse<T> {
   success: boolean;
   user?: T;
   matches?: T;
+  friends?: T;
+  requests?: T;
   message?: string;
   requested_for_user_id?: number;
   token?: string;
@@ -79,157 +100,202 @@ interface ApiResponse<T> {
 
 export interface UpdateProfilePayload {
   username?: string;
-  email?: string;
+  email?: string | null;
   bio?: string;
   current_password?: string;
   new_password?: string;
   avatar_url?: string;
 }
 
-export async function fetchMyProfileData(): Promise<UserPrivateData> {
+async function fetchApi<T>(
+  endpoint: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  body?: object
+): Promise<T> {
   const token = localStorage.getItem('authToken');
-
   if (!token) {
-    console.error('No auth token found.');
+    console.error(`No auth token found for API call to ${endpoint}.`);
     throw new Error('Unauthorized');
   }
 
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json',
+  };
+
+  const config: RequestInit = {
+    method,
+    headers,
+  };
+
+  if (method === 'POST' || method === 'PUT') {
+    headers['Content-Type'] = 'application/json';
+    config.body = JSON.stringify(body || {});
+  }
+
   try {
-    const response = await fetch('/api/users/me', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-    });
+    const response = await fetch(endpoint, config);
 
     if (response.status === 401) {
-      console.error('Authentication failed (token invalid or expired).');
+      console.error(
+        `Authentication failed for ${endpoint} (token invalid or expired).`
+      );
+      logout();
       throw new Error('Unauthorized');
     }
-    if (response.status === 404) {
-      console.error('User data not found on server for /me endpoint.');
+    if (response.status === 404 && endpoint.startsWith('/api/users/me')) {
+      console.error(`User data not found on server for ${endpoint}.`);
       throw new Error('User not found');
     }
 
+    const responseData: ApiResponse<T> = await response.json();
+
     if (!response.ok) {
-      console.error(`Server error: ${response.status} ${response.statusText}`);
-      let errorMsg = `Server error: ${response.status}`;
-      try {
-        const errData = await response.json();
-        if (errData && errData.message) {
-          errorMsg = errData.message;
-        }
-      } catch (e) {
-        console.warn('Could not parse error response body as JSON.');
-      }
-      throw new Error(errorMsg);
-    }
-
-    const data: ApiResponse<UserPrivateData> = await response.json();
-
-    if (data.success && data.user) {
-      const userWithDefaults: UserPrivateData = {
-        ...data.user,
-        bio: data.user.bio || null,
-      };
-      return userWithDefaults;
-    } else {
-      throw new Error(
-        data.message || 'Failed to retrieve profile data from API response.'
+      console.error(
+        `API error for ${endpoint}: ${response.status} ${response.statusText}`,
+        responseData
       );
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred during profile fetch.');
-    }
-  }
-}
-
-export async function updateMyProfileData(
-  payload: UpdateProfilePayload
-): Promise<ApiResponse<UserPrivateData>> {
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    throw new Error('Unauthorized');
-  }
-
-  try {
-    const response = await fetch('/api/users/me', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const responseData: ApiResponse<UserPrivateData> = await response.json();
-
-    if (!response.ok) {
       throw new Error(
         responseData.message || `Server error: ${response.status}`
       );
     }
 
-    return responseData;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+    if (!responseData.success) {
+      console.warn(
+        `API call to ${endpoint} was not successful:`,
+        responseData.message
+      );
+      throw new Error(responseData.message || 'API operation failed');
     }
-    throw new Error('An unknown error occurred during profile update.');
+    return responseData as T;
+  } catch (error) {
+    console.error(`Network or processing error for ${endpoint}:`, error);
+    if (error instanceof Error && error.name !== 'AbortError') {
+      if (error instanceof SyntaxError) {
+        console.error('Failed to parse JSON response from API.');
+        throw new Error('Received non-JSON response from server.');
+      }
+      throw error;
+    } else if (!(error instanceof Error && error.name === 'AbortError')) {
+      throw new Error(
+        `An unknown error occurred during API call to ${endpoint}.`
+      );
+    }
+
+    throw error;
   }
+}
+
+export async function fetchMyProfileData(): Promise<UserPrivateData> {
+  const data = await fetchApi<ApiResponse<UserPrivateData>>('/api/users/me');
+  if (data.user) {
+    return { ...data.user, bio: data.user.bio || null };
+  }
+  throw new Error(
+    data.message || 'Failed to retrieve profile data from API response.'
+  );
+}
+
+export async function updateMyProfileData(
+  payload: UpdateProfilePayload
+): Promise<ApiResponse<UserPrivateData>> {
+  return fetchApi<ApiResponse<UserPrivateData>>(
+    '/api/users/me',
+    'PUT',
+    payload
+  );
 }
 
 export async function fetchGameHistory(
   userId: string | number
 ): Promise<GameMatch[]> {
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    throw new Error('Unauthorized: No token');
+  const data = await fetchApi<ApiResponse<GameMatch[]>>(
+    `/api/users/${userId}/matches`
+  );
+  if (data.matches && Array.isArray(data.matches)) {
+    return data.matches;
   }
-
-  try {
-    const response = await fetch(`/api/users/${userId}/matches`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-    });
-
-    if (response.status === 401) throw new Error('Unauthorized');
-    if (response.status === 404)
-      throw new Error('User or match history not found');
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || `Server error: ${response.status}`);
-    }
-
-    const data: ApiResponse<GameMatch[]> = await response.json();
-
-    if (data.success && Array.isArray(data.matches)) {
-      return data.matches;
-    } else {
-      throw new Error(data.message || 'Failed to retrieve game history.');
-    }
-  } catch (error) {
-    throw error;
-  }
+  throw new Error(data.message || 'Failed to retrieve game history.');
 }
 
-export async function fetchFriendsList(): Promise<any[]> {
-  console.warn(
-    'fetchFriendsList function needs implementation (requires backend API).'
-  );
+export async function fetchAcceptedFriends(): Promise<FriendData[]> {
+  const response = await fetchApi<ApiResponse<FriendData[]>>('/api/friends');
+  if (response.friends && Array.isArray(response.friends)) {
+    return response.friends;
+  }
+  throw new Error(response.message || 'Failed to retrieve accepted friends.');
+}
 
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return [];
+export async function fetchIncomingFriendRequests(): Promise<
+  FriendRequestData[]
+> {
+  const response = await fetchApi<ApiResponse<FriendRequestData[]>>(
+    '/api/friends/requests/pending'
+  );
+  if (response.requests && Array.isArray(response.requests)) {
+    return response.requests;
+  }
+  throw new Error(
+    response.message || 'Failed to retrieve incoming friend requests.'
+  );
+}
+
+export async function fetchSentFriendRequests(): Promise<FriendRequestData[]> {
+  const response = await fetchApi<ApiResponse<FriendRequestData[]>>(
+    '/api/friends/requests/sent'
+  );
+  if (response.requests && Array.isArray(response.requests)) {
+    return response.requests;
+  }
+  throw new Error(
+    response.message || 'Failed to retrieve sent friend requests.'
+  );
+}
+
+export async function sendFriendRequest(
+  targetIdentifier: string | number
+): Promise<ApiResponse<null>> {
+  return fetchApi<ApiResponse<null>>(
+    `/api/friends/request/${targetIdentifier}`,
+    'POST',
+    {}
+  );
+}
+
+export async function acceptFriendRequest(
+  requesterId: number
+): Promise<ApiResponse<null>> {
+  return fetchApi<ApiResponse<null>>(
+    `/api/friends/accept/${requesterId}`,
+    'POST',
+    {}
+  );
+}
+
+export async function declineFriendRequest(
+  targetUserId: number
+): Promise<ApiResponse<null>> {
+  return fetchApi<ApiResponse<null>>(
+    `/api/friends/action/${targetUserId}`,
+    'POST',
+    { type: 'decline' }
+  );
+}
+
+export async function cancelFriendRequest(
+  targetUserId: number
+): Promise<ApiResponse<null>> {
+  return fetchApi<ApiResponse<null>>(
+    `/api/friends/action/${targetUserId}`,
+    'POST',
+    { type: 'cancel' }
+  );
+}
+
+export async function removeFriend(
+  friendId: number
+): Promise<ApiResponse<null>> {
+  return fetchApi<ApiResponse<null>>(`/api/friends/${friendId}`, 'DELETE');
 }
 
 function downloadJSONFile(filename: string, data: object) {
@@ -265,55 +331,26 @@ export async function deleteAccount() {
   );
 
   if (!confirmation) {
-    showFeedback(
-      EDIT_PROFILE_FEEDBACK_ID,
-      'Account deletion cancelled.',
-      false
-    );
-    return;
-  }
-
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    showFeedback(
-      EDIT_PROFILE_FEEDBACK_ID,
-      'Error: You are not logged in.',
-      true
-    );
-    logout();
-    return;
-  }
-
-  showFeedback(EDIT_PROFILE_FEEDBACK_ID, 'Deleting account...', false);
-
-  try {
-    const response = await fetch('/api/users/me', {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
-
-    const data: ApiResponse<null> = await response.json();
-
-    if (response.ok && data.success) {
-      alert('Account deleted successfully. You will now be logged out.');
-      logout();
-    } else {
+    const feedbackElem = document.getElementById(EDIT_PROFILE_FEEDBACK_ID);
+    if (feedbackElem)
       showFeedback(
         EDIT_PROFILE_FEEDBACK_ID,
-        data.message || 'Failed to delete account.',
-        true
+        'Account deletion cancelled.',
+        false
       );
-    }
+    else console.log('Account deletion cancelled.');
+    return;
+  }
+
+  try {
+    await fetchApi<ApiResponse<null>>('/api/users/me', 'DELETE');
+    alert('Account deleted successfully. You will now be logged out.');
+    logout();
   } catch (error) {
-    console.error('Error deleting account:', error);
-    showFeedback(
-      EDIT_PROFILE_FEEDBACK_ID,
-      `Error deleting account: ${error instanceof Error ? error.message : 'Network error or unexpected issue.'}`,
-      true
-    );
+    const feedbackElem = document.getElementById(EDIT_PROFILE_FEEDBACK_ID);
+    const message = `Error deleting account: ${error instanceof Error ? error.message : 'Network error or unexpected issue.'}`;
+    if (feedbackElem) showFeedback(EDIT_PROFILE_FEEDBACK_ID, message, true);
+    else alert(message);
   }
 }
 
@@ -330,6 +367,7 @@ export async function uploadAvatarToCloudinary(file: File): Promise<string> {
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
     },
     body: formData,
   });
@@ -343,21 +381,10 @@ export async function uploadAvatarToCloudinary(file: File): Promise<string> {
 }
 
 export async function deleteAvatarFromCloudinary(): Promise<void> {
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    throw new Error('Unauthorized: No token for avatar deletion.');
-  }
-
-  const response = await fetch('/api/avatar', {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data: ApiResponse<null> = await response.json();
-
-  if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to delete avatar from Cloudinary.');
+  const response = await fetchApi<ApiResponse<null>>('/api/avatar', 'DELETE');
+  if (!response.success) {
+    throw new Error(
+      response.message || 'Failed to delete avatar from Cloudinary.'
+    );
   }
 }
