@@ -92,7 +92,7 @@ export class StateManager {
     resizeObserver.observe(container);
     
     canvas.style.width = "100%";
-    canvas.style.height = "80%";
+    canvas.style.height = "60%";
     canvas.style.display = "block";
     
     container.appendChild(canvas);
