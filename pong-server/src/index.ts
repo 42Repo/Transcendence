@@ -5,7 +5,7 @@ import { PlayerBase } from './StateGame';
 import { FastifyRequest } from 'fastify/types/request';
 import fastifyCors from '@fastify/cors';
 import { jwtDecode } from 'jwt-decode';
-import { getUserById } from './DB/dbQuerys';
+import { getUserById, getUserMatchHistory, getUsers } from './DB/dbQuerys';
 
 interface DecodeToken {
   username: string;
@@ -44,6 +44,28 @@ const start = async () => {
   const matchMaker = new MatchMaking(gameManagers, tournamentManagers);
 
   server.get('/health', () => ({ status: 'pong-server running' }));
+
+  server.get('/users', async (req: FastifyRequest, rep: FastifyReply) => {
+    req;
+    const players = getUsers();
+    if (players)
+      return rep.status(200).send(players);
+    else
+      return rep.status(200).send({ message: "no players yet" });
+  });
+
+  server.get('/match/history/:name', async (req: FastifyRequest, rep: FastifyReply) => {
+    const name = req.params && (req.params as any).name;
+    if (!name) {
+      return rep.status(400).send({ error: { message: "name is required" } });
+    }
+    const history = getUserMatchHistory(name);
+    if (history)
+      return rep.status(200).send(history);
+    else
+      return rep.status(200).send({ message: "no players yet" });
+
+  });
 
   server.get('/user', async (req: FastifyRequest, rep: FastifyReply) => {
     const token = req.query && (req.query as any).token;
@@ -88,7 +110,7 @@ const start = async () => {
               true
             ));
             player = result.player;
-            if (result.tournament){
+            if (result.tournament) {
               socket.send(JSON.stringify({ type: 'wait' }));
               tournamentManagers.push(result.tournament);
               result.tournament.startTournament();
@@ -107,7 +129,7 @@ const start = async () => {
             if (result.game) {
               gameManagers.push(result.game);
               result.game.startGame();
-            } 
+            }
             else {
               socket.send(JSON.stringify({ type: 'wait' }));
             }

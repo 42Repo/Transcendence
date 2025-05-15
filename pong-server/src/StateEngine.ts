@@ -1,4 +1,4 @@
-import { Player, StateGame, PlayerBase } from "./StateGame";
+import { Player, StateGame } from "./StateGame";
 import { GameManager } from "./pong";
 
 interface RecordMatchBodyForApi {
@@ -115,13 +115,12 @@ export class StateEngine {
     winner: Player | null,
     loser: Player | null,
     isForfeit: boolean,
-    tournament:boolean,
+    tournament: boolean,
     draw: boolean = false
   ) {
     if (this._matchRecorded) return;
     console.log(
-      `[PongServer] Game concluded. Winner: ${
-        winner?.name || "N/A (Draw/Forfeit)"
+      `[PongServer] Game concluded. Winner: ${winner?.name || "N/A (Draw/Forfeit)"
       }, Loser: ${loser?.name || "N/A"}, Forfeit: ${isForfeit}, Draw: ${draw}`
     );
 
@@ -154,8 +153,7 @@ export class StateEngine {
           data: { message: `${winner.name} made you bite the dust` },
         })
       );
-      if (tournament)
-      {
+      if (tournament) {
         winner.socket?.send(
           JSON.stringify({
             type: "wait",
@@ -163,15 +161,14 @@ export class StateEngine {
           })
         );
       }
-      else
-        {
-          winner.socket?.send(
-            JSON.stringify({
-              type: "win",
-              data: { message: `You beat ${loser.name}` },
-            })
-          );
-        }
+      else {
+        winner.socket?.send(
+          JSON.stringify({
+            type: "win",
+            data: { message: `You beat ${loser.name}` },
+          })
+        );
+      }
     }
   }
 
