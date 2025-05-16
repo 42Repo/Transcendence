@@ -3,7 +3,6 @@ import { WebSocketManager } from './game/WebSocketManager.ts';
 import {
   fetchMyProfileData,
   UserPrivateData,
-  UserPublicData,
 } from './userService';
 import { isAuthenticated } from './switch-page';
 
