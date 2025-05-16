@@ -1,11 +1,5 @@
 import { WebSocketManager } from './game/WebSocketManager.ts';
 
-import {
-  fetchMyProfileData,
-  UserPrivateData,
-} from './userService';
-import { isAuthenticated } from './switch-page';
-
 export type InfoPlayer = {
   name: string;
   id: number | null;
