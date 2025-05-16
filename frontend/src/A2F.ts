@@ -14,7 +14,7 @@ export function showA2FModal() {
 
         if (!token) {
                 console.error("User isn't connected");
-                switchPage('login');
+                switchPage('home');
                 return;
         }
         setupTwoFactorAuth(token);

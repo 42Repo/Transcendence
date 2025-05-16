@@ -6,7 +6,6 @@ import {
   GameMatch,
   getMatchResultForUser,
   fetchAcceptedFriends,
-  FriendData,
   fetchIncomingFriendRequests,
   fetchSentFriendRequests,
   sendFriendRequest,
@@ -627,12 +626,6 @@ async function loadAndPopulateProfileData() {
   const statsWinLossRateElem = document.getElementById('statsWinLossRate');
   const statsBestWinStreakElem = document.getElementById('statsBestWinStreak');
 
-  const friendsLoadingProfile = document.getElementById('friendsLoading');
-  const friendsErrorProfile = document.getElementById('friendsError');
-  const friendsContainerProfile = document.getElementById(
-    'friendsListContainer'
-  );
-
   const historyLoading = document.getElementById('historyLoading');
   const historyError = document.getElementById('historyError');
   const historyContainer = document.getElementById('gameHistoryContainer');
@@ -651,9 +644,6 @@ async function loadAndPopulateProfileData() {
     !statsLossesElem ||
     !statsWinLossRateElem ||
     !statsBestWinStreakElem ||
-    !friendsLoadingProfile ||
-    !friendsErrorProfile ||
-    !friendsContainerProfile ||
     !historyLoading ||
     !historyError ||
     !historyContainer
@@ -713,11 +703,6 @@ async function loadAndPopulateProfileData() {
     const bestStreak = calculateBestWinStreak(historyItems, userData.user_id);
     statsBestWinStreakElem.textContent = `Best Win Streak: ${bestStreak}`;
 
-    void loadFriendsForProfilePage(
-      friendsContainerProfile,
-      friendsLoadingProfile,
-      friendsErrorProfile
-    );
     void loadHistory(
       userData.user_id,
       historyContainer,
@@ -743,48 +728,6 @@ async function loadAndPopulateProfileData() {
     }
   } finally {
     loadingIndicator.style.display = 'none';
-  }
-}
-
-async function loadFriendsForProfilePage(
-  container: HTMLElement | null,
-  loading: HTMLElement | null,
-  errorDisplay: HTMLElement | null
-) {
-  if (!container || !loading || !errorDisplay) {
-    console.error('Friends list elements missing on profile page');
-    return;
-  }
-  loading.style.display = 'block';
-  errorDisplay.style.display = 'none';
-  container.innerHTML = '';
-  try {
-    const friends = await fetchAcceptedFriends();
-    if (friends.length === 0) {
-      container.innerHTML =
-        '<li class="p-3 text-gray-500">No friends yet.</li>';
-    } else {
-      container.innerHTML = friends
-        .map(
-          (friend: FriendData) => `
-        <li class="flex items-center justify-between bg-mediumlightdark p-3 rounded-lg text-lightlight">
-          <div class="flex items-center">
-            <img src="${friend.avatar_url || '/DefaultProfilePic.png'}" alt="${friend.username}" class="w-10 h-10 rounded-full mr-3 object-cover">
-            <span>${friend.username} (${friend.online_status})</span>
-          </div>
-           <button data-user-id="${friend.friend_user_id}" class="view-profile-btn text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded">Profile</button>
-           
-        </li>`
-        )
-        .join('');
-    }
-  } catch (e) {
-    console.error('Error loading friends on profile page:', e);
-    errorDisplay.style.display = 'block';
-    errorDisplay.textContent = `Could not load friends list. ${e instanceof Error ? `(${e.message})` : ''}`;
-    container.innerHTML = '';
-  } finally {
-    loading.style.display = 'none';
   }
 }
 
