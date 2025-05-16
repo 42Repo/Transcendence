@@ -62,6 +62,10 @@ interface UpdateUserBody {
   avatar_url?: string;
 }
 
+interface UpdateStatusBody {
+  status: 'online' | 'offline' | 'ingame';
+}
+
 function isValidEmail(email: string): boolean {
   return /\S+@\S+\.\S+/.test(email);
 }
@@ -362,6 +366,45 @@ export default function userRoutes(
     }
   );
 
+  fastify.put<{ Body: UpdateStatusBody }>(
+    '/users/me/status',
+    routeOpts,
+    async (request, reply) => {
+      const userId = request.user.id;
+      const { status } = request.body;
+
+      if (!status || !['online', 'offline', 'ingame'].includes(status)) {
+        return reply.badRequest('Invalid status value.');
+      }
+
+      try {
+        const updateStmt = fastify.db.prepare(
+          'UPDATE users SET status = ? WHERE user_id = ?'
+        );
+        const result = updateStmt.run(status, userId);
+
+        if (result.changes > 0) {
+          request.log.info(`User ${userId} status updated to ${status}.`);
+          return reply.send({
+            success: true,
+            message: `Status updated to ${status}.`,
+          });
+        } else {
+          request.log.warn(
+            `Status update attempted for user ${userId} but no changes made.`
+          );
+          return reply.send({
+            success: true,
+            message: `Status was already ${status} or user not found.`,
+          });
+        }
+      } catch (err) {
+        request.log.error(err, `Error updating status for user ID: ${userId}`);
+        return reply.internalServerError('Failed to update status.');
+      }
+    }
+  );
+
   fastify.get<{ Params: UserParams }>(
     '/users/:identifier/matches',
     routeOpts,
@@ -479,6 +522,6 @@ export default function userRoutes(
   );
 
   fastify.log.info(
-    'Registered /api/users routes: GET /me, PUT /me, DELETE /me, GET /:identifier, GET /:identifier/matches'
+    'Registered /api/users routes: GET /me, PUT /me, PUT /me/status, DELETE /me, GET /:identifier, GET /:identifier/matches'
   );
 }

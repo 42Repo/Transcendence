@@ -668,7 +668,8 @@ async function loadAndPopulateProfileData() {
     joinDateElem.textContent = new Date(
       userData.created_at
     ).toLocaleDateString();
-    statusElem.textContent = userData.status;
+    statusElem.textContent =
+      userData.status.charAt(0).toUpperCase() + userData.status.slice(1);
     emailElem.textContent = userData.email || 'Not provided';
     if (
       userData.avatar_url &&
@@ -805,8 +806,8 @@ async function loadHistory(
                 : 'text-gray-500';
           const avatarSrc =
             opponentAvatar &&
-              opponentAvatar !== '/default-avatar.png' &&
-              opponentAvatar !== '/DefaultProfilePic.png'
+            opponentAvatar !== '/default-avatar.png' &&
+            opponentAvatar !== '/DefaultProfilePic.png'
               ? opponentAvatar
               : '/DefaultProfilePic.png';
 

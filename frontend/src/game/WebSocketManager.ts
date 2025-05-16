@@ -1,5 +1,6 @@
 import { InfoPlayer } from '../pongGame.ts';
 import { StateManager, State } from './StateManager.ts';
+import { updateMyStatus } from '../userService.ts';
 
 export class WebSocketManager {
   private container: HTMLElement;
@@ -43,17 +44,26 @@ export class WebSocketManager {
         this.stateManager.changeState(State.WAIT);
         break;
       case 'start':
+        if (this.player.id !== null) {
+          void updateMyStatus('ingame');
+        }
         this.stateManager.changeState(State.START, msg.data);
         break;
       case 'update':
         this.stateManager.updateStateGame(msg.data);
         break;
       case 'lose':
+        if (this.player.id !== null) {
+          void updateMyStatus('online');
+        }
         const exitLose = await this.stateManager.changeState(State.LOSE, msg.data);
         if (exitLose !== undefined)
           this.handleEndGame(exitLose);
         break;
       case 'win':
+        if (this.player.id !== null) {
+          void updateMyStatus('online');
+        }
         const exitWin = await this.stateManager.changeState(State.WIN, msg.data);
         if (exitWin !== undefined)
           this.handleEndGame(exitWin);

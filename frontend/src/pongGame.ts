@@ -1,4 +1,5 @@
 import { WebSocketManager } from './game/WebSocketManager.ts';
+import { updateMyStatus } from './userService.ts';
 
 export type InfoPlayer = {
   name: string;
@@ -27,7 +28,9 @@ const fetchUser = async (): Promise<InfoPlayer> => {
     player.name = data.name;
     player.id = data.id;
     try {
-      const resDb = await fetch(`${location.origin}/api-pong/db/user/${player.id}`);
+      const resDb = await fetch(
+        `${location.origin}/api-pong/db/user/${player.id}`
+      );
       if (!resDb.ok) {
         throw new Error(`Status ${res.status}\nError: fetch user data`);
       }
@@ -107,6 +110,9 @@ export const mainGame = async (tournament?: boolean) => {
 
 const cleanupGame = () => {
   if (currentWSManager) {
+    if (localStorage.getItem('authToken')) {
+      void updateMyStatus('online');
+    }
     currentWSManager = null;
   }
 };

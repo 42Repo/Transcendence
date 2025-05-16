@@ -6,7 +6,12 @@ import './pongGame';
 import './register';
 import './login';
 import { handleSaveChanges } from './editProfileData';
-import { downloadData, deleteAccount } from './userService';
+import {
+  downloadData,
+  deleteAccount,
+  updateMyStatus,
+  updateMyStatusOnUnload,
+} from './userService';
 import { confirmA2F, showA2FModal, hideA2FModal } from './A2F';
 
 const burger = document.getElementById('burger-icon');
@@ -28,6 +33,10 @@ if (burger && mobileMenu) {
     }
   });
 }
+
+window.addEventListener('beforeunload', () => {
+  updateMyStatusOnUnload();
+});
 
 document.body.addEventListener('click', (event) => {
   const target = event.target as HTMLElement;
@@ -68,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
   googleAuth.initialize();
   googleAuth.renderButton('googleButtonContainer');
   googleAuth.renderButton('googleRegisterButtonContainer');
+
+  if (localStorage.getItem('authToken')) {
+    void updateMyStatus('online');
+  }
 });
 
 const closeModal = () => {
