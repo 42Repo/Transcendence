@@ -224,11 +224,27 @@ const onSubmit = async (
 
                         localStorage.setItem('authToken', token);
                         closeModal(login2FAModal);
+                        const confirm2FAButton = document.getElementById(
+                                'A2FRegConfirm'
+                        ) as HTMLButtonElement | null;
+
+                        if (!confirm2FAButton) {
+                                alert('Bouton ou champ 2FA manquant');
+                                return;
+                        }
+                        confirm2FAButton.removeEventListener('click', async () => {
+                                try {
+                                        await onSubmit(username, login2FAModal, token);
+                                } catch (err) {
+                                        alert('Erreur capturée dans onSubmit:' + err);
+                                }
+                        });
                 } catch (jsonError) {
                         alert('Réponse invalide du serveur 2FA.');
                         return;
                 }
-                location.reload();
+
+                switchPage('logged');
         } catch (err) {
                 console.error('Erreur réseau ou parsing JSON', err);
                 alert('Une erreur est survenue lors de la connexion 2FA.');
