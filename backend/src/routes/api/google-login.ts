@@ -79,18 +79,18 @@ export default function (
         );
         let user = findByGoogleIdStmt.get(usercreds.sub) as
           | {
-              user_id: number;
-              username: string;
-              email: string | null;
-              avatar_url: string | null;
-            }
+            user_id: number;
+            username: string;
+            email: string | null;
+            avatar_url: string | null;
+          }
           | undefined;
 
         if (user) {
           let emailNeedsUpdate = user.email !== usercreds.email;
           const avatarNeedsUpdate =
-            user.avatar_url !== usercreds.picture && usercreds.picture;
-
+            user.avatar_url !== usercreds.picture &&
+            user.avatar_url == '/DefaultProfilePic.png';
           if (emailNeedsUpdate) {
             const emailConflictStmt = fastify.db.prepare(
               'SELECT user_id FROM users WHERE email = ? AND user_id != ?'
@@ -140,12 +140,12 @@ export default function (
           );
           const existingUserByEmail = findByEmailStmt.get(usercreds.email) as
             | {
-                user_id: number;
-                username: string;
-                email: string | null;
-                google_id: string | null;
-                avatar_url: string | null;
-              }
+              user_id: number;
+              username: string;
+              email: string | null;
+              google_id: string | null;
+              avatar_url: string | null;
+            }
             | undefined;
 
           if (existingUserByEmail) {
