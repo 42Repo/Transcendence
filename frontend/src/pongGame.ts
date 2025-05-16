@@ -14,32 +14,40 @@ export type InfoPlayer = {
 
 let currentWSManager: WebSocketManager | null = null;
 
-// const fetchUser = async (): Promise<InfoPlayer> => {
-//   const player: InfoPlayer = {
-//     name: 'Unknown',
-//     id: null,
-//     avatar: '/assets/img/defaultAvatar.jpg',
-//   };
-//   const isLocal = location.hostname === 'localhost';
-//   const host = isLocal ? 'localhost:4000' : location.host;
-//   const token = localStorage.getItem('authToken');
-//   if (token === null) return player;
-//   const safeToken = encodeURIComponent(token);
-//   const url = `http://${host}/api/user?token=${safeToken}`;
-//   const url = `${location.protocol}//${location.host}/api/user/me?token=${safeToken}`;
-//   try {
-//     const res = await fetch(url, { method: 'GET' });
-//     if (!res.ok) {
-//       throw new Error(`Status ${res.status}\nError: fetch user data`);
-//     }
-//     const data = await res.json();
-//     player.name = data.name;
-//     player.id = data.id;
-//   } catch (err: any) {
-//     console.error(err);
-//   }
-//   return player;
-// };
+const fetchUser = async (): Promise<InfoPlayer> => {
+  const player: InfoPlayer = {
+    name: 'Unknown',
+    id: null,
+    avatar: '/assets/img/defaultAvatar.jpg',
+  };
+  const token = localStorage.getItem('authToken');
+  if (token === null) return player;
+  const safeToken = encodeURIComponent(token);
+  const url = `${location.origin}/api-pong/user?token=${safeToken}`;
+  try {
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) {
+      throw new Error(`Status ${res.status}\nError: fetch user data`);
+    }
+    const data = await res.json();
+    player.name = data.name;
+    player.id = data.id;
+    try {
+      const resDb = await fetch(`${location.origin}/api-pong/db/user/${player.id}`);
+      if (!resDb.ok) {
+        throw new Error(`Status ${res.status}\nError: fetch user data`);
+      }
+      const dataDb = await resDb.json();
+      console.log(dataDb);
+      player.avatar = dataDb.avatar_url;
+    } catch (err: any) {
+      console.error(err);
+    }
+  } catch (err: any) {
+    console.error(err);
+  }
+  return player;
+};
 
 const onSubmit = async (
   event: Event,
@@ -82,44 +90,8 @@ export const mainGame = async (tournament?: boolean) => {
   const container = document.getElementById('game-container');
   if (!container) return console.log('Error: container not found!');
   try {
-    const isAuth = await isAuthenticated();
-    let player: InfoPlayer;
-
-    if (isAuth) {
-      const userData: UserPrivateData | undefined = await fetchMyProfileData();
-      if (userData) {
-        player = {
-          id: userData.user_id,
-          name: userData.username,
-          avatar: userData.avatar_url || '/DefaultProfilePic.png',
-        };
-      } else {
-        console.warn(
-          'Failed to fetch authenticated user data for game. Using guest profile.'
-        );
-        player = {
-          name: 'Guest',
-          id: null,
-          avatar: '/DefaultProfilePic.png',
-        };
-
-        const modal = document.getElementById('modal-pong');
-        if (modal) {
-          modal.classList.remove('hidden');
-          const form = document.getElementById('alias-form') as HTMLFormElement;
-          if (form)
-            form.addEventListener('submit', (e) =>
-              onSubmit(e, container, player, form, tournament)
-            );
-          return;
-        }
-      }
-    } else {
-      player = {
-        name: 'Guest',
-        id: null,
-        avatar: '/DefaultProfilePic.png',
-      };
+    const player = await fetchUser();
+    if (player.name === 'Unknown') {
       const modal = document.getElementById('modal-pong');
       if (modal) {
         modal.classList.remove('hidden');
@@ -128,10 +100,12 @@ export const mainGame = async (tournament?: boolean) => {
           form.addEventListener('submit', (e) =>
             onSubmit(e, container, player, form, tournament)
           );
-        return;
+      } else {
+        currentWSManager = new WebSocketManager(container, player, tournament);
       }
+    } else {
+      currentWSManager = new WebSocketManager(container, player, tournament);
     }
-    currentWSManager = new WebSocketManager(container, player, tournament);
   } catch (error) {
     console.log(error);
   }

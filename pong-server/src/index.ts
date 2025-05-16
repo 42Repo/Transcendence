@@ -100,7 +100,6 @@ const start = async () => {
         return rep.status(404).send('Player not found !');
       return rep.status(200).send(user);
     } catch (error: any) {
-      req.log.error(error, 'Erreur dans /db/user/:id');
       return rep.status(500).send('Erreur server');
     }
   })

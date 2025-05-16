@@ -13,7 +13,7 @@ export class WebSocketManager {
     this.container = container;
     this.keyMap = new Map();
     this.player = player;
-    this.tournament = tournament; 
+    this.tournament = tournament;
     document.addEventListener('keydown', this.keypress);
     document.addEventListener('keyup', this.keyup);
     this.stateManager = new StateManager(container);
@@ -34,7 +34,7 @@ export class WebSocketManager {
 
   private onMessage = async (event: any) => {
     const msg = JSON.parse(event.data);
-    const { type, data} = msg;
+    const { type, data } = msg;
     switch (type) {
       case 'names':
         this.stateManager.updateWaitingPlayers(data.waitingPlayers);
@@ -103,10 +103,8 @@ export class WebSocketManager {
       this.socket.close(1000, 'Reconnecting');
       this.socket = null;
     }
-    const isLocal = location.hostname === 'localhost';
-    const socketProtocol = isLocal ? 'ws' : 'wss';
-    const host = isLocal ? 'localhost:4000' : location.host;
-    this.socket = new WebSocket(`${socketProtocol}://${host}/ws`);
+    const socketProtocol = location.protocol === 'http:' ? 'ws' : 'wss';
+    this.socket = new WebSocket(`${socketProtocol}://${location.hostname}/api-pong/ws`);
     this.socket.addEventListener('open', this.onOpen);
     this.socket.addEventListener('message', this.onMessage);
     this.socket.addEventListener('close', this.onClose);
