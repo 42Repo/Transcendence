@@ -1,6 +1,14 @@
 #!/bin/bash
 
-BASE_URL="http://localhost:4000"
+if [ $# -eq 0 ]; then
+    BASE_URL="http://transcendence.nyantad.fr:4000"
+elif [ $# -eq 1 ]; then
+    BASE_URL="$1:4000"
+else
+    echo "Error: Invalid number of arguments. Provide 0 or 1 argument." >&2
+    exit 1
+fi
+
 
 function health_check() {
   echo "🔍 Checking server health..."
