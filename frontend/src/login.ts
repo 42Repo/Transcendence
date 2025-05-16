@@ -211,17 +211,23 @@ const onSubmit = async (
                         body: JSON.stringify({ username, code }),
                 });
 
-                const verifyResult = await verifyResponse.json(); // <- TOUJOURS appeler .json()
+                let verifyResult: any;
+                try {
+                        verifyResult = await verifyResponse.json();
 
-                if (!verifyResponse.ok || !verifyResult.success) {
-                        alert(
-                                verifyResult.message || 'Erreur lors de la vérification du code 2FA.'
-                        );
+                        if (!verifyResponse.ok || !verifyResult.success) {
+                                alert(
+                                        verifyResult.message || 'Erreur lors de la vérification du code 2FA.'
+                                );
+                                return;
+                        }
+
+                        localStorage.setItem('authToken', token);
+                        closeModal(login2FAModal);
+                } catch (jsonError) {
+                        alert('Réponse invalide du serveur 2FA.');
                         return;
                 }
-
-                localStorage.setItem('authToken', token);
-                closeModal(login2FAModal);
                 location.reload();
         } catch (err) {
                 console.error('Erreur réseau ou parsing JSON', err);
@@ -254,14 +260,12 @@ export async function check2FA(username: string, token: string) {
                         }
                 });
         } catch (error) {
-                console.log('HEHEHEHA');
                 alert('Erreur dans check2FA :' + error.message);
                 return;
         }
 }
 
 export const logout = () => {
-        console.log('Logout function called');
         localStorage.removeItem('authToken');
         switchPage('home');
         setHeaderMenu();

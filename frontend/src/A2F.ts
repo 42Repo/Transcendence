@@ -32,15 +32,12 @@ async function setupTwoFactorAuth(token: string) {
         ) as HTMLImageElement | null;
 
         try {
-                // Faire la requête à l'API 2FA
                 const twoFAResponse = await fetch('/api/2fa/setup', {
                         method: 'POST',
                         headers: {
                                 'Content-Type': 'application/json',
                                 Authorization: `Bearer ${token}`,
                         },
-                        // Le serveur récupère l'ID depuis le token,
-                        // donc nous envoyons juste un objet vide
                         body: JSON.stringify({}),
                 });
 
@@ -100,19 +97,9 @@ export async function confirmA2F() {
                         alert('Invalid 2FA Code, try again !');
                         return;
                 }
-                const result = await response.json();
-                alert(result);
         } catch (error) {
                 alert('error : ' + error);
         }
-
-        //window.location.reload();
         switchPage('profile');
         hideA2FModal();
-}
-
-export function disableA2F() {
-        // Cette fonction pourra être utilisée pour désactiver le 2FA
-        // via la future route /2fa/delete
-        alert('Fonctionnalité à implémenter: désactivation du 2FA');
 }

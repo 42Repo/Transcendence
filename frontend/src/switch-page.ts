@@ -87,9 +87,6 @@ export const fetchPage = async (page: string): Promise<void> => {
 
   const isAuth = await isAuthenticated();
   if (pageRequiresAuth(page) && !isAuth) {
-    console.log(
-      `Page '${page}' requires authentication. Redirecting to home/login.`
-    );
     const currentPage = getPageName();
     if (currentPage !== 'home' && currentPage !== 'error') {
       await switchPage('home');
@@ -101,7 +98,6 @@ export const fetchPage = async (page: string): Promise<void> => {
   const realPage: string = page;
   if (page === 'pongTournament') page = 'pongGame';
 
-  console.log('Fetching page structure for:', page);
   if (page !== 'pongGame') {
     document.dispatchEvent(new Event('pong:leaving'));
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -164,7 +160,6 @@ export const fetchPage = async (page: string): Promise<void> => {
 };
 
 async function loadAndPopulateLoggedDashboardData() {
-  console.log('Loading data for logged dashboard...');
   const avatarElem = document.getElementById(
     'loggedUserAvatar'
   ) as HTMLImageElement | null;
@@ -472,8 +467,6 @@ function setupLoggedDashboardEventListeners() {
 }
 
 async function loadAndPopulateEditProfileData() {
-  console.log('Attempting to load and populate edit profile data...');
-
   const loadingIndicator = document.getElementById('profileLoading');
   const errorDisplay = document.getElementById('profileError');
   const profileContentArea = document.getElementById('profileContentArea');
@@ -614,8 +607,6 @@ function calculateBestWinStreak(
 }
 
 async function loadAndPopulateProfileData() {
-  console.log('Attempting to load and populate profile data...');
-
   const loadingIndicator = document.getElementById('profileLoading');
   const errorDisplay = document.getElementById('profileError');
   const profileContentArea = document.getElementById('profileContentArea');
@@ -871,8 +862,8 @@ async function loadHistory(
                 : 'text-gray-500';
           const avatarSrc =
             opponentAvatar &&
-            opponentAvatar !== '/default-avatar.png' &&
-            opponentAvatar !== '/DefaultProfilePic.png'
+              opponentAvatar !== '/default-avatar.png' &&
+              opponentAvatar !== '/DefaultProfilePic.png'
               ? opponentAvatar
               : '/DefaultProfilePic.png';
 
@@ -918,15 +909,11 @@ export const switchPage = async (page: string) => {
     targetPage !== 'edit-profile' &&
     targetPage !== 'logged'
   ) {
-    console.log(`Already on page '${targetPage}', no full switch.`);
     return;
   }
 
   const newPath =
     targetPage === 'home' || targetPage === 'logged' ? '/' : `/${targetPage}`;
-  console.log(
-    `Switching page. Current: '${currentLogicalPage}', Target: '${targetPage}', New path: '${newPath}'`
-  );
   history.pushState({ page: targetPage }, '', newPath);
   void fetchPage(targetPage);
 };
@@ -936,14 +923,8 @@ export const loadCurrentPage = async () => {
   const pageFromUrl = getPageName();
   let page = pageFromState || pageFromUrl;
 
-  console.log(
-    `Loading current page. From State: ${pageFromState}, From URL: ${pageFromUrl}, Effective page: ${page}`
-  );
   const isAuth = await isAuthenticated();
   if ((page === 'home' || page === '') && isAuth) {
-    console.log(
-      "User authenticated on home/root, switching effective page to 'logged'"
-    );
     page = 'logged';
     history.replaceState({ page: 'logged' }, '', '/');
   }
@@ -952,14 +933,12 @@ export const loadCurrentPage = async () => {
 };
 
 const initializeApp = async () => {
-  console.log('Initializing app...');
   await loadCurrentPage();
 };
 
 void initializeApp();
 
 window.addEventListener('popstate', async (event) => {
-  console.log('Popstate event triggered (back/forward)', event.state);
   let pageToLoad = event.state?.page;
 
   if (!pageToLoad) {
@@ -972,7 +951,6 @@ window.addEventListener('popstate', async (event) => {
       ? 'logged'
       : pageToLoad;
 
-  console.log(`Popstate navigating to effective page: ${finalPage}`);
   void fetchPage(finalPage);
 });
 
