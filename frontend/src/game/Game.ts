@@ -74,22 +74,22 @@ export class Game {
     this._scorePlayer1 = this.createTextBlock(
       "0",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      32,
+      "60%"
     );
     this._scorePlayer2 = this.createTextBlock(
       "0",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      32,
+      "60%"
     );
     this._elapseMin = this.createTextBlock(
       "00",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      14,
+      "100%"
     );
     this._elapseSec = this.createTextBlock(
       "00",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      14,
+      "100%"
     );
   }
 
@@ -199,55 +199,50 @@ export class Game {
   }
 
   private createMobileControls(): void {
-    const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("MobileControls", true, this.scene);
-    const container = new GUI.StackPanel();
-    container.width = "300px";
-    container.height = "120px";
-    container.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-    container.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-    container.isVertical = false;
-    container.spacing = 40;
-    container.top = "-100px";
-  
-    const upButton = this.createControlButton("KeyW");
-    const downButton = this.createControlButton("KeyS");
-  
-    container.addControl(upButton);
-    container.addControl(downButton);
-    gui.addControl(container);
-  }
-  
-  private createControlButton(keyCode: string): GUI.Button {
-    const button = new GUI.Button();
-    button.width = "120px";
-    button.height = "120px";
-    button.color = "#e0c4f8";
-    button.background = "rgba(116, 44, 116, 0.5)";
-    button.cornerRadius = 60;
-    button.thickness = 0;
-    button.fontSize = 48;
-    button.fontFamily = "Comic Sans MS, Chalkboard SE, Comic Neue, sans-serif";
-  
-    // Touch start handler
-    button.onPointerDownObservable.add(() => {
-      const event = new KeyboardEvent('keydown', { code: keyCode });
-      document.dispatchEvent(event);
-    });
-  
-    // Touch end/release handler
-    button.onPointerUpObservable.add(() => {
-      const event = new KeyboardEvent('keyup', { code: keyCode });
-      document.dispatchEvent(event);
-    });
-  
-    // Handle touch moving out of button
-    button.onPointerOutObservable.add(() => {
-      const event = new KeyboardEvent('keyup', { code: keyCode });
-      document.dispatchEvent(event);
-    });
-  
-    return button;
-  }
+  const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("MobileControls", true, this.scene);
+  gui.layer!.layerMask = 2;
+
+  const buttonSize = Math.min(this.canvas.width, this.canvas.height) * 0.25;
+
+  const leftButton = this.createControlButton("KeyW", buttonSize);
+  leftButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+  leftButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+  leftButton.left = "5%";
+  leftButton.top = "-5%";
+
+  const rightButton = this.createControlButton("KeyS", buttonSize);
+  rightButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+  rightButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+  rightButton.left = "-5%";
+  rightButton.top = "-5%";
+
+  gui.addControl(leftButton);
+  gui.addControl(rightButton);
+}
+
+private createControlButton(
+  keyCode: string,
+  size: number
+): GUI.Button {
+  const button = new GUI.Button();
+  button.width = `${size}px`;
+  button.height = `${size}px`;
+  button.background = "rgba(116, 44, 116, 0.7)";
+  button.color = "transparent";
+  button.cornerRadius = size / 2;
+  button.thickness = 0;
+  button.zIndex = 100;
+
+  const press = () => document.dispatchEvent(new KeyboardEvent('keydown', { code: keyCode }));
+  const release = () => document.dispatchEvent(new KeyboardEvent('keyup', { code: keyCode }));
+
+  button.onPointerDownObservable.add(press);
+  button.onPointerUpObservable.add(release);
+  button.onPointerOutObservable.add(release);
+
+  return button;
+}
+
 
   private createContainer(): GUI.Rectangle {
     const container = new GUI.Rectangle("GUIcontainer");
@@ -289,12 +284,12 @@ export class Game {
     const namePlayer1 = this.createTextBlock(
       this._players.player1.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      28,
+      "50%",
     );
     const namePlayer2 = this.createTextBlock(
       this._players.player2.name,
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      28,
+      "50%",
     );
     scoreGrid.addControl(namePlayer1, 0, 1);
     scoreGrid.addControl(namePlayer2, 0, 5);
@@ -303,13 +298,13 @@ export class Game {
     const dotScore = this.createTextBlock(
       ":",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      32,
+      "60%",
     );
     scoreGrid.addControl(dotScore, 0, 3);
     const dotTime = this.createTextBlock(
       ":",
       "Comic Sans MS, Chalkboard SE, Comic Neue, cursive, sans-serif",
-      14,
+      "100%",
     );
     scoreGrid.addControl(this._elapseMin, 1, 2);
     scoreGrid.addControl(this._elapseSec, 1, 4);
@@ -328,7 +323,7 @@ export class Game {
   public createTextBlock(
     name: string,
     font: string,
-    size: number,
+    size: number | string,
   ): GUI.TextBlock {
     const textBlock = new GUI.TextBlock();
     textBlock.text = name;

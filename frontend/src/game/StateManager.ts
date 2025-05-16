@@ -19,6 +19,7 @@ export class StateManager {
   private _loseScene: LoseScene | null = null;
   public conf: PongConfig;
   private _floorY!: number;
+  private _lastResizeTime: number = 0;
 
   constructor(container: HTMLElement) {
     this._canvas = this.createCanvas(container);
@@ -92,7 +93,7 @@ export class StateManager {
     resizeObserver.observe(container);
     
     canvas.style.width = "100%";
-    canvas.style.height = "60%";
+    canvas.style.height = "100%";
     canvas.style.display = "block";
     
     container.appendChild(canvas);
@@ -100,6 +101,11 @@ export class StateManager {
   }
 
   private handleResize = () => {
+    const now = Date.now();
+    if (now - this._lastResizeTime < 100) {
+      return;
+    }
+    this._lastResizeTime = now;
     if (this._engine) {
       this._engine.resize();
     }

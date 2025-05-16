@@ -137,6 +137,8 @@ export class PhysicsEngine {
       ball.posZ = -maxZ + (ball.posZ + maxZ);
       ball.dirZ *= -1;
     }
+    if (Math.abs(ball.posZ) > maxZ)
+      ball.posZ = (maxZ - .001) * Math.sign(ball.posZ);
   }
 
   public handlePlayerInput(

@@ -2,13 +2,12 @@ import { jwtDecode } from 'jwt-decode';
 import { closeModal, showFeedback } from './utils/modalUtils';
 import { setHeaderMenu } from './header';
 import { check2FA } from './login';
-// Constantes d'identifiants DOM
+
 const LOGIN_FEEDBACK_ID = 'loginFeedback';
 const contentContainer = document.getElementById('content');
 const loginModal = document.getElementById('loginModal');
 const registerModal = document.getElementById('registerModal');
 
-// Interfaces utiles
 interface GoogleCredentialResponse {
         credential: string;
         select_by: string;
@@ -54,8 +53,6 @@ export class GoogleAuth {
         }
 
         private async handleCredentialResponse(response: GoogleCredentialResponse) {
-                console.log('Encoded JWT ID token:', response.credential);
-
                 interface GoogleUser {
                         email: string;
                         name: string;
@@ -64,8 +61,6 @@ export class GoogleAuth {
 
                 // Décodage du token JWT
                 const user = jwtDecode<GoogleUser>(response.credential);
-                console.log('User info:', user);
-
                 try {
                         const res = await fetch('/api/google-login', {
                                 method: 'POST',
@@ -82,7 +77,6 @@ export class GoogleAuth {
 
                                 closeModal(loginModal);
                                 const token = data.token;
-                                console.log('token =', data.token);
                                 try {
                                         const response = await fetch('/api/2fa/isenabled', {
                                                 method: 'POST',
@@ -94,12 +88,10 @@ export class GoogleAuth {
 
                                         const data = await response.json();
 
-                                        console.log(data.is_two_factor_enabled);
                                         if (data.is_two_factor_enabled) return check2FA(user.email, token);
                                 } catch (error) {
                                         return alert(error.message);
                                 }
-                                console.log('Login successful:', data);
                                 localStorage.setItem('authToken', data.token || '');
 
                                 if (contentContainer) {

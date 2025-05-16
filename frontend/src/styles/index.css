@@ -23,7 +23,7 @@
 
 #game-container {
 	width: 100%;
-	height: 100vh;
+	height: calc(100vh - 7vh - 76px - 1.5rem - 25px);
 	position: relative;
 	overflow: hidden;
   }
@@ -150,7 +150,7 @@ body {
 }
 
 footer {
-	@apply mt-auto p-10 pt-16 text-xs text-center bg-mediumdark text-darkdark;
+	@apply mt-auto py-[3vh] pt-[4vh] text-xs text-center bg-mediumdark text-darkdark;
 }
 
 .content {
