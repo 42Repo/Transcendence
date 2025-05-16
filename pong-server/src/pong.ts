@@ -155,7 +155,7 @@ export class TournamentManager {
 
   private handleSemiFinalCompletion() {
     this.completedSemiFinals++;
-    if (this.completedSemiFinals === 2) {
+        if (this.completedSemiFinals === 2) {
       setTimeout(() => {
         this.createLastGame();
       }, 5000);
@@ -171,6 +171,14 @@ export class TournamentManager {
     const newGame = new GameManager(p1, p2, false, () => this.handleFinalCompletion());
     this.gameManagers.push(newGame);
     this.games.push(newGame);
+    const semiFinals = this.games.splice(0, 2);
+    semiFinals.forEach(game => {
+      const index = this.gameManagers.indexOf(game);
+      if (index !== -1) {
+        this.gameManagers.splice(index, 1);
+    }
+  });
+
     newGame.startGame();
     setTimeout(() => {
       newGame.addPlayerReady(p1.id);
