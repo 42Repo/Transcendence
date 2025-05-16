@@ -204,13 +204,13 @@ export class Game {
 
   const buttonSize = Math.min(this.canvas.width, this.canvas.height) * 0.25;
 
-  const leftButton = this.createControlButton("KeyW", buttonSize);
+  const leftButton = this.createControlButton("KeyS", buttonSize);
   leftButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
   leftButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
   leftButton.left = "5%";
   leftButton.top = "-5%";
 
-  const rightButton = this.createControlButton("KeyS", buttonSize);
+  const rightButton = this.createControlButton("KeyW", buttonSize);
   rightButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
   rightButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
   rightButton.left = "-5%";
