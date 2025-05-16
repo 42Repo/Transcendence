@@ -1,0 +1,74 @@
+#!/bin/bash
+
+BASE_URL="http://localhost:4000"
+
+function health_check() {
+  echo "🔍 Checking server health..."
+  curl -s "$BASE_URL/health" | jq .
+}
+
+function list_users() {
+  echo "👥 Listing users..."
+  curl -s "$BASE_URL/users" | jq .
+}
+
+function get_win_stats() {
+  read -p "Enter username: " name
+  echo "📊 Getting win/lose stats for $name..."
+  curl -s "$BASE_URL/match/win/$name" | jq .
+}
+
+function get_all_stats() {
+  read -p "Enter username: " name
+  echo "📈 Getting all stats for $name..."
+  curl -s "$BASE_URL/match/stat/$name" | jq .
+}
+
+function get_user_by_token() {
+  read -p "Enter JWT token: " token
+  echo "🔑 Decoding token..."
+  curl -s "$BASE_URL/user?token=$token" | jq .
+}
+
+function get_user_by_id() {
+  read -p "Enter user ID: " id
+  echo "🔎 Getting user by ID..."
+  curl -s "$BASE_URL/db/user/$id" | jq .
+}
+
+function test_websocket() {
+  echo "🔌 Starting WebSocket test..."
+  echo "Note: Requires wscat (install with: npm install -g wscat)"
+  wscat -c "ws://localhost:4000/ws"
+}
+
+function show_menu() {
+  echo ""
+  echo "=== 🕹️ Pong Server CLI Tester ==="
+  echo "1) Check server health"
+  echo "2) List all users"
+  echo "3) Get win/lose stats for a user"
+  echo "4) Get all stats for a user"
+  echo "5) Get user info by JWT token"
+  echo "6) Get user by ID"
+  echo "7) Test WebSocket connection"
+  echo "0) Exit"
+  echo "=============================="
+}
+
+while true; do
+  show_menu
+  read -p "Choose an option: " choice
+  case $choice in
+    1) health_check ;;
+    2) list_users ;;
+    3) get_win_stats ;;
+    4) get_all_stats ;;
+    5) get_user_by_token ;;
+    6) get_user_by_id ;;
+    7) test_websocket ;;
+    0) echo "👋 Goodbye!"; exit 0 ;;
+    *) echo "❌ Invalid choice." ;;
+  esac
+done
+
