@@ -694,8 +694,8 @@ async function loadAndPopulateProfileData() {
       statsWinLossRateElem.textContent = `W/L Rate: N/A`;
     }
 
-    const rankElem = document.getElementById('statsRank');
-    if (rankElem) rankElem.textContent = `Rank: (Needs API)`;
+    // const rankElem = document.getElementById('statsRank');
+    // if (rankElem) rankElem.textContent = `Rank: (Needs API)`;
 
     profileContentArea.style.display = 'block';
     errorDisplay.style.display = 'none';
