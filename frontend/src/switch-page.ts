@@ -237,7 +237,7 @@ async function loadMyFriendsList() {
             <span>${friend.username} (${friend.online_status})</span>
           </div>
           <div>
-            <button data-user-id="${friend.friend_user_id}" class="view-profile-btn text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded mr-1">Profile</button>
+            <button data-user-id="${friend.friend_user_id}" class="view-profile-btn text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded mr-1 hidden">Profile</button>
             <button data-user-id="${friend.friend_user_id}" data-username="${friend.username}" class="remove-friend-btn text-xs bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded">Remove</button>
           </div>
         `;
